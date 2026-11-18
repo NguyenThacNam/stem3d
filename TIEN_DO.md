@@ -136,6 +136,10 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
 
+Sau phần 4: hook trong `.claude/settings.json` gọi script bằng `$CLAUDE_PROJECT_DIR` thay cho đường dẫn tương đối
+(trước đó đứng ở thư mục con như `frontend/` thì hook không tìm thấy script và chặn mọi lần sửa). Đã thử: sửa file
+frontend được phép khi đứng ở thư mục gốc và ở `frontend/`; ghi / sửa trong `docs/` bị chặn ở cả hai nơi.
+
 ## 5. Quyết định phát sinh khi code
 
 Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói hoặc phải chọn khi làm). Đã chốt với người dùng.
@@ -184,7 +188,6 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Trang giới thiệu (Hình 3-2) chưa làm.
 - Đổi ảnh cá chép sang webp, thêm `width` / `height`.
 - HTTPS: Nginx tự giữ chứng chỉ Let's Encrypt, mở cổng 443 – làm khi triển khai thật.
-- Hook trong `.claude/settings.json` gọi `python .claude/hooks/...` theo đường dẫn tương đối: nếu Claude Code đang đứng ở thư mục con (ví dụ `frontend/`) thì hook không tìm thấy file và chặn mọi lần sửa. Nên đổi sang đường dẫn dựa trên `$CLAUDE_PROJECT_DIR` (chờ người dùng đồng ý).
 
 ## 8. Bàn giao cho người mới
 

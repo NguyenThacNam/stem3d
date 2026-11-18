@@ -4,7 +4,7 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "python .claude/hooks/chan_sua_docs.py" }
+          { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/chan_sua_docs.py\"" }
         ]
       }
     ],
@@ -12,7 +12,7 @@
       {
         "matcher": "Edit|Write",
         "hooks": [
-          { "type": "command", "command": "python .claude/hooks/dinh_dang.py" }
+          { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/dinh_dang.py\"" }
         ]
       }
     ]
