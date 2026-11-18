@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Giao diện chương 3 – Phòng thí nghiệm ảo 3D STEM</title>
+<style>
+/* ---------- Phông chữ (Be Vietnam Pro, OFL, lưu trong dự án) ---------- */
+@font-face{font-family:"BVP";font-weight:400;font-display:block;src:url(vendor/fonts/bvp-vietnamese-400.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"BVP";font-weight:500;font-display:block;src:url(vendor/fonts/bvp-vietnamese-500.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"BVP";font-weight:600;font-display:block;src:url(vendor/fonts/bvp-vietnamese-600.woff2) format("woff2");unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:"BVP";font-weight:400;font-display:block;src:url(vendor/fonts/bvp-latin-400.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2190-2199,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"BVP";font-weight:500;font-display:block;src:url(vendor/fonts/bvp-latin-500.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2190-2199,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"BVP";font-weight:600;font-display:block;src:url(vendor/fonts/bvp-latin-600.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2190-2199,U+2212,U+2215,U+FEFF,U+FFFD}
+
+/* ---------- Quy ước thiết kế (mục 3.2.1) ---------- */
+:root{
+  --bg:#f5f5f3; --surface:#fff; --surface-2:#efefec; --surface-3:#e7e8e4;
+  --line:rgba(26,28,27,.09); --line-2:rgba(26,28,27,.16);
+  --text:#1a1c1b; --text-2:#545957; --muted:#858a87;
+  --accent:#0e7a55; --accent-ink:#0b6446; --accent-weak:#e6f2ec;
+  --danger:#b42318; --danger-weak:#fcecea; --warn:#8a5300; --warn-weak:#fdf3dc;
+  --grid:rgba(76,92,160,.07); --grid-2:rgba(76,92,160,.13);
+  --r-ctl:8px; --r-card:12px; --r-panel:16px;
+  --mono:ui-monospace,Consolas,"Cascadia Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"BVP",system-ui,sans-serif;background:#dcddd8;color:var(--text);font-size:14px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.page{padding:48px 0 80px;display:flex;flex-direction:column;align-items:center;gap:56px}
+.page-head{width:1440px}
+.page-head h1{font-size:22px;font-weight:500}
+.page-head p{color:var(--text-2);margin-top:4px}
+figure{display:flex;flex-direction:column;gap:12px}
+figcaption{font-size:14px;color:var(--text-2)}
+figcaption b{color:var(--text);font-weight:500}
+.screen{width:1440px;height:900px;background:var(--bg);overflow:hidden;position:relative;display:flex;
+  border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.06),0 8px 32px rgba(0,0,0,.08)}
+svg.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+svg.i.sm{width:16px;height:16px}
+
+/* ---------- Thanh bên ---------- */
+.side{width:248px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:16px 12px}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 20px}
+.mark{width:28px;height:28px;border-radius:7px;background:var(--accent);position:relative;flex:none;
+  background-image:linear-gradient(rgba(255,255,255,.28) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.28) 1px,transparent 1px);background-size:7px 7px;background-position:3px 3px}
+.brand .n{font-weight:500;font-size:14px;line-height:1.2}
+.brand .s{font-size:12px;color:var(--muted)}
+.nav-label{font-size:12px;color:var(--muted);padding:16px 10px 6px}
+.nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:var(--r-ctl);color:var(--text-2);text-decoration:none;margin-bottom:2px}
+.nav a.on{background:var(--surface-2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+.nav a .cnt{margin-left:auto;font-size:12px;color:var(--muted)}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px 8px 4px;border-top:1px solid var(--line)}
+.av{width:32px;height:32px;border-radius:50%;background:var(--surface-3);color:var(--text-2);display:grid;place-items:center;font-size:12px;font-weight:500;flex:none}
+.me .who{line-height:1.3;min-width:0}
+.me .who b{display:block;font-weight:500;font-size:13px}
+.me .who span{font-size:12px;color:var(--muted)}
+.me svg{margin-left:auto;color:var(--muted)}
+
+/* ---------- Vùng nội dung ---------- */
+.main{flex:1;min-width:0;padding:28px 32px;display:flex;flex-direction:column;gap:20px}
+.head{display:flex;align-items:flex-end;gap:16px}
+.head h2{font-size:22px;font-weight:500;line-height:1.3}
+.head .sub{color:var(--text-2);font-size:13px;margin-top:2px}
+.head .act{margin-left:auto;display:flex;gap:8px}
+.crumb{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;margin-bottom:4px}
+
+.btn{height:40px;padding:0 16px;border-radius:var(--r-ctl);border:1px solid var(--line-2);background:var(--surface);color:var(--text);
+  font:inherit;font-weight:500;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--text-2)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn[disabled]{opacity:.45}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card)}
+.field label{display:block;font-size:13px;color:var(--text-2);margin-bottom:6px}
+.input{height:40px;border:1px solid var(--line-2);border-radius:var(--r-ctl);background:var(--surface);display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--text)}
+.input.ph{color:var(--muted)}
+.input .tail{margin-left:auto;color:var(--muted)}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg span{height:32px;padding:0 14px;border-radius:7px;display:flex;align-items:center;color:var(--text-2);font-size:13px}
+.seg span.on{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.06),inset 0 0 0 1px var(--line);font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:12px;font-size:12px;background:var(--surface-2);color:var(--text-2)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
+.dot.ok{background:var(--accent)} .dot.warn{background:#d18a00} .dot.bad{background:var(--danger)}
+.mono{font-family:var(--mono);font-size:13px}
+.muted{color:var(--muted)} .t2{color:var(--text-2)}
+
+table{width:100%;border-collapse:collapse}
+th{font-weight:500;font-size:12px;color:var(--muted);text-align:left;height:36px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+td{height:44px;padding:0 16px;border-bottom:1px solid var(--line);font-size:13px}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right}
+tr.sel td{background:var(--accent-weak)}
+
+/* ---------- Khung 3D: nền lưới ô li ---------- */
+.grid3d{background-color:#f7f7f5;
+  background-image:linear-gradient(var(--grid-2) 1px,transparent 1px),linear-gradient(90deg,var(--grid-2) 1px,transparent 1px),
+    linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:64px 64px,64px 64px,16px 16px,16px 16px;background-position:-1px -1px}
+.model{position:absolute;display:block}
+.shadow{position:absolute;border-radius:50%;background:radial-gradient(closest-side,rgba(30,32,30,.18),rgba(30,32,30,0))}
+
+/* Thanh trên của khung bài học */
+.lbar{height:56px;flex:none;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 16px}
+.lbar .t{font-weight:500;font-size:15px;line-height:1.25}
+.lbar .t span{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.lbar .mid{position:absolute;left:50%;transform:translateX(-50%)}
+.lbar .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.iconbtn{width:36px;height:36px;border-radius:var(--r-ctl);display:grid;place-items:center;color:var(--text-2);border:1px solid var(--line-2);background:var(--surface)}
+.callout{position:absolute;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,.06);white-space:nowrap}
+.callout small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.callout.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.leader{position:absolute;height:1px;background:var(--text-2);transform-origin:0 0}
+.pin{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--text-2);transform:translate(-50%,-50%)}
+.pin.on{border-color:var(--accent);background:var(--accent);box-shadow:0 0 0 4px rgba(14,122,85,.18)}
+
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:10px;font-size:13px}
+.alert.bad{background:var(--danger-weak);color:#7a1a12}
+.alert.warn{background:var(--warn-weak);color:var(--warn)}
+.alert.ok{background:var(--accent-weak);color:var(--accent-ink)}
+.alert svg{margin-top:1px}
+
+.scrim{position:absolute;inset:0;background:rgba(24,26,25,.32)}
+.dialog{position:absolute;background:var(--surface);border-radius:var(--r-panel);box-shadow:0 24px 64px rgba(0,0,0,.18);padding:24px}
+.dialog h3{font-size:18px;font-weight:500}
+.dialog .foot{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line-2);display:grid;place-items:center;flex:none;background:var(--surface)}
+.check.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-2);flex:none;background:var(--surface)}
+.radio.on{border:5px solid var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- Bộ biểu tượng (vẽ theo Lucide, nét 1,5) -->
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M16 4.1a4 4 0 0 1 0 7.8"/><path d="M22 21a7 7 0 0 0-4-6.3"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6"/><path d="M10 3v6L4.6 18.4A1.8 1.8 0 0 0 6.2 21h11.6a1.8 1.8 0 0 0 1.6-2.6L14 9V3"/><path d="M7.5 15h9"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-4"/><path d="M13 17V7"/><path d="M18 17v-7"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></symbol>
+  <symbol id="i-sheet" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M12 11v8"/></symbol>
+  <symbol id="i-school" viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M10 21v-5h4v5"/><path d="M10 11h4"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r=".8"/><circle cx="9" cy="12" r=".8"/><circle cx="9" cy="18" r=".8"/><circle cx="15" cy="6" r=".8"/><circle cx="15" cy="12" r=".8"/><circle cx="15" cy="18" r=".8"/></symbol>
+  <symbol id="i-max" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8"/><path d="m16 7 3 3"/><path d="m18.5 4.5 2 2"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+  <symbol id="i-cast" viewBox="0 0 24 24"><path d="M2 4h20"/><path d="M21 4v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4"/><path d="m8 21 4-5 4 5"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r=".9"/><circle cx="12" cy="12" r=".9"/><circle cx="19" cy="12" r=".9"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-log" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></symbol>
+</svg>
+
+<div class="page">
+  <div class="page-head">
+    <h1>Phác thảo giao diện – Phòng thí nghiệm ảo 3D STEM</h1>
+    <p>Mười một màn hình chính của chương 3 (mục 3.2.3). Dữ liệu trong các màn hình là dữ liệu mẫu. Mô hình tim: “Human Heart 3d Model”, Sourav Pan, NIH 3D (CC0); mô hình cá chép: bài mẫu của dự án.</p>
+  </div>
+
+<!-- =============================== SƠ ĐỒ MÀN HÌNH =============================== -->
+<figure>
+<figcaption><b>Hình 3-1.</b> Sơ đồ màn hình theo vai trò</figcaption>
+<div class="screen" id="smap" style="height:720px;background:var(--surface);display:block">
+  <svg viewBox="0 0 1440 720" style="position:absolute;inset:0;width:1440px;height:720px">
+    <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#858a87"/></marker></defs>
+    <g fill="none" stroke="#858a87" stroke-width="1.5">
+      <path d="M200 360 H246" marker-end="url(#ar)"/>
+      <path d="M330 390 V444" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+      <path d="M410 360 C445 360 445 136 476 136" marker-end="url(#ar)"/>
+      <path d="M410 360 C445 360 445 248 476 248" marker-end="url(#ar)"/>
+      <path d="M410 360 H476" marker-end="url(#ar)"/>
+      <path d="M410 360 C445 360 445 472 476 472" marker-end="url(#ar)"/>
+      <path d="M410 360 C445 360 445 584 476 584" marker-end="url(#ar)"/>
+      <path d="M1204 136 C1224 136 1224 186 1238 186" marker-end="url(#ar)"/>
+      <path d="M1204 248 C1224 248 1224 230 1238 230" marker-end="url(#ar)"/>
+    </g>
+  </svg>
+  <div class="mbox" style="left:40px;top:330px;width:160px">Trang giới thiệu<small>Công khai</small></div>
+  <div class="mbox" style="left:250px;top:330px;width:160px">Đăng nhập</div>
+  <div class="mbox dash" style="left:224px;top:448px;width:212px">Đổi mật khẩu bắt buộc<small>Lần đầu: QTT, QTHT, BTV</small></div>
+  <div class="mrow" style="top:92px"><b>Học sinh</b><span>Bài được giao</span><span class="k">Thư viện bài học</span><span>Kết quả của tôi</span></div>
+  <div class="mrow" style="top:204px"><b>Giáo viên</b><span>Lớp của tôi</span><span>Kết quả cả lớp</span><span class="k">Thư viện bài học</span></div>
+  <div class="mrow" style="top:316px"><b>Quản trị trường</b><span>Học sinh</span><span>Giáo viên</span><span>Lớp và phân công</span><span>Báo cáo sử dụng</span></div>
+  <div class="mrow" style="top:428px"><b>Biên tập viên</b><span>Bài học</span><span>Mô hình 3D</span></div>
+  <div class="mrow" style="top:540px"><b>Quản trị hệ thống</b><span>Trường</span><span>Biên tập viên</span><span>Nhật ký hệ thống</span><span>Bài học</span><span>Mô hình 3D</span></div>
+  <div class="mbox on" style="left:1242px;top:148px;width:174px;text-align:left;padding:14px 16px">Khung bài học 3D<small>Phim · Tự khám phá<br>Thí nghiệm · Kiểm tra</small></div>
+  <div style="position:absolute;left:480px;top:652px;font-size:12px;color:var(--muted)">Mỗi hàng là menu thanh bên của một vai trò. Quản trị hệ thống kế thừa Biên tập viên nên có thêm mục Bài học, Mô hình 3D</div>
+</div>
+</figure>
+<style>
+.mbox{position:absolute;padding:12px 14px;border:1px solid var(--line-2);border-radius:var(--r-card);background:var(--surface);text-align:center;font-weight:500;font-size:14px;line-height:1.35}
+.mbox small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px}
+.mbox.dash{border-style:dashed;background:var(--bg)}
+.mbox.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.mrow{position:absolute;left:480px;width:724px;height:88px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--bg);display:flex;align-items:center;gap:8px;padding:0 16px}
+.mrow b{width:132px;flex:none;font-weight:500;font-size:14px}
+.mrow span{height:32px;padding:0 12px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;font-size:13px;color:var(--text-2);white-space:nowrap}
+.mrow span.k{border-color:var(--accent);color:var(--accent-ink)}
+</style>
+
+<!-- =============================== 0. TRANG GIỚI THIỆU =============================== -->
+<figure>
+<figcaption><b>Hình 3-2.</b> Trang giới thiệu (khi truy cập lần đầu, chưa đăng nhập)</figcaption>
+<div class="screen" id="s00" style="flex-direction:column;background:var(--surface);height:auto">
+  <header style="height:64px;flex:none;display:flex;align-items:center;gap:32px;padding:0 48px;border-bottom:1px solid var(--line)">
+    <div class="brand" style="padding:0"><div class="mark"></div><div><div class="n">Phòng thí nghiệm ảo</div><div class="s">Lý · Hóa · Sinh 3D</div></div></div>
+    <nav style="display:flex;gap:28px;color:var(--text-2);margin-left:24px"><span>Môn học</span><span>Tính năng</span><span>Dành cho nhà trường</span><span>Hỏi đáp</span></nav>
+    <button class="btn pri" style="margin-left:auto">Đăng nhập</button>
+  </header>
+
+  <!-- Mở đầu -->
+  <section style="display:flex;gap:48px;padding:40px 48px 0;height:520px">
+    <div style="width:560px;flex:none;display:flex;flex-direction:column;justify-content:center;gap:20px">
+      <div class="muted" style="font-size:14px">Phần mềm thí nghiệm ảo cho lớp 1 đến lớp 12</div>
+      <h1 style="font-size:40px;font-weight:500;line-height:1.2;letter-spacing:-.4px">Khám phá mô hình 3D, làm thí nghiệm ngay trên lớp</h1>
+      <p class="t2" style="font-size:17px;line-height:1.6">Bài học bám theo sách giáo khoa, toàn bộ bằng tiếng Việt. Chạy ngay trên trình duyệt của máy tính, máy tính bảng và máy chiếu, nhà trường không phải cài đặt</p>
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button class="btn pri" style="height:48px;padding:0 24px;font-size:15px">Đăng nhập</button>
+        <button class="btn" style="height:48px;padding:0 20px;font-size:15px"><svg class="i"><use href="#i-play"/></svg>Xem bài mẫu</button>
+      </div>
+    </div>
+    <div class="grid3d" style="flex:1;position:relative;border-radius:var(--r-panel);border:1px solid var(--line);overflow:hidden">
+      <div class="shadow" style="left:276px;top:446px;width:220px;height:32px"></div>
+      <img class="model" src="giao-dien-assets/tim-nghieng.png" style="left:265px;top:22px;height:456px">
+      <div class="pin on" style="left:477px;top:349px"></div><div class="leader" style="left:477px;top:349px;width:83px"></div>
+      <div class="callout on" style="left:560px;top:322px">Tâm thất trái<small>Thành cơ dày nhất</small></div>
+      <div class="pin" style="left:428px;top:113px"></div><div class="leader" style="left:428px;top:113px;width:132px"></div>
+      <div class="callout" style="left:560px;top:94px">Cung động mạch chủ</div>
+      <div style="position:absolute;left:24px;top:18px;font-size:13px"><span class="muted">Bài mẫu · </span>Cấu tạo của tim · Khoa học tự nhiên 8</div>
+    </div>
+  </section>
+
+  <!-- Môn học -->
+  <section class="lsec">
+    <div class="lhead"><h2>Môn học</h2><p>Vật lí, Hóa học, Sinh học trên cùng một nền tảng, từ Tiểu học đến THPT</p></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card subj"><div class="th grid3d"><img src="giao-dien-assets/ca-chep.png" style="width:220px"></div>
+        <b>Sinh học</b><span>Cấu tạo cơ thể động vật và cơ thể người: cá chép, tim người. Tách từng bộ phận, đọc chú thích theo sách</span></div>
+      <div class="card subj"><div class="th grid3d"><svg id="mini-curve" viewBox="0 0 220 110" style="width:220px;height:110px"></svg></div>
+        <b>Hóa học</b><span>Thí nghiệm có thông số và đồ thị: chuẩn độ axit – bazơ, đổi màu chất chỉ thị theo pH</span></div>
+      <div class="card subj off"><div class="th"><span>Đang xây dựng</span></div>
+        <b>Vật lí</b><span>Các bài thí nghiệm Vật lí sẽ được bổ sung trong giai đoạn sau</span></div>
+    </div>
+  </section>
+
+  <!-- Tính năng -->
+  <section class="lsec">
+    <div class="lhead"><h2>Tính năng</h2><p>Một khung bài học dùng chung cho mọi bài, cùng các công cụ để giáo viên tổ chức giờ học</p></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div class="feat"><div class="shot"><img src="hinh-giao-dien/03-khung-bai-hoc.png" style="object-position:30% 30%"></div>
+        <b>Tách từng bộ phận trên mô hình 3D</b><span>Xoay, phóng to, bấm vào bộ phận để tách ra và đọc chú thích. Có phim mở đầu cho từng bài</span></div>
+      <div class="feat"><div class="shot"><img src="hinh-giao-dien/04-thi-nghiem.png" style="object-position:70% 20%"></div>
+        <b>Thí nghiệm có thông số và đồ thị</b><span>Học sinh tự chọn thông số, quan sát hiện tượng và số liệu. Máy chủ tự tính lại đáp án rồi chấm điểm</span></div>
+      <div class="feat"><div class="shot"><img src="hinh-giao-dien/07-ket-qua-lop.png" style="object-position:70% 30%"></div>
+        <b>Giao bài, xem kết quả cả lớp</b><span>Giáo viên giao bài kèm hạn nộp, xem ai đã làm, điểm từng em, câu sai nhiều nhất và xuất ra Excel</span></div>
+      <div class="feat"><div class="shot grid3d" style="display:flex;align-items:center;gap:16px;padding:20px">
+          <div style="flex:1.6;display:flex;flex-direction:column;gap:6px"><span class="muted" style="font-size:12px">Máy giáo viên</span>
+            <img src="hinh-giao-dien/03-khung-bai-hoc.png" style="width:100%;height:auto;border-radius:8px;border:1px solid var(--line-2);box-shadow:0 2px 8px rgba(0,0,0,.08)"></div>
+          <svg viewBox="0 0 40 20" style="width:40px;flex:none"><path d="M2 10h32m-6-6 6 6-6 6" fill="none" stroke="#0e7a55" stroke-width="2"/></svg>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px"><span class="muted" style="font-size:12px">Máy học sinh · cùng góc nhìn</span>
+            <img src="hinh-giao-dien/03-khung-bai-hoc.png" style="height:80px;width:auto;align-self:flex-start;border-radius:6px;border:1px solid var(--line-2)">
+            <img src="hinh-giao-dien/03-khung-bai-hoc.png" style="height:80px;width:auto;align-self:flex-start;border-radius:6px;border:1px solid var(--line-2)"></div>
+        </div>
+        <b>Điều khiển màn hình cả lớp</b><span>Khi giảng, thao tác xoay, mở bộ phận trên máy giáo viên hiện ngay trên màn hình mọi học sinh</span></div>
+    </div>
+  </section>
+
+  <!-- Đáp ứng yêu cầu nhà trường -->
+  <section class="lsec">
+    <div class="lhead"><h2>Phù hợp với nhà trường</h2><p>Thiết kế theo tiêu chí phần mềm thí nghiệm ảo của mô hình trường học số</p></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div class="card req"><svg class="i"><use href="#i-book"/></svg><b>Bám sách giáo khoa</b><span>Bài học sắp theo mục lục sách, chú thích đúng thuật ngữ trong sách</span></div>
+      <div class="card req"><svg class="i"><use href="#i-list"/></svg><b>Toàn bộ tiếng Việt</b><span>Giao diện, thông báo, đơn vị đo và đồ thị đều bằng tiếng Việt</span></div>
+      <div class="card req"><svg class="i"><use href="#i-max"/></svg><b>Không cần cài đặt</b><span>Chạy trên Chrome, Cốc Cốc, Edge của máy tính, máy tính bảng và máy chiếu</span></div>
+      <div class="card req"><svg class="i"><use href="#i-lock"/></svg><b>Bảo vệ dữ liệu học sinh</b><span>Máy chủ đặt tại Việt Nam, mã hóa và sao lưu hằng ngày, theo Nghị định 13/2023/NĐ-CP</span></div>
+    </div>
+  </section>
+
+  <!-- Bắt đầu -->
+  <section class="lsec">
+    <div class="lhead"><h2>Nhà trường bắt đầu thế nào</h2><p>Chỉ cần danh sách giáo viên, học sinh và một trình duyệt</p></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card step"><i>1</i><b>Đăng ký tài khoản trường</b><span>InoLink tạo trường và cấp tài khoản quản trị cho hiệu trưởng hoặc cán bộ phụ trách</span></div>
+      <div class="card step"><i>2</i><b>Nhập giáo viên, học sinh</b><span>Quản trị trường nhập danh sách từ file Excel, hệ thống tự tạo tài khoản và in phiếu đăng nhập</span></div>
+      <div class="card step"><i>3</i><b>Vào lớp và giao bài</b><span>Giáo viên chọn bài theo môn mình dạy, giao cho lớp và theo dõi kết quả</span></div>
+    </div>
+  </section>
+
+  <!-- Hỏi đáp -->
+  <section class="lsec">
+    <div class="lhead"><h2>Hỏi đáp</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 48px">
+      <div class="qa"><b>Máy tính của trường cấu hình thấp có dùng được không?</b><span>Có. Mô hình được tối ưu cho máy tính, máy tính bảng phổ thông; máy yếu sẽ tự giảm hiệu ứng để chạy mượt</span></div>
+      <div class="qa"><b>Có cần kết nối Internet không?</b><span>Có. Mô hình được trình duyệt lưu lại sau lần tải đầu tiên, nên các lần mở sau gần như tức thì</span></div>
+      <div class="qa"><b>Học sinh quên mật khẩu thì làm thế nào?</b><span>Giáo viên chủ nhiệm hoặc quản trị trường đặt lại mật khẩu ngay trên hệ thống</span></div>
+      <div class="qa"><b>Một trường dùng cho cả ba môn được không?</b><span>Được. Vật lí, Hóa học, Sinh học từ lớp 1 đến lớp 12 nằm trong cùng một phần mềm</span></div>
+      <div class="qa"><b>Giáo viên có cần cài thêm gì không?</b><span>Không. Chỉ cần trình duyệt bản mới và tài khoản do nhà trường cấp</span></div>
+      <div class="qa"><b>Kết quả của học sinh có được lưu lại không?</b><span>Có. Mỗi lần nộp được lưu cùng điểm và số liệu thí nghiệm; giáo viên xuất được ra Excel</span></div>
+    </div>
+  </section>
+
+  <!-- Kêu gọi liên hệ -->
+  <section style="padding:24px 48px 56px">
+    <div style="border-radius:var(--r-panel);background:var(--accent-weak);padding:36px 40px;display:flex;align-items:center;gap:32px">
+      <div><h2 style="font-size:26px;font-weight:500;line-height:1.3">Đăng ký dùng thử cho trường của thầy cô</h2>
+        <p class="t2" style="font-size:15px;margin-top:6px">InoLink hỗ trợ tạo tài khoản, nhập dữ liệu và tập huấn giáo viên trong buổi đầu tiên</p></div>
+      <button class="btn pri" style="margin-left:auto;height:48px;padding:0 24px;font-size:15px">Liên hệ InoLink</button>
+    </div>
+  </section>
+
+  <!-- Chân trang -->
+  <footer style="background:var(--surface-2);border-top:1px solid var(--line);padding:40px 48px 24px">
+    <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr 1.4fr;gap:40px">
+      <div>
+        <div class="brand" style="padding:0"><div class="mark"></div><div><div class="n">Phòng thí nghiệm ảo</div><div class="s">Lý · Hóa · Sinh 3D</div></div></div>
+        <p class="t2" style="font-size:13px;margin-top:14px;max-width:320px">Sản phẩm của <b style="font-weight:600;color:var(--text)">InoLink</b>. Phần mềm thí nghiệm ảo 3D cho dạy học Vật lí, Hóa học, Sinh học</p>
+      </div>
+      <div class="fcol"><b>Sản phẩm</b><span>Môn học</span><span>Tính năng</span><span>Bài mẫu</span></div>
+      <div class="fcol"><b>Hỗ trợ</b><span>Hướng dẫn sử dụng</span><span>Hỏi đáp</span><span>Chính sách bảo vệ dữ liệu</span></div>
+      <div class="fcol"><b>Liên hệ InoLink</b><span>Hà Nội, Việt Nam</span><span>lienhe@inolink.vn</span><span>0900 000 000</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:32px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)">
+      <span>© 2026 InoLink. Bảo lưu mọi quyền.</span><span>Điều khoản sử dụng · Chính sách bảo vệ dữ liệu cá nhân</span>
+    </div>
+  </footer>
+</div>
+</figure>
+<style>
+.subj{overflow:hidden;display:flex;flex-direction:column}
+.subj .th{height:132px;display:grid;place-items:center;border-bottom:1px solid var(--line)}
+.subj.off .th{background:var(--surface-2);color:var(--muted);font-size:13px}
+.subj b{font-weight:500;font-size:15px;padding:14px 18px 2px}
+.subj>span{font-size:13px;color:var(--text-2);padding:0 18px 16px}
+.subj.off b,.subj.off>span{color:var(--muted)}
+.lsec{padding:56px 48px 0}
+.lhead{margin-bottom:24px}
+.lhead h2{font-size:26px;font-weight:500;line-height:1.3}
+.lhead p{color:var(--text-2);font-size:15px;margin-top:4px}
+.subj .th{height:150px}
+.feat{display:flex;flex-direction:column;gap:6px}
+.feat .shot{height:250px;border-radius:var(--r-card);border:1px solid var(--line);overflow:hidden;background:var(--bg);margin-bottom:10px}
+.feat .shot img{width:100%;height:100%;object-fit:cover;display:block}
+.feat b{font-weight:500;font-size:17px}
+.feat span{color:var(--text-2);font-size:14px}
+.req{padding:20px;display:flex;flex-direction:column;gap:6px}
+.req svg{color:var(--accent);width:22px;height:22px;margin-bottom:6px}
+.req b,.step b{font-weight:500;font-size:15px}
+.req span,.step span{font-size:13px;color:var(--text-2)}
+.step{padding:20px;display:flex;flex-direction:column;gap:6px}
+.step i{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:13px;font-weight:500;background:var(--accent-weak);color:var(--accent-ink);margin-bottom:6px}
+.qa{padding:18px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.qa b{font-weight:500;font-size:15px}
+.qa span{font-size:14px;color:var(--text-2)}
+.fcol{display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-2)}
+.fcol b{font-weight:500;color:var(--text);font-size:14px;margin-bottom:4px}
+.howto{display:flex;gap:12px;align-items:flex-start;font-size:13px;color:var(--text-2)}
+.howto i{width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:500;background:var(--accent-weak);color:var(--accent-ink)}
+</style>
+
+<!-- =============================== 1. ĐĂNG NHẬP =============================== -->
+<figure>
+<figcaption><b>Hình 3-3.</b> Màn hình đăng nhập</figcaption>
+<div class="screen" id="s01">
+  <div class="grid3d" style="width:800px;position:relative;border-right:1px solid var(--line)">
+    <img class="model" src="giao-dien-assets/ca-chep.png" style="left:64px;top:236px;width:672px">
+    <div style="position:absolute;left:40px;bottom:36px;right:40px;display:flex;justify-content:space-between;align-items:flex-end">
+      <div>
+        <div style="font-size:13px;color:var(--muted)">Bài mẫu</div>
+        <div style="font-size:15px;font-weight:500">Cá chép – cấu tạo ngoài · Khoa học tự nhiên</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted)">Kéo để xoay · chụm hai ngón để phóng to</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:40px 96px;background:var(--surface)">
+    <div class="brand" style="padding:0"><div class="mark"></div><div><div class="n">Phòng thí nghiệm ảo</div><div class="s">Lý · Hóa · Sinh 3D</div></div></div>
+    <div style="margin:auto 0;display:flex;flex-direction:column;gap:20px">
+      <div>
+        <h2 style="font-size:28px;font-weight:500;line-height:1.25">Đăng nhập</h2>
+        <p class="t2" style="margin-top:6px">Dùng tài khoản nhà trường đã cấp cho thầy cô và các em</p>
+      </div>
+      <div class="field"><label>Tên đăng nhập</label><div class="input"><svg class="i sm muted"><use href="#i-user"/></svg>nguyendu.hs0123</div></div>
+      <div class="field"><label>Mật khẩu</label><div class="input"><svg class="i sm muted"><use href="#i-lock"/></svg><span style="letter-spacing:3px">••••••••</span><svg class="i sm tail"><use href="#i-eye"/></svg></div></div>
+      <button class="btn pri" style="width:100%;justify-content:center;height:44px" disabled>Đăng nhập</button>
+      <div class="alert warn"><svg class="i sm"><use href="#i-lock"/></svg>
+        <div>Tài khoản đang tạm khóa do nhập sai 5 lần liên tiếp. Thử lại sau <b class="mono" style="font-weight:600">0:42</b></div></div>
+    </div>
+    <p class="muted" style="font-size:13px">Quên mật khẩu? Học sinh báo giáo viên chủ nhiệm, giáo viên báo quản trị trường để được cấp mật khẩu mới</p>
+  </div>
+</div>
+</figure>
+
+<!-- =============================== 2. THƯ VIỆN BÀI HỌC =============================== -->
+<figure>
+<figcaption><b>Hình 3-4.</b> Màn hình thư viện bài học</figcaption>
+<div class="screen" id="s02">
+  <aside class="side" data-role="hs" data-on="Thư viện bài học"></aside>
+  <div class="main">
+    <div class="head">
+      <div><h2>Thư viện bài học</h2><div class="sub">Sắp theo mục lục sách Kết nối tri thức với cuộc sống</div></div>
+      <div class="act"><div class="input ph" style="width:320px"><svg class="i sm"><use href="#i-search"/></svg>Tìm bài hoặc bộ phận</div></div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div class="seg"><span>Tiểu học</span><span class="on">THCS</span><span>THPT</span></div>
+      <div class="input" style="width:220px">Khoa học tự nhiên<svg class="i sm tail"><use href="#i-chev-d"/></svg></div>
+      <div class="input" style="width:120px">Lớp 8<svg class="i sm tail"><use href="#i-chev-d"/></svg></div>
+      <span class="muted" style="margin-left:auto;font-size:13px">6 bài</span>
+    </div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px"><h3 style="font-size:15px;font-weight:500">Sinh học cơ thể người</h3><span class="muted" style="font-size:13px">4 bài</span></div>
+      <div class="lessons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div class="card lc"><div class="th grid3d"><img src="giao-dien-assets/tim-truoc.png" style="height:156px"></div>
+          <div class="bd"><b>Máu và hệ tuần hoàn của cơ thể người</b><div class="meta"><span class="pill"><svg class="i sm"><use href="#i-box"/></svg>Cấu tạo</span><span class="muted">9 bộ phận</span></div></div></div>
+        <div class="card lc"><div class="th grid3d"><img src="giao-dien-assets/tim-nghieng.png" style="height:156px"></div>
+          <div class="bd"><b>Cấu tạo của tim</b><div class="meta"><span class="pill"><svg class="i sm"><use href="#i-box"/></svg>Cấu tạo</span><span class="muted">10 bộ phận</span></div></div></div>
+        <div class="card lc empty"><div class="th"><span>Nội dung đang được cập nhật</span></div>
+          <div class="bd"><b class="t2">Hệ hô hấp ở người</b><div class="meta"><span class="muted">Sắp có</span></div></div></div>
+        <div class="card lc empty"><div class="th"><span>Nội dung đang được cập nhật</span></div>
+          <div class="bd"><b class="t2">Hệ bài tiết ở người</b><div class="meta"><span class="muted">Sắp có</span></div></div></div>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px"><h3 style="font-size:15px;font-weight:500">Acid – base – pH</h3><span class="muted" style="font-size:13px">2 bài</span></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div class="card lc"><div class="th grid3d"><svg viewBox="0 0 200 150" style="height:150px" id="ph-thumb"></svg></div>
+          <div class="bd"><b>Thang pH</b><div class="meta"><span class="pill"><svg class="i sm"><use href="#i-flask"/></svg>Thí nghiệm</span><span class="muted">Đo pH 5 dung dịch</span></div></div></div>
+        <div class="card lc empty"><div class="th"><span>Nội dung đang được cập nhật</span></div>
+          <div class="bd"><b class="t2">Base</b><div class="meta"><span class="muted">Sắp có</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.lc{overflow:hidden}
+.lc .th{height:176px;display:grid;place-items:center;border-bottom:1px solid var(--line)}
+.lc.empty .th{background:var(--surface-2);color:var(--muted);font-size:13px}
+.lc .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px}
+.lc .bd b{font-weight:500;font-size:14px;line-height:1.4;min-height:40px}
+.lc .meta{display:flex;align-items:center;gap:10px;font-size:12px}
+</style>
+
+<!-- =============================== 3. KHUNG BÀI HỌC 3D =============================== -->
+<figure>
+<figcaption><b>Hình 3-5.</b> Màn hình khung bài học 3D (chế độ tự khám phá)</figcaption>
+<div class="screen" id="s03" style="flex-direction:column">
+  <div class="lbar">
+    <div class="iconbtn"><svg class="i"><use href="#i-back"/></svg></div>
+    <div class="t">Cấu tạo của tim<span>Khoa học tự nhiên 8 · Sinh học cơ thể người</span></div>
+    <div class="mid seg"><span><svg class="i sm" style="margin-right:6px"><use href="#i-play"/></svg>Phim</span><span class="on">Tự khám phá</span><span>Kiểm tra</span></div>
+    <div class="r"><div class="iconbtn"><svg class="i"><use href="#i-reset"/></svg></div><div class="iconbtn"><svg class="i"><use href="#i-max"/></svg></div></div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div class="grid3d" style="flex:1;position:relative">
+      <div class="shadow" style="left:380px;top:752px;width:340px;height:44px"></div>
+      <img class="model" src="giao-dien-assets/tim-nghieng.png" style="left:337px;top:36px;height:744px">
+      <!-- nhãn bộ phận -->
+      <div class="pin on" style="left:673px;top:568px"></div><div class="leader on" style="left:673px;top:568px;width:181px"></div>
+      <div class="callout on" style="left:854px;top:541px">Tâm thất trái<small>Đang xem</small></div>
+      <div class="pin" style="left:595px;top:185px"></div><div class="leader" style="left:595px;top:185px;width:259px"></div><div class="callout" style="left:854px;top:166px">Cung động mạch chủ</div>
+      <div class="pin" style="left:658px;top:247px"></div><div class="leader" style="left:658px;top:247px;width:196px"></div><div class="callout" style="left:854px;top:228px">Động mạch phổi</div>
+      <div class="pin" style="left:454px;top:130px"></div><div class="leader" style="left:200px;top:130px;width:254px"></div><div class="callout" style="right:896px;top:111px">Tĩnh mạch chủ trên</div>
+      <div class="pin" style="left:525px;top:552px"></div><div class="leader" style="left:200px;top:552px;width:325px"></div><div class="callout" style="right:896px;top:533px">Tâm thất phải</div>
+      <div class="pin" style="left:556px;top:458px"></div><div class="leader" style="left:200px;top:458px;width:356px"></div><div class="callout" style="right:896px;top:439px">Động mạch vành</div>
+      <div style="position:absolute;left:24px;bottom:20px;font-size:12px;color:var(--muted)">Kéo để xoay · cuộn hoặc chụm hai ngón để phóng to · bấm vùng trống để bỏ chọn</div>
+      <div style="position:absolute;right:24px;bottom:20px;font-size:12px;color:var(--muted)">Mô hình 3D: Sourav Pan, NIH 3D · CC0</div>
+    </div>
+    <div style="width:344px;flex:none;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column">
+      <div style="padding:20px 20px 8px;display:flex;align-items:baseline"><b style="font-weight:500">Bộ phận</b><span class="muted" style="margin-left:auto;font-size:12px">10</span></div>
+      <div class="parts" style="padding:0 12px">
+        <div>Tâm nhĩ phải</div><div>Tâm nhĩ trái</div><div>Tâm thất phải</div><div class="on">Tâm thất trái</div>
+        <div>Cung động mạch chủ</div><div>Động mạch phổi</div><div>Tĩnh mạch chủ trên</div><div>Tĩnh mạch chủ dưới</div>
+        <div>Tĩnh mạch phổi</div><div>Động mạch vành</div>
+      </div>
+      <div style="margin:auto 16px 16px;padding:16px;border-radius:var(--r-card);background:var(--surface-2)">
+        <div style="font-size:12px;color:var(--muted)">Đang xem</div>
+        <div style="font-size:16px;font-weight:500;margin:2px 0 8px">Tâm thất trái</div>
+        <p class="t2" style="font-size:13px">Ngăn tim có thành cơ dày nhất. Khi tâm thất trái co, máu giàu oxygen được đẩy vào động mạch chủ để đi nuôi khắp cơ thể.</p>
+        <div style="display:flex;gap:8px;margin-top:14px"><button class="btn sm"><svg class="i sm"><use href="#i-reset"/></svg>Lắp lại</button><button class="btn sm ghost">Bộ phận tiếp</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.parts div{height:34px;display:flex;align-items:center;padding:0 10px;border-radius:var(--r-ctl);color:var(--text-2);font-size:13px;gap:10px}
+.parts div::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--line-2)}
+.parts div.on{background:var(--accent-weak);color:var(--accent-ink);font-weight:500}
+.parts div.on::before{background:var(--accent)}
+</style>
+
+<!-- =============================== 4. THÍ NGHIỆM =============================== -->
+<figure>
+<figcaption><b>Hình 3-6.</b> Màn hình thí nghiệm chuẩn độ axit – bazơ</figcaption>
+<div class="screen" id="s04" style="flex-direction:column">
+  <div class="lbar">
+    <div class="iconbtn"><svg class="i"><use href="#i-back"/></svg></div>
+    <div class="t">Chuẩn độ axit – bazơ<span>Hóa học 11 · Cân bằng trong dung dịch nước</span></div>
+    <div class="mid seg"><span>Phim</span><span>Tự khám phá</span><span class="on">Thí nghiệm</span><span>Kiểm tra</span></div>
+    <div class="r"><span class="muted" style="font-size:13px">Bài được giao · hạn 21:00, 25/11/2026</span><div class="iconbtn"><svg class="i"><use href="#i-max"/></svg></div></div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div class="grid3d" style="width:440px;flex:none;position:relative;border-right:1px solid var(--line)">
+      <svg id="rig" viewBox="0 0 440 844" style="position:absolute;inset:0;width:440px;height:844px"></svg>
+    </div>
+    <div style="flex:1;padding:24px;display:grid;grid-template-columns:1fr 320px;grid-template-rows:auto 1fr;gap:16px;min-width:0">
+      <div class="card" style="grid-column:1/3;padding:20px 20px 12px">
+        <div style="display:flex;align-items:baseline;gap:12px">
+          <b style="font-weight:500;font-size:15px">Đồ thị pH theo thể tích NaOH</b>
+          <span class="muted" style="font-size:13px">Vẽ dần theo từng lần nhỏ</span>
+          <span style="margin-left:auto;font-size:13px" class="t2">Đã nhỏ <b class="mono" style="font-weight:600;color:var(--text)">20,10 mL</b> · pH <b class="mono" style="font-weight:600;color:var(--accent-ink)">10,40</b></span>
+        </div>
+        <svg id="curve" viewBox="0 0 900 380" style="width:100%;height:380px;display:block;margin-top:8px"></svg>
+      </div>
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+        <b style="font-weight:500">Thông số</b>
+        <div class="param"><div class="lab"><span>Nồng độ HCl (C<sub>a</sub>)</span><b class="mono">0,10 mol/L</b></div><div class="track"><i style="width:33%"></i><s style="left:33%"></s></div><div class="rng"><span>0,05</span><span>0,20</span></div></div>
+        <div class="param"><div class="lab"><span>Thể tích HCl (V<sub>a</sub>)</span><b class="mono">20,0 mL</b></div><div class="track"><i style="width:67%"></i><s style="left:67%"></s></div><div class="rng"><span>10,0</span><span>25,0</span></div></div>
+        <div class="param"><div class="lab"><span>Nồng độ NaOH (C<sub>b</sub>)</span><b class="mono">0,10 mol/L</b></div><div class="track"><i style="width:33%"></i><s style="left:33%"></s></div><div class="rng"><span>0,05</span><span>0,20</span></div></div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="btn"><svg class="i sm"><use href="#i-drop"/></svg>Nhỏ 1 giọt</button>
+          <button class="btn">Nhỏ nhanh</button>
+          <button class="btn ghost"><svg class="i sm"><use href="#i-reset"/></svg>Làm lại</button>
+        </div>
+      </div>
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;gap:14px">
+        <b style="font-weight:500">Phiếu kết quả</b>
+        <div class="field"><label>Thể tích NaOH tại điểm tương đương</label><div class="input" style="font-weight:500">20,0<span class="tail" style="font-weight:400">mL</span></div></div>
+        <div class="field"><label>Màu dung dịch sau điểm tương đương</label><div class="input">Hồng nhạt<svg class="i sm tail"><use href="#i-chev-d"/></svg></div></div>
+        <button class="btn pri" style="margin-top:auto;justify-content:center">Nộp kết quả</button>
+        <span class="muted" style="font-size:12px;text-align:center;margin-top:-6px">Máy chủ tự tính lại đáp án từ thông số em đã chọn</span>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.param .lab{display:flex;justify-content:space-between;font-size:13px;color:var(--text-2);margin-bottom:10px}
+.param .lab b{color:var(--text);font-weight:500}
+.param .track{height:4px;border-radius:2px;background:var(--surface-3);position:relative}
+.param .track i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--accent)}
+.param .track s{position:absolute;top:50%;width:16px;height:16px;border-radius:50%;background:#fff;border:1.5px solid var(--accent);transform:translate(-50%,-50%);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.param .rng{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+</style>
+
+<!-- =============================== 5. BÀI KIỂM TRA =============================== -->
+<figure>
+<figcaption><b>Hình 3-7.</b> Màn hình bài kiểm tra nhanh</figcaption>
+<div class="screen" id="s05" style="flex-direction:column">
+  <div class="lbar">
+    <div class="iconbtn"><svg class="i"><use href="#i-back"/></svg></div>
+    <div class="t">Cấu tạo của tim<span>Khoa học tự nhiên 8 · Sinh học cơ thể người</span></div>
+    <div class="mid seg"><span>Phim</span><span>Tự khám phá</span><span class="on">Kiểm tra</span></div>
+    <div class="r"><span class="muted" style="font-size:13px">Câu đã trả lời 2/5</span></div>
+  </div>
+  <div style="flex:1;display:flex;min-height:0">
+    <div class="grid3d" style="width:600px;flex:none;position:relative;border-right:1px solid var(--line)">
+      <div class="shadow" style="left:150px;top:722px;width:300px;height:40px"></div>
+      <img class="model" src="giao-dien-assets/tim-nghieng.png" style="left:118px;top:88px;height:660px">
+      <div style="position:absolute;left:24px;top:20px;font-size:12px;color:var(--muted)">Xoay mô hình để quan sát trước khi trả lời</div>
+    </div>
+    <div style="flex:1;padding:48px 72px;display:flex;flex-direction:column">
+      <div class="steps"><i class="d"></i><i class="d"></i><i class="c"></i><i></i><i></i></div>
+      <div style="margin-top:28px;font-size:13px;color:var(--muted)">Câu 3 / 5 · Trắc nghiệm</div>
+      <h3 style="font-size:22px;font-weight:500;line-height:1.4;margin-top:6px">Van nhĩ – thất có vai trò gì trong hoạt động của tim?</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px">
+        <div class="opt"><span>A</span>Đẩy máu đi nuôi khắp cơ thể</div>
+        <div class="opt on"><span>B</span>Giúp máu chảy một chiều từ tâm nhĩ xuống tâm thất</div>
+        <div class="opt"><span>C</span>Trao đổi khí giữa máu và không khí</div>
+        <div class="opt"><span>D</span>Dẫn máu từ tim lên phổi</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:auto">
+        <button class="btn">Câu trước</button>
+        <button class="btn pri" style="margin-left:auto">Câu tiếp<svg class="i sm"><use href="#i-chev-r"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.steps{display:flex;gap:6px}
+.steps i{height:4px;flex:1;border-radius:2px;background:var(--surface-3)}
+.steps i.d{background:var(--accent)} .steps i.c{background:var(--text)}
+.opt{display:flex;align-items:center;gap:16px;min-height:60px;padding:0 20px;border-radius:var(--r-card);border:1px solid var(--line-2);background:var(--surface);font-size:16px}
+.opt span{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;background:var(--surface-2);font-weight:500;font-size:14px;color:var(--text-2);flex:none}
+.opt.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+.opt.on span{background:var(--accent);color:#fff}
+</style>
+
+<!-- =============================== 6. LỚP CỦA TÔI + GIAO BÀI =============================== -->
+<figure>
+<figcaption><b>Hình 3-8.</b> Màn hình lớp của tôi và hộp thoại giao bài</figcaption>
+<div class="screen" id="s06">
+  <aside class="side" data-role="gv" data-on="Lớp của tôi"></aside>
+  <div class="main">
+    <div class="head"><div><h2>Lớp của tôi</h2><div class="sub">Năm học 2026-2027 · Khoa học tự nhiên</div></div></div>
+    <div style="display:flex;gap:20px;flex:1;min-height:0">
+      <div style="width:264px;flex:none;display:flex;flex-direction:column;gap:8px">
+        <div class="cls on"><div><b>8A2</b><span class="pill" style="height:20px;font-size:11px">Chủ nhiệm</span></div><span>KHTN · 38 học sinh</span></div>
+        <div class="cls"><div><b>8A1</b></div><span>KHTN · 40 học sinh</span></div>
+        <div class="cls"><div><b>8A3</b></div><span>KHTN · 39 học sinh</span></div>
+        <div class="cls"><div><b>9A1</b></div><span>KHTN · 41 học sinh</span></div>
+      </div>
+      <div class="card" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:16px;padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div class="seg"><span class="on">Học sinh</span><span>Bài đã giao · 3</span></div>
+          <button class="btn sm" style="margin-left:auto"><svg class="i sm"><use href="#i-cast"/></svg>Điều khiển lớp</button>
+        </div>
+        <table id="t-hs"><thead><tr><th style="width:56px">STT</th><th>Mã HS</th><th>Họ và tên</th><th>Tên đăng nhập</th><th class="num">Bài đã nộp</th><th style="width:170px"></th></tr></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <div class="dialog" style="left:470px;top:150px;width:560px">
+    <h3>Giao bài</h3>
+    <p class="t2" style="font-size:13px;margin-top:4px">Cấu tạo của tim · Khoa học tự nhiên 8</p>
+    <div style="margin-top:20px;font-size:13px;color:var(--text-2)">Lớp</div>
+    <div style="display:flex;gap:24px;margin-top:10px">
+      <label class="ck"><span class="check"></span>8A1</label>
+      <label class="ck"><span class="check on"><svg class="i sm" style="width:12px;height:12px;stroke-width:2.5"><use href="#i-check"/></svg></span>8A2</label>
+      <label class="ck"><span class="check"></span>8A3</label>
+    </div>
+    <p class="muted" style="font-size:12px;margin-top:8px">Chỉ hiện các lớp khối 8 mà thầy cô được phân công dạy Khoa học tự nhiên</p>
+    <div style="margin-top:20px;font-size:13px;color:var(--text-2)">Phần yêu cầu</div>
+    <div style="display:flex;gap:24px;margin-top:10px">
+      <label class="ck" style="opacity:.45"><span class="radio"></span>Thí nghiệm</label>
+      <label class="ck"><span class="radio on"></span>Kiểm tra</label>
+      <label class="ck" style="opacity:.45"><span class="radio"></span>Cả hai</label>
+    </div>
+    <p class="muted" style="font-size:12px;margin-top:8px">Bài cấu tạo không có phần thí nghiệm</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
+      <div class="field"><label>Mở bài lúc</label><div class="input"><svg class="i sm muted"><use href="#i-cal"/></svg>07:00, 18/11/2026</div></div>
+      <div class="field"><label>Hạn nộp</label><div class="input"><svg class="i sm muted"><use href="#i-cal"/></svg>21:00, 25/11/2026</div></div>
+    </div>
+    <div class="foot"><button class="btn ghost">Hủy</button><button class="btn pri">Giao bài cho 8A2</button></div>
+  </div>
+</div>
+</figure>
+<style>
+.cls{padding:12px 14px;border-radius:var(--r-card);border:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:2px}
+.cls div{display:flex;align-items:center;gap:8px}
+.cls b{font-weight:500;font-size:15px}
+.cls>span{font-size:12px;color:var(--muted)}
+.cls.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.ck{display:flex;align-items:center;gap:8px;font-size:14px}
+</style>
+
+<!-- =============================== 7. KẾT QUẢ CẢ LỚP =============================== -->
+<figure>
+<figcaption><b>Hình 3-9.</b> Màn hình kết quả cả lớp</figcaption>
+<div class="screen" id="s07">
+  <aside class="side" data-role="gv" data-on="Kết quả cả lớp"></aside>
+  <div class="main">
+    <div class="head">
+      <div><div class="crumb">Kết quả cả lớp<svg class="i sm"><use href="#i-chev-r"/></svg>8A2</div><h2>Cấu tạo của tim</h2><div class="sub">Kiểm tra · mở 07:00, 18/11/2026 · hạn nộp 21:00, 25/11/2026</div></div>
+      <div class="act"><button class="btn"><svg class="i sm"><use href="#i-download"/></svg>Xuất Excel</button></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+      <div class="card stat"><span>Đã hoàn thành</span><b>34<small>/38</small></b><em>89% học sinh của lớp</em></div>
+      <div class="card stat"><span>Điểm trung bình</span><b>7,8</b><em>Cao hơn 0,4 so với bài giao trước</em></div>
+      <div class="card stat"><span>Nộp muộn</span><b>3</b><em>Nộp sau 21:00, 25/11/2026</em></div>
+    </div>
+    <div style="display:flex;gap:16px;flex:1;min-height:0">
+      <div class="card" style="flex:1;overflow:hidden">
+        <div style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)">
+          <div class="seg"><span class="on">Tất cả · 38</span><span>Đã nộp · 31</span><span>Nộp muộn · 3</span><span>Chưa làm · 4</span></div>
+        </div>
+        <table id="t-kq"><thead><tr><th>Học sinh</th><th>Trạng thái</th><th class="num">Câu đúng</th><th class="num">Điểm</th><th class="num">Nộp lúc</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card" style="width:340px;flex:none;padding:20px">
+        <b style="font-weight:500">Câu sai nhiều nhất</b>
+        <div class="muted" style="font-size:12px;margin:2px 0 16px">Tỉ lệ học sinh trả lời sai trên 34 bài đã nộp</div>
+        <div class="bar top"><div><span>Câu 4 · Chọn tâm thất trái trên mô hình</span><b>41%</b></div><i style="width:41%"></i></div>
+        <div class="bar"><div><span>Câu 2 · Thành tâm thất trái dày nhất vì sao</span><b>29%</b></div><i style="width:29%"></i></div>
+        <div class="bar"><div><span>Câu 5 · Đường đi của máu qua tim phải</span><b>18%</b></div><i style="width:18%"></i></div>
+        <div class="bar"><div><span>Câu 1 · Tim có mấy ngăn</span><b>6%</b></div><i style="width:6%"></i></div>
+        <div class="bar"><div><span>Câu 3 · Vai trò van nhĩ – thất</span><b>3%</b></div><i style="width:3%"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.stat{padding:18px 20px;display:flex;flex-direction:column;gap:2px}
+.stat span{font-size:13px;color:var(--text-2)}
+.stat b{font-size:30px;font-weight:500;line-height:1.25}
+.stat b small{font-size:16px;color:var(--muted);font-weight:400;margin-left:2px}
+.stat em{font-style:normal;font-size:12px;color:var(--muted)}
+.bar{margin-bottom:16px}
+.bar div{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:6px}
+.bar div span{color:var(--text-2)} .bar div b{font-weight:500}
+.bar i{display:block;height:6px;border-radius:3px;background:var(--surface-3);position:relative;overflow:hidden}
+.bar i{background:linear-gradient(var(--text-2),var(--text-2)) no-repeat 0 0/100% 100%;opacity:.75}
+.bar.top i{background:linear-gradient(var(--accent),var(--accent)) no-repeat;opacity:1}
+.st{display:inline-flex;align-items:center;gap:8px}
+</style>
+
+<!-- =============================== 8. NHẬP HỌC SINH TỪ EXCEL =============================== -->
+<figure>
+<figcaption><b>Hình 3-10.</b> Màn hình nhập học sinh từ Excel (bước xem trước, file có dòng lỗi)</figcaption>
+<div class="screen" id="s08">
+  <aside class="side" data-role="qtt" data-on="Học sinh"></aside>
+  <div class="main">
+    <div class="head">
+      <div><div class="crumb">Học sinh<svg class="i sm"><use href="#i-chev-r"/></svg>Nhập từ Excel</div><h2>Nhập học sinh từ Excel</h2><div class="sub">Năm học 2026-2027 · tối đa 1.000 dòng mỗi lần</div></div>
+      <div class="act"><button class="btn"><svg class="i sm"><use href="#i-download"/></svg>Tải file mẫu</button></div>
+    </div>
+    <div class="stepper"><div class="d"><i><svg class="i sm" style="stroke-width:2.2"><use href="#i-check"/></svg></i>Chọn file</div><s></s><div class="c"><i>2</i>Xem trước</div><s></s><div><i>3</i>Tạo tài khoản</div></div>
+    <div style="display:flex;gap:16px;flex:1;min-height:0">
+      <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-width:0">
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center;color:var(--text-2)"><svg class="i"><use href="#i-sheet"/></svg></div>
+          <div><b style="font-weight:500">hoc-sinh-khoi-6-nam-2026.xlsx</b><div class="muted" style="font-size:12px">312 dòng · 48 KB · tải lên lúc 08:15</div></div>
+          <button class="btn sm" style="margin-left:auto"><svg class="i sm"><use href="#i-upload"/></svg>Chọn file khác</button>
+        </div>
+        <div class="alert bad"><svg class="i sm"><use href="#i-alert"/></svg><div><b style="font-weight:600">File có 3 dòng lỗi, chưa tạo tài khoản nào.</b> Sửa các dòng dưới đây trong file Excel rồi tải lên lại. Hệ thống chỉ tạo khi toàn bộ file hợp lệ</div></div>
+        <div class="card" style="overflow:hidden">
+          <table><thead><tr><th style="width:80px">Dòng</th><th style="width:150px">Cột</th><th>Giá trị</th><th>Lỗi</th></tr></thead><tbody>
+            <tr><td class="mono">15</td><td>Lớp</td><td class="mono">6A9</td><td>Lớp 6A9 chưa có trong năm học 2026-2027 – tạo lớp trước khi nhập</td></tr>
+            <tr><td class="mono">48</td><td>Mã học sinh</td><td class="mono">HS0412</td><td>Trùng với dòng 31 trong cùng file</td></tr>
+            <tr><td class="mono">203</td><td>Ngày sinh</td><td class="mono">31/02/2015</td><td>Ngày không hợp lệ</td></tr>
+          </tbody></table>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:auto">
+          <span class="muted" style="font-size:13px">Sau khi tạo, hệ thống trả file tên đăng nhập và mật khẩu để in phát cho học sinh. Xóa file đó sau khi phát xong</span>
+          <button class="btn pri" style="margin-left:auto" disabled>Xác nhận tạo 312 tài khoản</button>
+        </div>
+      </div>
+      <div class="card" style="width:300px;flex:none;padding:20px;display:flex;flex-direction:column">
+        <b style="font-weight:500">Theo lớp</b>
+        <div class="muted" style="font-size:12px;margin:2px 0 12px">309 dòng hợp lệ / 312</div>
+        <div class="kv"><span>6A1</span><b>40</b></div><div class="kv"><span>6A2</span><b>39</b></div><div class="kv"><span>6A3</span><b>41</b></div>
+        <div class="kv"><span>6A4</span><b>38</b></div><div class="kv"><span>6A5</span><b>40</b></div><div class="kv"><span>6A6</span><b>37</b></div>
+        <div class="kv"><span>6A7</span><b>38</b></div><div class="kv"><span>6A8</span><b>36</b></div>
+        <div class="kv bad"><span>Có lỗi</span><b>3</b></div>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.stepper{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+.stepper div{display:flex;align-items:center;gap:8px}
+.stepper i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:500;border:1.5px solid var(--line-2);color:var(--muted)}
+.stepper .d{color:var(--text-2)} .stepper .d i{background:var(--accent);border-color:var(--accent);color:#fff}
+.stepper .c{color:var(--text);font-weight:500} .stepper .c i{border-color:var(--text);color:var(--text)}
+.stepper s{width:48px;height:1px;background:var(--line-2)}
+.kv{display:flex;justify-content:space-between;height:36px;align-items:center;border-bottom:1px solid var(--line);font-size:13px}
+.kv span{color:var(--text-2)} .kv b{font-weight:500}
+.kv.bad{border-bottom:none} .kv.bad span,.kv.bad b{color:var(--danger)}
+</style>
+
+<!-- =============================== 9. SOẠN BÀI + GẮN NHÃN =============================== -->
+<figure>
+<figcaption><b>Hình 3-11.</b> Màn hình soạn bài và gắn nhãn bộ phận</figcaption>
+<div class="screen" id="s09">
+  <aside class="side" data-role="btv" data-on="Bài đang soạn"></aside>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <div style="padding:20px 24px 0;background:var(--surface);border-bottom:1px solid var(--line)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div><div class="crumb">Bài đang soạn<svg class="i sm"><use href="#i-chev-r"/></svg>Khoa học tự nhiên 6</div>
+          <div style="display:flex;align-items:center;gap:10px"><h2 style="font-size:20px;font-weight:500">Cá chép – cấu tạo ngoài</h2><span class="pill"><span class="dot"></span>Nháp</span></div></div>
+        <div style="margin-left:auto;display:flex;gap:8px"><button class="btn"><svg class="i sm"><use href="#i-eye"/></svg>Xem trước</button><button class="btn">Lưu nháp</button><button class="btn pri">Xuất bản</button></div>
+      </div>
+      <div class="tabs"><span>Thông tin bài</span><span>Mô hình</span><span class="on">Bộ phận · 9</span><span>Câu hỏi · 4</span><span class="off">Thí nghiệm</span></div>
+    </div>
+    <div style="flex:1;display:flex;min-height:0">
+      <div class="grid3d" style="flex:1;position:relative">
+        <div class="alert warn" style="position:absolute;left:20px;top:16px;right:20px;align-items:center">
+          <svg class="i sm"><use href="#i-alert"/></svg>
+          <span><b style="font-weight:600">ca-chep-robot.glb</b> · <b style="font-weight:600">61,2 MB</b> – trên mức khuyến nghị 50 MB, cả lớp tải lần đầu sẽ chậm · 412.000 tam giác · texture 2048 px</span>
+        </div>
+        <img class="model" src="giao-dien-assets/ca-chep.png" style="left:16px;top:150px;width:800px">
+        <div class="pin on" style="left:440px;top:236px"></div>
+        <div class="leader" style="left:440px;top:236px;width:120px;transform:rotate(-38deg)"></div>
+        <div class="callout on" style="left:500px;top:130px">Vây lưng<small>2 mesh · đang sửa</small></div>
+        <div class="pin" style="left:179px;top:466px"></div>
+        <div class="leader" style="left:179px;top:466px;width:150px;transform:rotate(233deg)"></div>
+        <div class="callout" style="left:56px;top:300px">Mắt</div>
+        <div style="position:absolute;left:20px;bottom:16px;display:flex;gap:8px">
+          <button class="btn sm"><svg class="i sm"><use href="#i-cam"/></svg>Lưu góc nhìn</button>
+          <button class="btn sm ghost"><svg class="i sm"><use href="#i-reset"/></svg>Góc nhìn chuẩn</button>
+        </div>
+        <div style="position:absolute;right:20px;bottom:24px;font-size:12px;color:var(--muted)">Bấm vào một phần trên mô hình để gắn nhãn · giữ Shift để chọn nhiều phần</div>
+      </div>
+      <div style="width:360px;flex:none;background:var(--surface);border-left:1px solid var(--line);display:flex;flex-direction:column">
+        <div style="padding:16px 16px 8px;display:flex;align-items:center"><b style="font-weight:500">Bộ phận</b><span class="muted" style="font-size:12px;margin-left:8px">kéo để sắp thứ tự</span></div>
+        <div class="plist">
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Mắt<span>2 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Lỗ mũi<span>2 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Nắp mang<span>2 mesh</span></div>
+          <div class="on"><svg class="i sm"><use href="#i-grip"/></svg>Vây lưng<span>2 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Vây ngực<span>2 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Vây bụng<span>2 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Vây hậu môn<span>1 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Vây đuôi<span>1 mesh</span></div>
+          <div><svg class="i sm"><use href="#i-grip"/></svg>Đường bên<span>2 mesh</span></div>
+        </div>
+        <div style="margin-top:auto;padding:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px">
+          <div class="field"><label>Nhãn hiển thị</label><div class="input" style="border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)">Vây lưng</div></div>
+          <div class="field"><label>Chú thích theo sách</label><div class="input" style="height:auto;padding:10px 12px;align-items:flex-start;font-size:13px;line-height:1.5">Vây lưng cùng vây hậu môn giúp cá giữ thăng bằng theo chiều dọc khi bơi.</div></div>
+          <div class="field"><label>Các phần của mô hình</label><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill mono" style="font-size:12px">dorsal_fin_rays</span><span class="pill mono" style="font-size:12px">dorsal_fin_web</span></div></div>
+          <div class="muted" style="font-size:12px">Góc nhìn đã lưu lúc 10:42</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</figure>
+<style>
+.tabs{display:flex;gap:24px;margin-top:16px}
+.tabs span{padding:10px 0 12px;color:var(--text-2);font-size:14px;border-bottom:2px solid transparent}
+.tabs span.on{color:var(--text);font-weight:500;border-color:var(--text)}
+.tabs span.off{color:var(--muted);opacity:.6}
+.plist{padding:0 8px}
+.plist div{height:36px;display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:var(--r-ctl);font-size:13px;color:var(--text)}
+.plist div svg{color:var(--muted)}
+.plist div span{margin-left:auto;font-size:12px;color:var(--muted)}
+.plist div.on{background:var(--accent-weak);color:var(--accent-ink);font-weight:500}
+</style>
+
+<!-- =============================== 10. QUẢN LÝ TRƯỜNG =============================== -->
+<figure>
+<figcaption><b>Hình 3-12.</b> Màn hình quản lý trường (vừa thêm trường mới)</figcaption>
+<div class="screen" id="s10">
+  <aside class="side" data-role="qtht" data-on="Trường"></aside>
+  <div class="main">
+    <div class="head">
+      <div><h2>Trường</h2><div class="sub">12 trường · 9.842 học sinh · 611 giáo viên</div></div>
+      <div class="act"><div class="input ph" style="width:280px"><svg class="i sm"><use href="#i-search"/></svg>Tìm theo mã hoặc tên trường</div><button class="btn pri"><svg class="i sm"><use href="#i-plus"/></svg>Thêm trường</button></div>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <table id="t-truong"><thead><tr><th>Mã trường</th><th>Tên trường</th><th>Cấp học</th><th class="num">Học sinh</th><th class="num">Giáo viên</th><th>Trạng thái</th><th class="num">Ngày tạo</th><th style="width:56px"></th></tr></thead><tbody></tbody></table>
+    </div>
+  </div>
+  <div class="scrim"></div>
+  <div class="dialog" style="left:480px;top:200px;width:540px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--accent-weak);color:var(--accent);display:grid;place-items:center"><svg class="i"><use href="#i-check"/></svg></div>
+      <div><h3>Đã tạo trường THCS Chu Văn An</h3><p class="t2" style="font-size:13px">và tài khoản quản trị trường cho cô Phạm Lan Anh</p></div>
+    </div>
+    <div style="margin-top:20px;border:1px solid var(--line-2);border-radius:var(--r-card);overflow:hidden">
+      <div class="cred"><span>Tên đăng nhập</span><b class="mono">chuvanan.admin</b><svg class="i sm"><use href="#i-copy"/></svg></div>
+      <div class="cred"><span>Mật khẩu ban đầu</span><b class="mono">q7Rk2mXa</b><svg class="i sm"><use href="#i-copy"/></svg></div>
+    </div>
+    <div class="alert warn" style="margin-top:16px"><svg class="i sm"><use href="#i-alert"/></svg><div>Mật khẩu chỉ hiển thị một lần. Quản trị trường phải đổi mật khẩu ở lần đăng nhập đầu tiên</div></div>
+    <div class="foot"><button class="btn pri">Đã lưu thông tin</button></div>
+  </div>
+</div>
+</figure>
+<style>
+.cred{display:flex;align-items:center;gap:12px;height:52px;padding:0 16px;border-bottom:1px solid var(--line)}
+.cred:last-child{border-bottom:none}
+.cred span{width:140px;color:var(--text-2);font-size:13px}
+.cred b{font-size:15px;font-weight:500}
+.cred svg{margin-left:auto;color:var(--muted)}
+</style>
+
+</div>
+
+<script>
+/* ---------- Thanh bên theo vai trò ---------- */
+const ROLES = {
+  hs:  { menu: [['Học tập', [['i-clip', 'Bài được giao', 2], ['i-book', 'Thư viện bài học'], ['i-chart', 'Kết quả của tôi']]]],
+         user: ['TA', 'Trần Minh Anh', 'Học sinh · 8A2'] },
+  gv:  { menu: [['Giảng dạy', [['i-users', 'Lớp của tôi'], ['i-chart', 'Kết quả cả lớp']]], ['Học tập', [['i-book', 'Thư viện bài học']]]],
+         user: ['HT', 'Nguyễn Thu Hà', 'Giáo viên KHTN'] },
+  qtt: { menu: [['Quản lý trường', [['i-user', 'Học sinh'], ['i-users', 'Giáo viên'], ['i-school', 'Lớp và phân công'], ['i-chart', 'Báo cáo sử dụng']]]],
+         user: ['VĐ', 'Vũ Văn Đức', 'Quản trị trường'] },
+  btv: { menu: [['Nội dung', [['i-pen', 'Bài đang soạn', 3], ['i-book', 'Bài đã xuất bản', 14], ['i-box', 'Mô hình 3D', 21]]]],
+         user: ['NK', 'Đỗ Ngọc Khánh', 'Biên tập viên'] },
+  qtht:{ menu: [['Hệ thống', [['i-school', 'Trường'], ['i-pen', 'Biên tập viên'], ['i-log', 'Nhật ký hệ thống']]], ['Nội dung', [['i-book', 'Bài học', 17], ['i-box', 'Mô hình 3D', 21]]]],
+         user: ['QT', 'Lê Quang Thịnh', 'Quản trị hệ thống'] },
+};
+document.querySelectorAll('aside.side').forEach(a => {
+  const r = ROLES[a.dataset.role], on = a.dataset.on;
+  let h = '<div class="brand"><div class="mark"></div><div><div class="n">Phòng thí nghiệm ảo</div><div class="s">Lý · Hóa · Sinh 3D</div></div></div><nav class="nav">';
+  for (const [label, items] of r.menu) {
+    h += `<div class="nav-label">${label}</div>`;
+    for (const [ic, t, c] of items) h += `<a class="${t === on ? 'on' : ''}"><svg class="i"><use href="#${ic}"/></svg>${t}${c ? `<span class="cnt">${c}</span>` : ''}</a>`;
+  }
+  h += `</nav><div class="me"><div class="av">${r.user[0]}</div><div class="who"><b>${r.user[1]}</b><span>${r.user[2]}</span></div><svg class="i sm"><use href="#i-out"/></svg></div>`;
+  a.innerHTML = h;
+});
+
+/* ---------- Dữ liệu mẫu lớp 8A2 ---------- */
+const HS = [
+  ['HS0101', 'Nguyễn Hoàng An'], ['HS0102', 'Trần Minh Anh'], ['HS0103', 'Lê Bảo Châu'], ['HS0104', 'Phạm Đức Duy'],
+  ['HS0105', 'Hoàng Thu Giang'], ['HS0106', 'Đặng Quốc Huy'], ['HS0107', 'Bùi Khánh Linh'], ['HS0108', 'Vũ Nhật Minh'],
+  ['HS0109', 'Ngô Phương Nga'], ['HS0110', 'Đỗ Gia Phúc'], ['HS0111', 'Trịnh Thanh Tâm'],
+];
+const nop = ['3/3', '3/3', '2/3', '3/3', '1/3', '3/3', '3/3', '2/3', '3/3', '0/3', '3/3'];
+document.querySelector('#t-hs tbody').innerHTML = HS.map(([m, n], i) =>
+  `<tr class="${i === 1 ? '' : ''}"><td class="muted">${i + 1}</td><td class="mono">${m}</td><td>${n}</td><td class="mono t2">nguyendu.${m.toLowerCase()}</td><td class="num">${nop[i]}</td>
+   <td class="num"><button class="btn sm ghost"><svg class="i sm"><use href="#i-key"/></svg>Đặt lại mật khẩu</button></td></tr>`).join('');
+
+const KQ = [
+  ['Nguyễn Hoàng An', 'ok', 'Đã nộp', '5/5', '10', '20:12, 19/11'], ['Trần Minh Anh', 'ok', 'Đã nộp', '4/5', '8', '21:40, 18/11'],
+  ['Lê Bảo Châu', 'ok', 'Đã nộp', '4/5', '8', '19:05, 20/11'], ['Phạm Đức Duy', 'ok', 'Đã nộp', '3/5', '6', '17:30, 21/11'],
+  ['Hoàng Thu Giang', 'warn', 'Nộp muộn', '4/5', '8', '22:16, 25/11'], ['Đặng Quốc Huy', 'ok', 'Đã nộp', '5/5', '10', '20:48, 19/11'],
+  ['Bùi Khánh Linh', 'ok', 'Đã nộp', '4/5', '8', '18:22, 22/11'], ['Vũ Nhật Minh', '', 'Chưa làm', '–', '–', '–'],
+  ['Ngô Phương Nga', 'ok', 'Đã nộp', '5/5', '10', '07:55, 23/11'], ['Đỗ Gia Phúc', '', 'Chưa làm', '–', '–', '–'],
+  ['Trịnh Thanh Tâm', 'ok', 'Đã nộp', '3/5', '6', '21:02, 24/11'],
+];
+document.querySelector('#t-kq tbody').innerHTML = KQ.map(([n, d, s, c, p, t]) =>
+  `<tr><td>${n}</td><td><span class="st"><span class="dot ${d}"></span>${s}</span></td><td class="num">${c}</td><td class="num" style="font-weight:500">${p}</td><td class="num t2">${t}</td></tr>`).join('');
+
+const TR = [
+  ['chuvanan', 'THCS Chu Văn An', 'THCS', '0', '0', 'ok', 'Đang dùng', '17/11/2026', true],
+  ['nguyendu', 'THCS Nguyễn Du', 'THCS', '1.124', '68', 'ok', 'Đang dùng', '02/09/2026'],
+  ['tranphu', 'THPT Trần Phú', 'THPT', '1.562', '94', 'ok', 'Đang dùng', '02/09/2026'],
+  ['kimdong', 'TH Kim Đồng', 'Tiểu học', '893', '41', 'ok', 'Đang dùng', '05/09/2026'],
+  ['lequydon', 'THCS Lê Quý Đôn', 'THCS', '1.031', '63', 'ok', 'Đang dùng', '08/09/2026'],
+  ['ngoquyen', 'TH&THCS Ngô Quyền', 'Liên cấp', '1.208', '77', 'ok', 'Đang dùng', '12/09/2026'],
+  ['hoabinh', 'TH Hòa Bình', 'Tiểu học', '702', '35', 'bad', 'Tạm khóa', '15/09/2026'],
+  ['phandinhphung', 'THPT Phan Đình Phùng', 'THPT', '1.418', '88', 'ok', 'Đang dùng', '20/09/2026'],
+  ['vietduc', 'THPT Việt Đức', 'THPT', '1.297', '81', 'ok', 'Đang dùng', '01/10/2026'],
+  ['dongda', 'THCS Đống Đa', 'THCS', '607', '64', 'ok', 'Đang dùng', '14/10/2026'],
+];
+document.querySelector('#t-truong tbody').innerHTML = TR.map(([m, n, c, h, g, d, s, t, sel]) =>
+  `<tr class="${sel ? 'sel' : ''}"><td class="mono">${m}</td><td>${n}</td><td class="t2">${c}</td><td class="num">${h}</td><td class="num">${g}</td>
+   <td><span class="st"><span class="dot ${d}"></span>${s}</span></td><td class="num t2">${t}</td><td class="num muted"><svg class="i sm"><use href="#i-more"/></svg></td></tr>`).join('');
+
+/* ---------- Đồ thị chuẩn độ: tính đúng theo công thức HCl + NaOH ---------- */
+const Ca = 0.1, Va = 20, Cb = 0.1, VNOW = 20.1;
+const pH = vb => {
+  const nA = Ca * Va, nB = Cb * vb, V = (Va + vb) / 1000;
+  if (Math.abs(nA - nB) < 1e-9) return 7;
+  if (nA > nB) return -Math.log10((nA - nB) / 1000 / V);
+  return 14 + Math.log10((nB - nA) / 1000 / V);
+};
+(function curve() {
+  const svg = document.getElementById('curve'), W = 900, H = 380, L = 44, R = 16, T = 30, B = 36;
+  const x = v => L + (v / 30) * (W - L - R), y = p => T + (1 - p / 14) * (H - T - B);
+  let g = '';
+  for (let v = 0; v <= 30; v += 1) g += `<line x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${H - B}" stroke="${v % 5 ? 'rgba(76,92,160,.06)' : 'rgba(76,92,160,.13)'}"/>`;
+  for (let p = 0; p <= 14; p += 0.5) g += `<line x1="${L}" x2="${W - R}" y1="${y(p)}" y2="${y(p)}" stroke="${p % 2 ? 'rgba(76,92,160,.06)' : 'rgba(76,92,160,.13)'}"/>`;
+  for (let v = 0; v <= 30; v += 5) g += `<text x="${x(v)}" y="${H - 14}" text-anchor="middle" font-size="12" fill="#858a87" font-family="Consolas,monospace">${v}</text>`;
+  for (let p = 0; p <= 14; p += 2) g += `<text x="${L - 10}" y="${y(p) + 4}" text-anchor="end" font-size="12" fill="#858a87" font-family="Consolas,monospace">${p}</text>`;
+  g += `<text x="${W - R}" y="${H - 14}" text-anchor="end" font-size="12" fill="#858a87" dx="0" dy="0"></text>`;
+  g += `<text x="${x(30)}" y="${H - 1}" text-anchor="end" font-size="12" fill="#858a87">V NaOH (mL)</text>`;
+  g += `<text x="${L - 10}" y="12" text-anchor="end" font-size="12" fill="#858a87">pH</text>`;
+  // vùng đổi màu phenolphtalein 8,2 – 10
+  g += `<rect x="${L}" y="${y(10)}" width="${W - L - R}" height="${y(8.2) - y(10)}" fill="rgba(214,51,132,.07)"/>`;
+  g += `<text x="${W - R - 6}" y="${y(10) + 15}" text-anchor="end" font-size="12" fill="#a8326c">Khoảng đổi màu phenolphtalein</text>`;
+  // đường tương đương
+  g += `<line x1="${x(20)}" x2="${x(20)}" y1="${T}" y2="${H - B}" stroke="#545957" stroke-dasharray="4 4"/>`;
+  g += `<text x="${x(20) + 8}" y="${T + 16}" font-size="12" fill="#545957">Điểm tương đương · 20,0 mL · pH 7</text>`;
+  // đường cong đã vẽ (tới VNOW) và phần chưa làm (mờ)
+  const pts = [];
+  for (let v = 0; v <= VNOW + 1e-9; v += 0.02) pts.push([x(v), y(pH(v))]);
+  const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+  g += `<path d="${d}" fill="none" stroke="#0e7a55" stroke-width="2.5" stroke-linejoin="round"/>`;
+  // số liệu đã đo
+  for (const v of [0, 5, 10, 15, 18, 19, 19.5, 19.9, 20.1]) g += `<circle cx="${x(v)}" cy="${y(pH(v))}" r="4" fill="#fff" stroke="#0e7a55" stroke-width="2"/>`;
+  g += `<circle cx="${x(VNOW)}" cy="${y(pH(VNOW))}" r="6" fill="#0e7a55"/>`;
+  svg.innerHTML = g;
+})();
+
+/* ---------- Bộ dụng cụ chuẩn độ (buret + bình tam giác) ---------- */
+(function rig() {
+  const s = document.getElementById('rig');
+  const vRead = VNOW;            // mL đã nhỏ
+  const top = 96, bot = 520, cx = 220;
+  const lvl = top + 22 + (vRead / 50) * (bot - top - 22);
+  let g = `<defs>
+    <linearGradient id="glass" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#eef2f5" stop-opacity=".55"/><stop offset="1" stop-color="#d9e0e6" stop-opacity=".8"/></linearGradient>
+    <linearGradient id="naoh" x1="0" x2="1"><stop offset="0" stop-color="#d9eef8"/><stop offset="1" stop-color="#b9dbee"/></linearGradient>
+    <linearGradient id="pink" x1="0" x2="1"><stop offset="0" stop-color="#f6c3dc"/><stop offset=".5" stop-color="#eea4c8"/><stop offset="1" stop-color="#e48ab7"/></linearGradient>
+    <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#9aa3a0"/><stop offset=".5" stop-color="#e3e7e5"/><stop offset="1" stop-color="#8a928f"/></linearGradient>
+  </defs>`;
+  // giá đỡ
+  g += `<rect x="70" y="780" width="300" height="16" rx="4" fill="url(#metal)"/>`;
+  g += `<rect x="96" y="60" width="10" height="722" rx="3" fill="url(#metal)"/>`;
+  g += `<rect x="100" y="300" width="${cx - 100 - 12}" height="8" rx="3" fill="url(#metal)"/>`;
+  g += `<rect x="${cx - 18}" y="294" width="36" height="20" rx="4" fill="#6d7572"/>`;
+  // buret
+  g += `<rect x="${cx - 12}" y="${lvl}" width="24" height="${bot - lvl}" fill="url(#naoh)"/>`;
+  g += `<rect x="${cx - 12}" y="${top}" width="24" height="${bot - top}" rx="4" fill="url(#glass)" stroke="#9aa6ad" stroke-width="1.2"/>`;
+  for (let m = 0; m <= 50; m += 1) {
+    const yy = top + 22 + (m / 50) * (bot - top - 22), big = m % 5 === 0;
+    g += `<line x1="${cx - 12}" x2="${cx - 12 + (big ? 10 : 5)}" y1="${yy}" y2="${yy}" stroke="#5f6b70" stroke-width="${big ? 1 : .6}"/>`;
+    if (m % 10 === 0) g += `<text x="${cx + 18}" y="${yy + 4}" font-size="11" fill="#5f6b70" font-family="Consolas,monospace">${m}</text>`;
+  }
+  g += `<path d="M${cx - 12} ${lvl} q12 4 24 0" fill="none" stroke="#5a8fb0" stroke-width="1.4"/>`;
+  // khóa và đầu buret
+  g += `<rect x="${cx - 7}" y="${bot}" width="14" height="22" fill="url(#glass)" stroke="#9aa6ad"/>`;
+  g += `<rect x="${cx - 26}" y="${bot + 6}" width="52" height="10" rx="5" fill="#0e7a55"/>`;
+  g += `<path d="M${cx - 5} ${bot + 22} L${cx - 2} ${bot + 62} L${cx + 2} ${bot + 62} L${cx + 5} ${bot + 22}Z" fill="url(#glass)" stroke="#9aa6ad"/>`;
+  g += `<path d="M${cx} ${bot + 70} c-3 5 -3 9 0 9 c3 0 3 -4 0 -9z" fill="#b9dbee" stroke="#7fb3d0" stroke-width=".8"/>`;
+  // bình tam giác
+  const fy = 640, fb = 776;
+  g += `<path d="M${cx - 16} ${fy} L${cx - 16} ${fy + 40} L${cx - 78} ${fb - 8} Q${cx - 80} ${fb} ${cx - 70} ${fb} L${cx + 70} ${fb} Q${cx + 80} ${fb} ${cx + 78} ${fb - 8} L${cx + 16} ${fy + 40} L${cx + 16} ${fy}Z" fill="url(#glass)" stroke="#9aa6ad" stroke-width="1.2"/>`;
+  g += `<path d="M${cx - 58} ${fb - 52} L${cx + 58} ${fb - 52} L${cx + 77} ${fb - 9} Q${cx + 79} ${fb - 1} ${cx + 70} ${fb - 1} L${cx - 70} ${fb - 1} Q${cx - 79} ${fb - 1} ${cx - 77} ${fb - 9}Z" fill="url(#pink)" opacity=".92"/>`;
+  g += `<ellipse cx="${cx}" cy="${fb - 52}" rx="58" ry="4" fill="#f3b6d4" opacity=".8"/>`;
+  g += `<rect x="${cx - 18}" y="${fy - 6}" width="36" height="8" rx="3" fill="url(#glass)" stroke="#9aa6ad"/>`;
+  // ghi chú
+  const note = (x, y, t, s) => `<text x="${x}" y="${y}" font-size="13" fill="#1a1c1b" font-weight="500">${t}</text><text x="${x}" y="${y + 18}" font-size="12" fill="#858a87">${s}</text>`;
+  g += `<line x1="${cx + 40}" x2="${cx + 70}" y1="${top + 60}" y2="${top + 60}" stroke="#858a87"/>` + note(cx + 76, top + 56, 'Buret NaOH', 'C = 0,10 mol/L');
+  g += `<line x1="${cx + 82}" x2="${cx + 100}" y1="${fb - 30}" y2="${fb - 30}" stroke="#858a87"/>` + note(cx + 104, fb - 46, 'HCl 20,0 mL', '+ phenolphtalein');
+  g += `<text x="24" y="36" font-size="12" fill="#858a87">Chất chỉ thị đã chuyển hồng nhạt</text>`;
+  s.innerHTML = g;
+})();
+
+/* ---------- Đồ thị nhỏ trên trang giới thiệu ---------- */
+(function mini() {
+  const svg = document.getElementById('mini-curve'), x = v => 10 + v / 30 * 200, y = p => 100 - p / 14 * 90;
+  let d = '';
+  for (let v = 0; v <= 30.0001; v += 0.05) d += (d ? ' L' : 'M') + x(v).toFixed(1) + ' ' + y(pH(v)).toFixed(1);
+  svg.innerHTML = `<line x1="10" x2="210" y1="100" y2="100" stroke="rgba(76,92,160,.25)"/><line x1="${x(20)}" x2="${x(20)}" y1="10" y2="100" stroke="#858a87" stroke-dasharray="3 3"/><path d="${d}" fill="none" stroke="#0e7a55" stroke-width="2.5"/>`;
+})();
+
+/* ---------- Ảnh đại diện bài Thang pH ---------- */
+(function phThumb() {
+  const s = document.getElementById('ph-thumb');
+  const cols = ['#e2553f', '#ef8b3c', '#e9c645', '#7cbf5b', '#3f9f82', '#3f7fbf', '#6a4fa8'];
+  let g = '';
+  cols.forEach((c, i) => {
+    const x = 34 + i * 20;
+    g += `<rect x="${x}" y="54" width="16" height="44" rx="3" fill="${c}"/>`;
+    g += `<text x="${x + 8}" y="112" text-anchor="middle" font-size="9" fill="#858a87" font-family="Consolas,monospace">${i * 2}</text>`;
+  });
+  s.innerHTML = g;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Bí mật
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# Công cụ
+.playwright-mcp/
+.claude/settings.local.json
+
+# Hệ điều hành, trình soạn thảo
+.DS_Store
+Thumbs.db
+.vscode/
