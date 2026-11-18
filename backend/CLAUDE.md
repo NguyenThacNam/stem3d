@@ -19,6 +19,12 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
 - Router không gọi repository trực tiếp. Service không trả model SQLAlchemy ra ngoài router; router trả schema `...Out`.
 - Đường dẫn, tên trường JSON, mã lỗi theo đúng chương 3 (mục 3.1). Tên trường JSON = tên cột CSDL (snake_case).
 - Lỗi: ném `AppError(status, code, message, details)`; trình xử lý chung trả `{"error": {"code", "message", "details"}}`, message tiếng Việt.
+- Mã lỗi chung (đặt trong `app/core/errors.py`, mọi API dùng thống nhất; mã riêng của từng API theo chương 3):
+  - 404 `NOT_FOUND` – đường dẫn không có
+  - 405 `METHOD_NOT_ALLOWED` – sai phương thức
+  - 422 `VALIDATION_ERROR` – dữ liệu sai; `details` = danh sách `{field, message}`, không vọng lại giá trị gửi lên
+  - 500 `INTERNAL_ERROR` – lỗi không lường trước; chi tiết chỉ ghi log
+  - 413 `FILE_TOO_LARGE` – Nginx trả khi yêu cầu vượt 151 MB; API tải mô hình tự chặn chính xác file > 150 MB
 - Phân quyền hai lớp: router dùng `require_role(...)`, service kiểm tra cùng trường / đúng lớp. Khác trường → 404.
 - Thời gian: lưu UTC trong CSDL, trả ISO 8601 có múi giờ. Phần phụ thuộc giờ (khóa tạm, hạn nộp) nhận hàm lấy giờ để test được.
 - Danh sách: `page`, `page_size` (mặc định 20, tối đa 100), trả `{items, total, page, page_size}`.
@@ -30,3 +36,8 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
 ## Test
 - Test chạy với CSDL PostgreSQL thật trong Docker (CSDL riêng cho test), mỗi test một giao dịch rồi hoàn tác.
 - Mỗi API: trường hợp đúng, sai dữ liệu, không có quyền, khác trường, và từng mã lỗi trong đặc tả.
+
+## Việc còn chờ
+- CSDL riêng cho test + `tests/conftest.py` (mỗi test một giao dịch rồi hoàn tác): làm đầu phần 3, trước bảng đầu tiên.
+  Lưu ý: engine đang tạo ngay khi import `app.core.database`, cần cho test đổi được sang CSDL test.
+- `docker-compose.yml`: chỉ truyền cho `api` những biến nó cần (hiện `env_file: .env` truyền cả `POSTGRES_PASSWORD`).

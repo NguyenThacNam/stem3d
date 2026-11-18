@@ -1,0 +1,42 @@
+# Stem3D – 3 dịch vụ: web (Nginx), api (FastAPI), db (PostgreSQL).
+# Bản chạy thật: docker compose -f docker-compose.yml up -d --build
+# (không có -f thì Docker tự nạp thêm docker-compose.override.yml dành cho máy phát triển).
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Không mở cổng ra ngoài: api nối vào db qua mạng nội bộ của compose.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    # Không mở cổng ra ngoài: mọi yêu cầu đi qua web (Nginx) tại /api/.
+
+  web:
+    build: ./nginx
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

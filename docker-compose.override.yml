@@ -1,0 +1,24 @@
+# Cấu hình riêng cho máy phát triển, Docker tự nạp khi chạy `docker compose up`.
+# Bản chạy thật bỏ qua file này: docker compose -f docker-compose.yml up -d --build
+
+services:
+  api:
+    # Gắn mã nguồn vào container và tự nạp lại khi sửa code.
+    volumes:
+      - ./backend:/app
+    environment:
+      # Bind mount trên Windows không phát sự kiện đổi file, phải dò định kỳ.
+      WATCHFILES_FORCE_POLLING: "true"
+    command:
+      - uvicorn
+      - app.main:app
+      - --host=0.0.0.0
+      - --port=8000
+      - --proxy-headers
+      - --forwarded-allow-ips=*
+      - --reload
+
+  # Cần pgAdmin thì bỏ chú thích 3 dòng dưới. Dùng 5433 vì 5432 có thể đã bị PostgreSQL cài trên máy chiếm.
+  # db:
+  #   ports:
+  #     - "5433:5432"

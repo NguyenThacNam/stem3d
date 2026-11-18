@@ -17,10 +17,15 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
 - `docker-compose.yml` – 3 dịch vụ: `web` (Nginx + frontend), `api` (FastAPI), `db` (PostgreSQL)
 
 ## Lệnh
-- Khởi động: `docker compose up -d --build`
+- Khởi động (máy phát triển, tự nạp `docker-compose.override.yml`): `docker compose up -d --build`
+- Chạy bản thật (bỏ qua override): `docker compose -f docker-compose.yml up -d --build`
 - Xem log: `docker compose logs -f api`
 - Test backend: `docker compose exec api pytest`
 - Migration: `docker compose exec api alembic upgrade head`
+
+## Triển khai
+- HTTPS: Nginx tự giữ chứng chỉ Let's Encrypt, mở cổng 443; làm khi triển khai thật (hiện chỉ có cổng 80/8080).
+- Cookie refresh token chỉ bật `Secure` khi `APP_ENV=prod`; dev chạy http://localhost vẫn đăng nhập được.
 
 ## Cài đặt trên máy mới
 1. Cài Git, Docker Desktop, Node.js LTS, Python 3.12+.
