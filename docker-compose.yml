@@ -31,7 +31,10 @@ services:
     # Không mở cổng ra ngoài: mọi yêu cầu đi qua web (Nginx) tại /api/.
 
   web:
-    build: ./nginx
+    # Build frontend (Vite) rồi Nginx phục vụ bản build; context là thư mục gốc để lấy cả frontend/ và nginx/.
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-8080}:80"

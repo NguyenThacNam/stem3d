@@ -78,6 +78,8 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
   Tài khoản / trường bị khóa thì refresh bị từ chối nhờ kiểm tra `is_active` (chưa có code tăng `token_version`
   khi khóa tài khoản – thêm khi làm API khóa tài khoản). Cấp token mới chỉ để gia hạn phiên, không chống dùng
   lại token bị lộ.
+- Đăng xuất (`/api/auth/logout`) chỉ xóa cookie trên máy hiện tại (đúng đặc tả), KHÔNG tăng `token_version`:
+  refresh token đã bị lộ trước đó vẫn dùng được tới hết hạn 8 giờ. Muốn thu hồi mọi phiên thì đổi mật khẩu.
 - Dò được tên đăng nhập có tồn tại qua khóa tạm: tên có thật sau 5 lần sai trả 423, tên không có luôn trả 401
   (không giới hạn theo IP – docs/quyet-dinh.md). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV
   vốn đoán được.

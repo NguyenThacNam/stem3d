@@ -1,0 +1,6 @@
+# Build context của dịch vụ web là thư mục gốc: chỉ gửi frontend/ và nginx/ vào Docker.
+*
+!frontend
+!nginx
+frontend/node_modules
+frontend/dist

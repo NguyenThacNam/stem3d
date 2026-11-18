@@ -1,0 +1,80 @@
+@import "tailwindcss";
+@import "./fonts.css";
+
+/*
+  Token giao diện – lấy đúng từ docs/giao-dien-chuong-3.html (mục 3.2.1 chương 3).
+  `--color-*: initial` xóa bảng màu mặc định của Tailwind: chỉ dùng được màu có tên dưới đây,
+  không thể vô tình thêm màu mới.
+*/
+@theme {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #fff;
+
+  --color-bg: #f5f5f3;
+  --color-surface: #fff;
+  --color-surface-2: #efefec;
+  --color-surface-3: #e7e8e4;
+  --color-line: rgba(26, 28, 27, 0.09);
+  --color-line-2: rgba(26, 28, 27, 0.16);
+  --color-text: #1a1c1b;
+  --color-text-2: #545957;
+  /* Chỉ dùng cho biểu tượng, đường kẻ: tương phản với nền trắng ~3,6:1, chưa đạt 4,5:1 cho chữ. */
+  --color-muted: #858a87;
+  --color-accent: #0e7a55;
+  --color-accent-ink: #0b6446;
+  --color-accent-weak: #e6f2ec;
+  --color-danger: #b42318;
+  --color-danger-ink: #7a1a12;
+  --color-danger-weak: #fcecea;
+  --color-warn: #8a5300;
+  --color-warn-weak: #fdf3dc;
+  --color-grid: rgba(76, 92, 160, 0.07);
+  --color-grid-2: rgba(76, 92, 160, 0.13);
+
+  --font-sans: "BVP", system-ui, sans-serif;
+  --font-mono: ui-monospace, Consolas, "Cascadia Mono", monospace;
+
+  --radius-ctl: 8px;
+  --radius-alert: 10px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-bg font-sans text-text;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    /* Chữ số đều độ rộng để cột điểm thẳng hàng. */
+    font-variant-numeric: tabular-nums;
+  }
+  /* Viền nhấn rõ cho phần tử đang chọn bằng bàn phím. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Nền lưới ô li – CHỈ dùng cho khung 3D và đồ thị. */
+@utility grid3d {
+  background-color: #f7f7f5;
+  background-image:
+    linear-gradient(var(--color-grid-2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid-2) 1px, transparent 1px),
+    linear-gradient(var(--color-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-grid) 1px, transparent 1px);
+  background-size:
+    64px 64px,
+    64px 64px,
+    16px 16px,
+    16px 16px;
+  background-position: -1px -1px;
+}

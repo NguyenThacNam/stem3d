@@ -1,5 +1,13 @@
-FROM nginx:1.27-alpine
+# Bước 1: build frontend bằng Vite.
+FROM node:26-alpine AS build
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+COPY frontend/ ./
+RUN npm run build
 
-COPY default.conf /etc/nginx/conf.d/default.conf
-# Trang chờ tạm thời; khi có frontend sẽ thay bằng bản build Vite.
-COPY html/ /usr/share/nginx/html/
+# Bước 2: Nginx (bản ổn định) phục vụ bản build, chuyển /api/ và /ws/ sang api.
+FROM nginx:1.30.6-alpine
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
+COPY --from=build /app/dist /usr/share/nginx/html
