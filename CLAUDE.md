@@ -11,6 +11,10 @@ Sản phẩm của công ty InoLink. Giao diện, thông báo, dữ liệu mẫu
 - `docs/giao-dien-chuong-3.html`, `docs/hinh-giao-dien/` – giao diện mẫu cho 11 màn hình
 Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần.
 
+## Tiến độ
+- Đầu mỗi phiên: đọc `TIEN_DO.md` (đang ở giai đoạn nào, việc nào xong, quyết định phát sinh, giới hạn đã biết).
+- Xong mỗi phần: cập nhật `TIEN_DO.md` (bảng chức năng, bảng API, commit, quyết định mới) trong CÙNG commit của phần đó.
+
 ## Cấu trúc
 - `backend/` – Python FastAPI (quy ước riêng: `backend/CLAUDE.md`)
 - `frontend/` – React + TypeScript + Three.js (quy ước riêng: `frontend/CLAUDE.md`)
