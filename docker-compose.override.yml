@@ -9,6 +9,8 @@ services:
     environment:
       # Bind mount trên Windows không phát sự kiện đổi file, phải dò định kỳ.
       WATCHFILES_FORCE_POLLING: "true"
+      # CSDL riêng cho pytest (tên phải kết thúc bằng _test; conftest tự tạo nếu chưa có).
+      TEST_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}_test
     command:
       - uvicorn
       - app.main:app

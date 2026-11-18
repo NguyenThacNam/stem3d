@@ -22,6 +22,7 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
 - Xem log: `docker compose logs -f api`
 - Test backend: `docker compose exec api pytest`
 - Migration: `docker compose exec api alembic upgrade head`
+- Dữ liệu mẫu (máy phát triển, cần `SEED_PASSWORD` trong `.env`): `docker compose exec api python -m scripts.seed`
 
 ## Triển khai
 - HTTPS: Nginx tự giữ chứng chỉ Let's Encrypt, mở cổng 443; làm khi triển khai thật (hiện chỉ có cổng 80/8080).

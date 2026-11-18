@@ -1,18 +1,8 @@
-from collections.abc import Iterator
-
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.exc import OperationalError
 
 from app.core.database import get_db
 from app.main import app
-
-
-@pytest.fixture
-def client() -> Iterator[TestClient]:
-    with TestClient(app) as c:
-        yield c
-    app.dependency_overrides.clear()
 
 
 def test_health_ok(client: TestClient) -> None:

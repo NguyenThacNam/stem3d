@@ -37,7 +37,7 @@ Ký hiệu dùng trong tài liệu: **1–1** là quan hệ một – một, **1
 | users → student_profiles | 1–1 | student_profiles.user_id | Một tài khoản học sinh có đúng một hồ sơ học sinh | Xóa user thì xóa hồ sơ |
 | users → teacher_profiles | 1–1 | teacher_profiles.user_id | Một tài khoản giáo viên có một hồ sơ giáo viên | Xóa user thì xóa hồ sơ |
 
-Cột `user_id` của mỗi bảng hồ sơ vừa là khóa chính vừa là khóa ngoại, nên một tài khoản có tối đa một hồ sơ mỗi loại. Mỗi tài khoản chỉ giữ một vai trò, nên trên thực tế chỉ có một trong hai hồ sơ. Quản trị trường, biên tập viên và quản trị hệ thống chỉ có bản ghi trong `users`, không có hồ sơ riêng và không thuộc trường nào (`users.school_id` để NULL).
+Cột `user_id` của mỗi bảng hồ sơ vừa là khóa chính vừa là khóa ngoại, nên một tài khoản có tối đa một hồ sơ mỗi loại. Mỗi tài khoản chỉ giữ một vai trò, nên trên thực tế chỉ có một trong hai hồ sơ. Quản trị trường, biên tập viên và quản trị hệ thống chỉ có bản ghi trong `users`, không có hồ sơ riêng. Quản trị trường thuộc một trường (`users.school_id`); biên tập viên và quản trị hệ thống không thuộc trường nào (`school_id` để NULL).
 
 ### 2.2. Trường học
 

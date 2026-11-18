@@ -84,7 +84,7 @@ def test_422_thieu_truong_va_json_hong(client: TestClient) -> None:
 
     assert {"field": "password", "message": "Thiếu thông tin bắt buộc"} in thieu.json()["error"]["details"]
     assert hong.status_code == 422
-    assert hong.json()["error"]["details"][0]["message"] == "Dữ liệu JSON không đúng cú pháp"
+    assert hong.json()["error"]["details"] == [{"field": "", "message": "Dữ liệu JSON không đúng cú pháp"}]
     assert "khong-phai-json" not in hong.text
 
 

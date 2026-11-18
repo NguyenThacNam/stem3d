@@ -84,6 +84,9 @@ def _mo_ta_loi(loi: dict[str, Any]) -> dict[str, str]:
     vi_tri = [str(p) for p in loi.get("loc", ())]
     if vi_tri and vi_tri[0] in _NGUON:
         vi_tri = vi_tri[1:]
+    if loi.get("type") == "json_invalid":
+        # loc của lỗi JSON hỏng là vị trí ký tự, không phải tên trường.
+        vi_tri = []
     mau = _LOI_DU_LIEU.get(loi.get("type", ""), "Giá trị không hợp lệ")
     try:
         message = mau.format(**loi.get("ctx", {}))

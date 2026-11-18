@@ -34,6 +34,15 @@ def test_prod_tu_choi_jwt_secret_yeu(khoa: str) -> None:
         Settings(database_url=URL_TOT, jwt_secret=khoa, app_env="prod")
 
 
+@pytest.mark.parametrize("app_env", ["dev", "prod"])
+def test_database_url_sai_khong_lo_mat_khau(app_env: str) -> None:
+    with pytest.raises(ValidationError) as loi:
+        Settings(database_url="postgres//stem3d:MATKHAUBIMAT@db/stem3d", jwt_secret=KHOA_TOT, app_env=app_env)
+
+    assert "DATABASE_URL không đúng định dạng" in str(loi.value)
+    assert "MATKHAUBIMAT" not in str(loi.value)
+
+
 def test_prod_tu_choi_mat_khau_csdl_mau() -> None:
     with pytest.raises(ValidationError, match="POSTGRES_PASSWORD"):
         Settings(
