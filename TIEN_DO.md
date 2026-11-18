@@ -140,6 +140,10 @@ Sau phần 4: hook trong `.claude/settings.json` gọi script bằng `$CLAUDE_PR
 (trước đó đứng ở thư mục con như `frontend/` thì hook không tìm thấy script và chặn mọi lần sửa). Đã thử: sửa file
 frontend được phép khi đứng ở thư mục gốc và ở `frontend/`; ghi / sửa trong `docs/` bị chặn ở cả hai nơi.
 
+Quy trình Git (mục "Quy trình Git" trong `CLAUDE.md`): nhánh `main` / `dev` / `feature/<mã-việc>-...`, mọi thay đổi vào
+`dev` qua Pull Request. Hook `chan_git_nhanh_chinh.py` chặn Claude commit / merge / rebase / cherry-pick trên `main`,
+`dev` và push vào `main`, `dev` (89 test). Commit thiết lập này là commit cuối cùng nằm thẳng trên `main`.
+
 ## 5. Quyết định phát sinh khi code
 
 Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói hoặc phải chọn khi làm). Đã chốt với người dùng.
@@ -198,11 +202,28 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 4. Mở http://localhost:8080. Tài khoản mẫu: `admin`, `bientap`, `nguyendu.admin`, `nguyendu.gv001`, `nguyendu.hs001` – mật khẩu là `SEED_PASSWORD` trong `.env`.
 5. Frontend dev: `cd frontend && npm ci && npm run dev` (cổng 5173, proxy `/api` sang 8080).
 
+**Git – việc đầu tiên** (quy tắc đầy đủ: mục "Quy trình Git" trong `CLAUDE.md`)
+1. Lấy mã nguồn: `git clone https://github.com/NguyenThacNam/stem3d.git` rồi `cd stem3d` (làm trước bước cài đặt ở trên).
+2. Chuyển sang nhánh gộp code của nhóm: `git switch dev` rồi `git pull`. Không làm việc trực tiếp trên `main` hay `dev`.
+3. Xem mã việc mình phụ trách ở mục 2 (cột "Người phụ trách"), tạo nhánh việc từ `dev`:
+   `git switch -c feature/<mã-việc>-<mô-tả-ngắn-không-dấu>`, ví dụ `git switch -c feature/QL03-quan-ly-hoc-sinh`.
+   Sửa lỗi thì dùng `fix/<mô-tả>`.
+4. Làm việc, commit trên nhánh của mình. Mỗi ngày và trước khi tạo PR: `git pull origin dev`, tự giải quyết xung đột.
+5. Trước khi tạo PR: chạy toàn bộ test, nhờ `review-code` soát, cập nhật dòng của việc mình trong `TIEN_DO.md`.
+6. Đẩy nhánh lên: `git push -u origin feature/...`.
+7. Tạo Pull Request trên GitHub: mở trang kho → **Pull requests** → **New pull request** → chọn
+   **base: `dev`**, **compare: nhánh của mình** → điền tiêu đề tiếng Việt bắt đầu bằng động từ, mô tả đã làm gì,
+   đã test gì → **Create pull request**. Không chọn base `main`.
+8. **Trưởng nhóm duyệt** và gộp PR vào `dev`. Gộp xong thì xóa nhánh việc (nút **Delete branch** trên GitHub,
+   và `git switch dev && git pull && git branch -d feature/...` trên máy).
+9. Đưa `dev` lên `main` (bản ổn định) cũng qua Pull Request, chỉ khi đã chạy thử ổn – trưởng nhóm làm.
+
 **Đọc trước khi code:** `CLAUDE.md` (gốc), `backend/CLAUDE.md`, `frontend/CLAUDE.md`, `docs/quyet-dinh.md`, mục 5–6 của tệp này.
 
 **Kiểm tra**
 - Backend: `docker compose exec api pytest` (dùng CSDL `stem3d_test` riêng, tự tạo; chỉ có trong `docker-compose.override.yml`).
 - Frontend: `npm run typecheck`, `npm run build`, `npm test`.
+- Hook Git: `python -m pytest .claude/hooks/tests` (Python trên máy, không cần Docker).
 
 **Cách làm việc:** trình bày kế hoạch trước khi tạo / sửa nhiều file; làm từng phần nhỏ; chạy test, nhờ `review-code` soát rồi mới commit; commit message tiếng Việt bắt đầu bằng động từ; không sửa `docs/` (hook chặn).
 

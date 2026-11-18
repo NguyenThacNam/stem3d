@@ -6,6 +6,12 @@
         "hooks": [
           { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/chan_sua_docs.py\"" }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          { "type": "command", "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/chan_git_nhanh_chinh.py\"" }
+        ]
       }
     ],
     "PostToolUse": [

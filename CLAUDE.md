@@ -15,6 +15,29 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
 - Đầu mỗi phiên: đọc `TIEN_DO.md` (đang ở giai đoạn nào, việc nào xong, quyết định phát sinh, giới hạn đã biết).
 - Xong mỗi phần: cập nhật `TIEN_DO.md` (bảng chức năng, bảng API, commit, quyết định mới) trong CÙNG commit của phần đó.
 
+## Quy trình Git
+- Nhánh:
+  - `main`: bản ổn định; chỉ nhận từ `dev` qua Pull Request khi đã chạy thử ổn.
+  - `dev`: nơi gộp code cả nhóm; chỉ nhận từ nhánh việc qua Pull Request.
+  - Nhánh việc tạo từ `dev`, mỗi việc một nhánh, tên theo mã việc trong `docs/Ke_hoach_trien_khai_chuc_nang.xlsx`:
+    `feature/<mã-việc>-<mô-tả-ngắn-không-dấu>` (ví dụ `feature/QL04-nhap-hoc-sinh-excel`); sửa lỗi: `fix/<mô-tả>`.
+- Không commit, merge, push thẳng vào `main` hay `dev`.
+- Bắt đầu việc mới: `git switch dev` → `git pull` → `git switch -c feature/...`.
+- Mỗi ngày và trước khi tạo PR: kéo `dev` mới nhất về nhánh mình (`git pull origin dev`), tự giải quyết xung đột.
+- Migration: kéo `dev` mới nhất về TRƯỚC khi tạo migration; nếu Alembic báo nhiều head thì tạo migration gộp
+  (`alembic merge`) trên nhánh của mình.
+- File dùng chung (`backend/app/main.py`, `TIEN_DO.md`, `frontend/src/lib/roles.ts`…): chỉ thêm phần của mình,
+  không sửa phần của người khác.
+- Trước khi tạo PR: chạy toàn bộ test, nhờ `review-code` soát, cập nhật dòng của việc mình trong `TIEN_DO.md`.
+- PR vào `dev` do trưởng nhóm duyệt; xong thì xóa nhánh việc.
+- Hook `.claude/hooks/chan_git_nhanh_chinh.py` chặn Claude commit / merge / rebase / cherry-pick khi đang ở `main`
+  hoặc `dev`, và chặn mọi `git push` nhắm vào `main` / `dev` (test: `python -m pytest .claude/hooks/tests`).
+  Lưu ý:
+  - Hook chỉ ràng buộc Claude, KHÔNG ràng buộc người gõ lệnh trong terminal.
+  - Hook chỉ đọc chuỗi lệnh Bash: không chặn được `bash -c "..."`, alias git hay script riêng.
+  - GitHub gói miễn phí với kho riêng tư có thể không khóa được nhánh (branch protection), nên quy tắc này dựa
+    trên thỏa thuận của nhóm.
+
 ## Cấu trúc
 - `backend/` – Python FastAPI (quy ước riêng: `backend/CLAUDE.md`)
 - `frontend/` – React + TypeScript + Three.js (quy ước riêng: `frontend/CLAUDE.md`)
