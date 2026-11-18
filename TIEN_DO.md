@@ -208,15 +208,22 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 3. Xem mã việc mình phụ trách ở mục 2 (cột "Người phụ trách"), tạo nhánh việc từ `dev`:
    `git switch -c feature/<mã-việc>-<mô-tả-ngắn-không-dấu>`, ví dụ `git switch -c feature/QL03-quan-ly-hoc-sinh`.
    Sửa lỗi thì dùng `fix/<mô-tả>`.
-4. Làm việc, commit trên nhánh của mình. Mỗi ngày và trước khi tạo PR: `git pull origin dev`, tự giải quyết xung đột.
-5. Trước khi tạo PR: chạy toàn bộ test, nhờ `review-code` soát, cập nhật dòng của việc mình trong `TIEN_DO.md`.
+4. Làm việc, commit trên nhánh của mình. Mỗi ngày: `git pull origin dev`, tự giải quyết xung đột.
+5. Trước khi gộp: chạy toàn bộ test, nhờ `review-code` soát đạt, cập nhật dòng của việc mình trong `TIEN_DO.md`.
+   Sau đó kéo `dev` mới nhất về (`git pull origin dev`) và **chạy lại toàn bộ test**. Có xung đột phải sửa tay thì
+   nhờ `review-code` soát lại phần đã sửa.
 6. Đẩy nhánh lên: `git push -u origin feature/...`.
 7. Tạo Pull Request trên GitHub: mở trang kho → **Pull requests** → **New pull request** → chọn
    **base: `dev`**, **compare: nhánh của mình** → điền tiêu đề tiếng Việt bắt đầu bằng động từ, mô tả đã làm gì,
    đã test gì → **Create pull request**. Không chọn base `main`.
-8. **Trưởng nhóm duyệt** và gộp PR vào `dev`. Gộp xong thì xóa nhánh việc (nút **Delete branch** trên GitHub,
-   và `git switch dev && git pull && git branch -d feature/...` trên máy).
-9. Đưa `dev` lên `main` (bản ổn định) cũng qua Pull Request, chỉ khi đã chạy thử ổn – trưởng nhóm làm.
+8. **Tự gộp** (không cần trưởng nhóm duyệt): trên trang PR, nút Merge để kiểu **Create a merge commit** (không
+   chọn Squash / Rebase), bấm **Merge pull request** → **Confirm merge**, rồi bấm **Delete branch**.
+   Trang PR báo nhánh đã cũ so với `dev` ("out-of-date") thì kéo `dev` về, test lại rồi mới gộp.
+   Trên máy: `git switch dev && git pull && git branch -d feature/...`.
+   Gộp xong mà `dev` lỗi: mở lại PR đó, bấm **Revert** → **Create pull request** → **Merge pull request** →
+   **Confirm merge**. GitHub báo không revert tự động được thì tạo nhánh `fix/...` từ `dev`, chạy
+   `git revert -m 1 <mã-merge-commit>` rồi tạo PR như thường.
+9. Đưa `dev` lên `main` (bản ổn định) cũng qua Pull Request, chỉ khi đã chạy thử ổn – **chỉ trưởng nhóm** làm.
 
 **Đọc trước khi code:** `CLAUDE.md` (gốc), `backend/CLAUDE.md`, `frontend/CLAUDE.md`, `docs/quyet-dinh.md`, mục 5–6 của tệp này.
 
