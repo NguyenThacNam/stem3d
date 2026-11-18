@@ -17,8 +17,8 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
 
 ## Quy trình Git
 - Nhánh:
-  - `main`: bản ổn định; chỉ nhận từ `dev` qua Pull Request khi đã chạy thử ổn.
-  - `dev`: nơi gộp code cả nhóm; chỉ nhận từ nhánh việc qua Pull Request.
+  - `main`: bản ổn định; chỉ nhận từ `dev` qua Pull Request khi đã chạy thử ổn; chỉ trưởng nhóm gộp.
+  - `dev`: nơi gộp code cả nhóm; chỉ nhận từ nhánh việc qua Pull Request, người làm tự gộp (xem dưới).
   - Nhánh việc tạo từ `dev`, mỗi việc một nhánh, tên theo mã việc trong `docs/Ke_hoach_trien_khai_chuc_nang.xlsx`:
     `feature/<mã-việc>-<mô-tả-ngắn-không-dấu>` (ví dụ `feature/QL04-nhap-hoc-sinh-excel`); sửa lỗi: `fix/<mô-tả>`.
 - Không commit, merge, push thẳng vào `main` hay `dev`.
@@ -28,8 +28,18 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
   (`alembic merge`) trên nhánh của mình.
 - File dùng chung (`backend/app/main.py`, `TIEN_DO.md`, `frontend/src/lib/roles.ts`…): chỉ thêm phần của mình,
   không sửa phần của người khác.
-- Trước khi tạo PR: chạy toàn bộ test, nhờ `review-code` soát, cập nhật dòng của việc mình trong `TIEN_DO.md`.
-- PR vào `dev` do trưởng nhóm duyệt; xong thì xóa nhánh việc.
+- Gộp vào `dev`: KHÔNG cần trưởng nhóm duyệt, người làm tự gộp, theo thứ tự:
+  1. Chạy toàn bộ test; nhờ `review-code` soát đạt; cập nhật dòng của việc mình trong `TIEN_DO.md`.
+  2. Kéo `dev` mới nhất về nhánh mình (`git pull origin dev`) và chạy lại toàn bộ test. Có xung đột phải sửa
+     tay thì nhờ `review-code` soát lại phần đã sửa.
+  3. Đẩy nhánh lên, tạo PR vào `dev` trên GitHub, tự bấm **Merge pull request** (kiểu **Create a merge commit**,
+     không dùng Squash / Rebase) → **Confirm merge**, xong bấm **Delete branch**. Trang PR báo nhánh đã cũ so với
+     `dev` ("out-of-date") thì quay lại bước 2 trước khi gộp.
+  4. Dọn trên máy: `git switch dev && git pull && git branch -d <nhánh-việc>`.
+  5. Gộp xong mà `dev` lỗi: trên PR đó bấm **Revert** → **Create pull request** → **Merge pull request** →
+     **Confirm merge**. GitHub báo không revert tự động được thì làm trên máy: tạo nhánh `fix/...` từ `dev`,
+     `git revert -m 1 <mã-merge-commit>`, rồi tạo PR như thường.
+- Chỉ trưởng nhóm gộp `dev` vào `main`, cũng qua PR, khi đã chạy thử ổn.
 - Hook `.claude/hooks/chan_git_nhanh_chinh.py` chặn Claude commit / merge / rebase / cherry-pick khi đang ở `main`
   hoặc `dev`, và chặn mọi `git push` nhắm vào `main` / `dev` (test: `python -m pytest .claude/hooks/tests`).
   Lưu ý:
