@@ -242,3 +242,26 @@ def test_gvcn_sang_nam_hoc_moi_khong_con_dat_lai_duoc(
     res = _dat_lai(client, the_gioi, dong_ho, "gvcn_a", "hs_lop_cn")
 
     assert res.status_code == 403
+
+
+def test_kiem_tra_lai_pham_vi_sau_khi_khoa_dong(
+    client: TestClient, db: Session, the_gioi: TheGioi, dong_ho: DongHo, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Tài khoản đích bị chuyển sang trường khác giữa lần kiểm tra đầu và lúc khóa dòng: phải từ chối."""
+    target = the_gioi.tk["gvcn_a"]
+    truong_b_id = the_gioi.tk["qtt_b"].school_id
+    hash_cu = target.password_hash
+    refresh_goc = db.refresh
+
+    def refresh_va_chuyen_truong(obj, *args, **kwargs):
+        refresh_goc(obj, *args, **kwargs)
+        if obj is target and kwargs.get("with_for_update"):
+            obj.school_id = truong_b_id  # giả lập giao dịch khác vừa commit việc chuyển trường
+
+    monkeypatch.setattr(db, "refresh", refresh_va_chuyen_truong)
+
+    res = _dat_lai(client, the_gioi, dong_ho, "qtt_a", "gvcn_a")
+
+    assert res.status_code == 404
+    assert target.password_hash == hash_cu
+    assert db.scalar(select(func.count()).select_from(SystemLog).where(SystemLog.action == "RESET_PASSWORD")) == 0

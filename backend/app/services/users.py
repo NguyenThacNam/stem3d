@@ -62,6 +62,8 @@ def reset_password(db: Session, actor: CurrentUser, target_id: int, now: datetim
         raise _khong_tim_thay()
     _kiem_tra_pham_vi(db, actor, target, now)
     db.refresh(target, with_for_update=True)
+    # Kiểm tra lại trên bản đã khóa: vai trò / trường có thể vừa đổi giữa hai lần đọc.
+    _kiem_tra_pham_vi(db, actor, target, now)
 
     mat_khau_moi = generate_password()
     target.password_hash = hash_password(mat_khau_moi)

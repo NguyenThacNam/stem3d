@@ -436,6 +436,21 @@ def test_doi_mat_khau_thanh_cong(client: TestClient, db: Session, dong_ho: DongH
     nhat_ky = [n for n in _nhat_ky(db, "truonga.admin") if n.action == "CHANGE_PASSWORD"]
     assert len(nhat_ky) == 1
     assert "MatKhau" not in str(nhat_ky[0].detail)
+    assert set(nhat_ky[0].detail) == {"username", "ip"}
+
+
+def test_doi_mat_khau_khi_dang_khoa_khong_tang_bo_dem_khong_ghi_nhat_ky(
+    client: TestClient, db: Session, dong_ho: DongHo
+) -> None:
+    user = tao_tai_khoan(db, "bientap", "CONTENT_EDITOR", locked_until=dong_ho.gio + timedelta(minutes=5))
+
+    res = _doi(client, bearer(user, dong_ho.gio), current_password="sai")
+
+    assert res.status_code == 423
+    assert _loi(res)["details"] == {"retry_after_seconds": 300}
+    db.refresh(user)
+    assert (user.failed_login_count, user.locked_until) == (0, dong_ho.gio + timedelta(minutes=5))
+    assert _nhat_ky(db, "bientap") == []
 
 
 def test_doi_mat_khau_sai_mat_khau_hien_tai(client: TestClient, db: Session, dong_ho: DongHo) -> None:

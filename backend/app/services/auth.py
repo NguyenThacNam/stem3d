@@ -293,7 +293,7 @@ def change_password(
         school_id=user.school_id,
         target_type="user",
         target_id=user.id,
-        detail={"username": user.username},
+        detail={"username": user.username, "ip": ip},
     )
     db.commit()
     return _cap_token(user, users_repo.get_school(db, user.school_id), now)

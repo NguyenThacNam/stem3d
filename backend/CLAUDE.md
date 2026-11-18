@@ -74,8 +74,10 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
 
 ## Giới hạn đã biết của thiết kế
 - Refresh token: không có bảng `refresh_tokens` (docs/quyet-dinh.md), nên mỗi lần refresh tuy cấp token mới nhưng
-  token cũ VẪN DÙNG ĐƯỢC tới hết hạn 8 giờ, trừ khi `users.token_version` tăng (đổi / đặt lại mật khẩu, khóa
-  tài khoản). Cấp token mới chỉ để gia hạn phiên, không chống dùng lại token bị lộ.
+  token cũ VẪN DÙNG ĐƯỢC tới hết hạn 8 giờ, trừ khi `users.token_version` tăng (đổi / đặt lại mật khẩu).
+  Tài khoản / trường bị khóa thì refresh bị từ chối nhờ kiểm tra `is_active` (chưa có code tăng `token_version`
+  khi khóa tài khoản – thêm khi làm API khóa tài khoản). Cấp token mới chỉ để gia hạn phiên, không chống dùng
+  lại token bị lộ.
 - Dò được tên đăng nhập có tồn tại qua khóa tạm: tên có thật sau 5 lần sai trả 423, tên không có luôn trả 401
   (không giới hạn theo IP – docs/quyet-dinh.md). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV
   vốn đoán được.
