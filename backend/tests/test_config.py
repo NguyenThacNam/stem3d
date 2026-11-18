@@ -19,8 +19,13 @@ def test_dev_chap_nhan_gia_tri_mau() -> None:
 
 
 def test_prod_hop_le() -> None:
-    s = Settings(database_url=URL_TOT, jwt_secret=KHOA_TOT, app_env="prod")
+    s = Settings(database_url=URL_TOT, jwt_secret=KHOA_TOT, app_env="prod", bcrypt_rounds=12)
     assert s.is_prod is True
+
+
+def test_prod_tu_choi_bcrypt_rounds_thap() -> None:
+    with pytest.raises(ValidationError, match="BCRYPT_ROUNDS"):
+        Settings(database_url=URL_TOT, jwt_secret=KHOA_TOT, app_env="prod", bcrypt_rounds=10)
 
 
 def test_app_env_go_nham_bi_tu_choi() -> None:

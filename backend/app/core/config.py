@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
@@ -12,6 +12,7 @@ from sqlalchemy.exc import ArgumentError
 JWT_SECRET_MAU = "doi-chuoi-nay"
 MAT_KHAU_CSDL_MAU = "doi-mat-khau-nay"
 DO_DAI_JWT_SECRET_TOI_THIEU = 32
+BCRYPT_ROUNDS_TOI_THIEU_BAN_THAT = 12
 
 
 class Settings(BaseSettings):
@@ -21,6 +22,8 @@ class Settings(BaseSettings):
     database_url: str
     jwt_secret: str
     app_env: Literal["dev", "prod"] = "dev"
+    # Độ khó bcrypt; test đặt 4 cho nhanh, bản thật tối thiểu 12 (kiểm tra bên dưới).
+    bcrypt_rounds: int = Field(12, ge=4, le=15)
 
     @property
     def is_prod(self) -> bool:
@@ -42,6 +45,8 @@ class Settings(BaseSettings):
             )
         if url.password == MAT_KHAU_CSDL_MAU:
             raise ValueError("APP_ENV=prod: POSTGRES_PASSWORD đang là giá trị mẫu, hãy đổi trong .env")
+        if self.bcrypt_rounds < BCRYPT_ROUNDS_TOI_THIEU_BAN_THAT:
+            raise ValueError(f"APP_ENV=prod: BCRYPT_ROUNDS phải từ {BCRYPT_ROUNDS_TOI_THIEU_BAN_THAT} trở lên")
         return self
 
 

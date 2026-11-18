@@ -1,7 +1,8 @@
 """Lỗi chung: mọi lỗi trả {"error": {"code", "message", "details"}}, message tiếng Việt.
 
 Mã lỗi chung (dùng thống nhất cho mọi API, xem backend/CLAUDE.md):
-NOT_FOUND, METHOD_NOT_ALLOWED, VALIDATION_ERROR, INTERNAL_ERROR, FILE_TOO_LARGE (Nginx trả).
+NOT_FOUND, METHOD_NOT_ALLOWED, VALIDATION_ERROR, INTERNAL_ERROR, FILE_TOO_LARGE (Nginx trả),
+NOT_AUTHENTICATED, TOKEN_INVALID, TOKEN_EXPIRED, FORBIDDEN, PASSWORD_CHANGE_REQUIRED.
 """
 
 import logging
@@ -38,8 +39,13 @@ def _phan_hoi(
     )
 
 
-async def app_error_handler(_request: Request, exc: AppError) -> JSONResponse:
+def error_response(exc: AppError) -> JSONResponse:
+    """Phản hồi lỗi chuẩn cho AppError – dùng khi router cần sửa thêm phản hồi (ví dụ xóa cookie)."""
     return _phan_hoi(exc.status_code, exc.code, exc.message, exc.details)
+
+
+async def app_error_handler(_request: Request, exc: AppError) -> JSONResponse:
+    return error_response(exc)
 
 
 # Lỗi HTTP do FastAPI/Starlette tự sinh (đường dẫn không có, sai phương thức...).
@@ -76,6 +82,9 @@ _LOI_DU_LIEU = {
     "datetime_parsing": "Phải là thời điểm theo ISO 8601",
     "date_parsing": "Phải là ngày theo dạng YYYY-MM-DD",
     "extra_forbidden": "Trường này không được phép",
+    "timezone_aware": "Phải kèm múi giờ, ví dụ 2026-11-18T14:00:00+07:00",
+    # Lỗi từ validator tự viết: dùng nguyên câu tiếng Việt trong ValueError.
+    "value_error": "{error}",
 }
 _NGUON = {"body", "query", "path", "header", "cookie"}
 

@@ -18,6 +18,10 @@ _TEN_CSDL_TEST = make_url(_TEST_URL).database or ""
 if not re.fullmatch(r"[a-z0-9_]+_test", _TEN_CSDL_TEST):
     raise RuntimeError(f"TEST_DATABASE_URL phải trỏ tới CSDL có tên kết thúc bằng _test, đang là '{_TEN_CSDL_TEST}'")
 os.environ["DATABASE_URL"] = _TEST_URL
+# bcrypt độ khó thấp nhất cho test chạy nhanh (bản thật bắt buộc >= 12).
+os.environ["BCRYPT_ROUNDS"] = "4"
+
+from datetime import datetime, timedelta  # noqa: E402
 
 import pytest  # noqa: E402
 from alembic import command  # noqa: E402
@@ -26,6 +30,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy import create_engine, text  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
+from app.core.clock import get_now  # noqa: E402
 from app.core.config import get_settings  # noqa: E402
 from app.core.database import get_db, get_engine  # noqa: E402
 from app.main import app  # noqa: E402
@@ -73,14 +78,32 @@ def db() -> Iterator[Session]:
         conn.close()
 
 
+class DongHo:
+    """Đồng hồ giả cho test: API đọc giờ qua get_now, test tua giờ bằng tua(...)."""
+
+    BAT_DAU = datetime(2026, 11, 18, 7, 0, 0)  # UTC, năm học 2026-2027
+
+    def __init__(self) -> None:
+        self.gio = self.BAT_DAU
+
+    def tua(self, **khoang: float) -> None:
+        self.gio += timedelta(**khoang)
+
+
 @pytest.fixture
-def client(db: Session) -> Iterator[TestClient]:
-    """TestClient dùng chung phiên CSDL của test (API ghi gì cũng được hoàn tác)."""
+def dong_ho() -> DongHo:
+    return DongHo()
+
+
+@pytest.fixture
+def client(db: Session, dong_ho: DongHo) -> Iterator[TestClient]:
+    """TestClient dùng chung phiên CSDL của test (API ghi gì cũng được hoàn tác) và đồng hồ giả."""
 
     def _get_db_test() -> Iterator[Session]:
         yield db
 
     app.dependency_overrides[get_db] = _get_db_test
+    app.dependency_overrides[get_now] = lambda: dong_ho.gio
     try:
         with TestClient(app) as c:
             yield c

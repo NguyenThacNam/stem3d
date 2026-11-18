@@ -25,11 +25,34 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
   - 422 `VALIDATION_ERROR` – dữ liệu sai; `details` = danh sách `{field, message}`, không vọng lại giá trị gửi lên
   - 500 `INTERNAL_ERROR` – lỗi không lường trước; chi tiết chỉ ghi log
   - 413 `FILE_TOO_LARGE` – Nginx trả khi yêu cầu vượt 151 MB; API tải mô hình tự chặn chính xác file > 150 MB
+  - 401 `NOT_AUTHENTICATED` – thiếu header `Authorization: Bearer`
+  - 401 `TOKEN_INVALID` – access token sai chữ ký, sai loại (dùng refresh token), tài khoản không còn
+  - 401 `TOKEN_EXPIRED` – access token hết hạn (máy khách gọi /api/auth/refresh)
+  - 403 `FORBIDDEN` – sai vai trò hoặc cùng trường nhưng ngoài phạm vi
+  - 403 `PASSWORD_CHANGE_REQUIRED` – tài khoản phải đổi mật khẩu, gọi API ngoài `/api/auth`
+  - 403 `ACCOUNT_DISABLED`, `SCHOOL_DISABLED` – tài khoản / trường bị khóa (kiểm tra ở mỗi yêu cầu)
+- Lỗi 401/403 luôn ném `AppError`; không dùng `fastapi.security.HTTPBearer` hay `HTTPException` (sẽ ra `HTTP_ERROR`).
 - Phân quyền hai lớp: router dùng `require_role(...)`, service kiểm tra cùng trường / đúng lớp. Khác trường → 404.
+  - `require_role(...)` (`app/core/deps.py`): khai báo `CONTENT_EDITOR` thì `SYSTEM_ADMIN` tự được dùng.
+  - `get_current_user` chặn tài khoản phải đổi mật khẩu; chỉ API `/api/auth/*` dùng `get_current_user_for_auth`.
+  - Mỗi yêu cầu đọc lại tài khoản trong CSDL: khóa tài khoản / trường có hiệu lực ngay.
 - Thời gian: cột kiểu `TIMESTAMP` (không múi giờ, đúng phụ lục) nhưng luôn chứa giờ UTC – phiên kết nối ép
   `timezone=UTC` (`CONNECT_ARGS` trong `app/core/database.py`), nên `now()` cũng là UTC. Ghi vào CSDL dùng
-  `datetime` UTC không kèm múi giờ. Trả ra API dùng kiểu `UtcDatetime` (`app/schemas/common.py`): ISO 8601 có múi giờ.
-  Phần phụ thuộc giờ (khóa tạm, hạn nộp) nhận hàm lấy giờ để test được.
+  `datetime` UTC không kèm múi giờ.
+  - Trả ra API: kiểu `UtcDatetime` (`app/schemas/common.py`) – ISO 8601 có múi giờ.
+  - Nhận từ API (`open_at`, `due_at`, `submitted_at`…): kiểu `UtcInputDatetime` – bắt buộc có múi giờ, đổi về UTC.
+  - Giờ hiện tại lấy qua dependency `get_now` (`app/core/clock.py`), truyền xuống service; test ghi đè để tua giờ.
+- Năm học hiện tại: `current_school_year(now)` trong `app/core/clock.py` – từ 1/8 năm N đến hết 31/7 năm N+1
+  (theo giờ Việt Nam) là `"N-(N+1)"`, ví dụ 18/11/2026 → `"2026-2027"`. Giáo viên chủ nhiệm chỉ có quyền với lớp
+  chủ nhiệm trong năm học hiện tại.
+- Mật khẩu mới dùng kiểu `NewPassword`: tối thiểu 8 ký tự, tối đa 72 byte UTF-8 (giới hạn của bcrypt);
+  `verify_password` luôn trả False với mật khẩu dài hơn 72 byte.
+- Tham số id trên đường dẫn dùng kiểu `IdPath` (`app/schemas/common.py`, 1 … 2.147.483.647): id ngoài khoảng trả 422,
+  không để CSDL báo tràn số thành 500.
+- Câu báo lỗi trong validator tự viết (`ValueError`) được trả nguyên văn ra ngoài: không bao giờ chứa giá trị gửi lên.
+- Sai mật khẩu khi đăng nhập và sai mật khẩu hiện tại khi đổi mật khẩu dùng chung `failed_login_count`:
+  đủ 5 lần thì khóa tạm theo vai trò, trả 423.
+- Thao tác trên phản hồi chứa token hoặc mật khẩu: đặt `Cache-Control: no-store`.
 - Danh sách: `page`, `page_size` (mặc định 20, tối đa 100), trả `{items, total, page, page_size}`.
 
 ## Migration
@@ -48,9 +71,13 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
 ## Việc còn chờ
 - `docker-compose.yml`: chỉ truyền cho `api` những biến nó cần (hiện `env_file: .env` truyền cả `POSTGRES_PASSWORD`).
 - Lớp 1–3 chưa có môn: cân nhắc thêm môn "Tự nhiên và Xã hội" (lớp 1–3) – hỏi người dùng trước khi thêm.
-- Khi làm phần xác thực:
-  - bcrypt lặng lẽ cắt mật khẩu dài hơn 72 byte: schema đặt/đổi mật khẩu phải giới hạn độ dài tính theo byte UTF-8
-    (chữ tiếng Việt có dấu chiếm 2–3 byte).
-  - Giờ gửi lên (`open_at`, `due_at`, `submitted_at`…) dùng `AwareDatetime` (bắt buộc có múi giờ) rồi đổi sang UTC
-    không múi giờ trước khi ghi. `UtcDatetime` chỉ dùng cho schema `...Out`.
-  - Lỗi 401/403 ném `AppError` với mã trong chương 3; không dùng `HTTPBearer`/`HTTPException` (sẽ ra `HTTP_ERROR`).
+
+## Giới hạn đã biết của thiết kế
+- Refresh token: không có bảng `refresh_tokens` (docs/quyet-dinh.md), nên mỗi lần refresh tuy cấp token mới nhưng
+  token cũ VẪN DÙNG ĐƯỢC tới hết hạn 8 giờ, trừ khi `users.token_version` tăng (đổi / đặt lại mật khẩu, khóa
+  tài khoản). Cấp token mới chỉ để gia hạn phiên, không chống dùng lại token bị lộ.
+- Dò được tên đăng nhập có tồn tại qua khóa tạm: tên có thật sau 5 lần sai trả 423, tên không có luôn trả 401
+  (không giới hạn theo IP – docs/quyet-dinh.md). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV
+  vốn đoán được.
+- Access token cũ còn hạn tối đa 15 phút sau khi đổi mật khẩu (không so `token_version` ở access token); khóa
+  tài khoản / trường thì chặn ngay vì mỗi yêu cầu đọc lại CSDL.
