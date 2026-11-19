@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.orm import Session
 
 from app.core.clock import get_now
@@ -19,6 +19,7 @@ router = APIRouter(prefix="/api/users", tags=["Tài khoản"])
 @router.post("/{user_id}/reset-password", response_model=ResetPasswordOut)
 def reset_password(
     user_id: IdPath,
+    request: Request,
     response: Response,
     # TEACHER: chỉ giáo viên chủ nhiệm mới qua được kiểm tra phạm vi ở service.
     actor: CurrentUser = Depends(require_role("SYSTEM_ADMIN", "SCHOOL_ADMIN", "TEACHER")),
@@ -26,4 +27,5 @@ def reset_password(
     now: datetime = Depends(get_now),
 ) -> ResetPasswordOut:
     response.headers["Cache-Control"] = "no-store"
-    return users_service.reset_password(db, actor, user_id, now)
+    ip = request.client.host if request.client else None
+    return users_service.reset_password(db, actor, user_id, now, ip)

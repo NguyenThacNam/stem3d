@@ -18,6 +18,9 @@ Danh sách kiểm tra:
 - Phân quyền: router có `require_role` đúng vai trò trong bảng API? Service có kiểm tra lớp mình dạy / lớp chủ nhiệm?
 - Đúng đặc tả: đường dẫn, mã HTTP, mã lỗi, tên trường JSON, phân trang.
 - CSDL: giao dịch khi tạo nhiều bản ghi; khớp ràng buộc trong phụ lục; migration không sửa bản cũ.
+- Nhật ký: API thay đổi dữ liệu có gọi `nhat_ky.ghi(...)` đúng mã trong bảng ở mục "Nhật ký" của
+  `backend/CLAUDE.md`, trước `db.commit()`, có `ten_doi_tuong` khi xóa, `school_id` đúng trường? Test có
+  `kiem_tra_nhat_ky` khi thành công và không có nhật ký khi lỗi? Không ghi mật khẩu / danh sách tài khoản vừa tạo?
 - Chấm điểm: máy chủ tự tính lại, không tin số máy học sinh gửi; nộp bài chống trùng theo `client_id`.
 - Frontend: access token không vào localStorage; không tính điểm phía máy học sinh; đúng quy ước giao diện 3.2.1.
 - Test: có đủ trường hợp đúng, sai dữ liệu, 401, 403, khác trường, từng mã lỗi? Chạy `docker compose exec api pytest`.

@@ -55,6 +55,48 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
 - Thao tác trên phản hồi chứa token hoặc mật khẩu: đặt `Cache-Control: no-store`.
 - Danh sách: `page`, `page_size` (mặc định 20, tối đa 100), trả `{items, total, page, page_size}`.
 
+## Nhật ký (system_logs) – điều kiện hoàn thành của mọi API thay đổi dữ liệu
+- Ghi ở tầng Service bằng `nhat_ky.ghi(...)` (`app/services/nhat_ky.py`), không gọi thẳng `repositories.system_logs`.
+  Ghi trước `db.commit()`, cùng giao dịch với thao tác; `ghi()` không tự commit.
+- Xóa (`DELETE_*`): đọc tên rồi gọi `ghi()` TRƯỚC `db.delete()`. Gọi sau khi xóa thì khóa ngoại `school_id` /
+  `user_id` không còn hợp lệ → lỗi 500. Sau khi xóa, `school_id` / `user_id` của dòng nhật ký thành NULL (đúng thiết
+  kế, phụ lục PL-7), tên vẫn còn trong `detail`. Xóa tài khoản ghi thêm `chi_tiet={"full_name": ...}` (UC14).
+- Mã hành động chỉ lấy trong `HANH_DONG`; API mới cần mã chưa có thì thêm mã kèm nhãn tiếng Việt vào đó.
+  Mỗi API trong bảng dưới ghi đúng mã của nó khi thao tác THÀNH CÔNG:
+
+  | API | Mã |
+  |---|---|
+  | 17, 18 | `CREATE_ASSIGNMENT`, `DELETE_ASSIGNMENT` |
+  | 23–25, 28 | `CREATE_STUDENT`, `UPDATE_STUDENT`, `DELETE_STUDENT`, `IMPORT_STUDENTS` |
+  | 30–32, 35 | `CREATE_TEACHER`, `UPDATE_TEACHER`, `DELETE_TEACHER`, `IMPORT_TEACHERS` |
+  | 37–39, 41, 42 | `CREATE_CLASS`, `UPDATE_CLASS`, `DELETE_CLASS`, `ASSIGN_TEACHER`, `UNASSIGN_TEACHER` |
+  | 46, 48 | `UPLOAD_ASSET`, `DELETE_ASSET` |
+  | 50, 52–59 | `CREATE_LESSON`, `UPDATE_LESSON`, `DELETE_LESSON`, `PUBLISH_LESSON`, `UNPUBLISH_LESSON`, `UPDATE_LESSON_PARTS`, `CREATE_QUESTION`, `UPDATE_QUESTION`, `DELETE_QUESTION` |
+  | 61–65 | `CREATE_SCHOOL`, `UPDATE_SCHOOL`, `LOCK_SCHOOL`, `UNLOCK_SCHOOL`, `DELETE_SCHOOL` |
+  | 67–69 | `CREATE_SCHOOL_ADMIN`, `UPDATE_SCHOOL_ADMIN`, `DELETE_SCHOOL_ADMIN` |
+  | 71–73 | `CREATE_EDITOR`, `UPDATE_EDITOR`, `DELETE_EDITOR` |
+  | 68, 72 (khóa / mở khóa) | đổi `is_active` → `LOCK_ACCOUNT` / `UNLOCK_ACCOUNT`; đổi thông tin khác → `UPDATE_*`; đổi cả hai → ghi cả hai dòng |
+- API 61 (thêm trường kèm quản trị trường đầu tiên) ghi hai dòng: `CREATE_SCHOOL` và `CREATE_SCHOOL_ADMIN`.
+- `ASSIGN_TEACHER` / `UNASSIGN_TEACHER`: `doi_tuong="class"`, `doi_tuong_id` = mã lớp, `ten_doi_tuong` = tên lớp,
+  `chi_tiet={"teacher_id", "subject_id"}`. `doi_tuong="assignment"` là BÀI GIAO, không phải phân công.
+- `DELETE_ASSIGNMENT`: `ten_doi_tuong` = "<tên lớp> – <tên bài>" (bảng `assignments` không có cột tên).
+- Sửa (`UPDATE_*`): chỉ ghi `chi_tiet={"changed_fields": [...]}` (tên các trường đã đổi), không ghi giá trị;
+  `ghi()` chặn khóa `config`, `options`, `correct`, `expected` để cấu hình bài / câu hỏi không lọt vào nhật ký.
+- Không ghi: API chỉ đọc, đăng xuất (3), nộp bài (10), xem trước nhập Excel (27, 34), thao tác thất bại
+  (403, 404, 422…). Thất bại chỉ ghi cho đăng nhập và đổi mật khẩu (đã có).
+- IP chỉ ghi cho đăng nhập và mật khẩu (kể cả đặt lại mật khẩu); khóa `ip` có thể vắng khi không xác định được IP.
+- Tham số `ghi()`: `nguoi_lam` (CurrentUser), `doi_tuong` (`user`, `school`, `class`, `assignment`, `asset`,
+  `lesson`, `question`), `doi_tuong_id`, `ten_doi_tuong` (tên đăng nhập, mã trường, tên lớp, tên bài… – BẮT BUỘC
+  với `DELETE_*`), `truong_doi_tuong` (trường của đối tượng; bỏ trống thì lấy trường của người làm), `chi_tiet`.
+- `detail` tự có `actor` (tên người làm) và `target_name`: xóa tài khoản / trường vẫn tra được tên.
+- Không bao giờ ghi mật khẩu, token, mã băm, đáp án, công thức chấm, sai số; `ghi()` chặn khóa chứa `password`,
+  `token`, `hash`, `secret`, `answer`, `formula`, `tolerance`, `config`… kể cả lồng bên trong. Bộ lọc chỉ xét TÊN
+  khóa: không đưa nguyên đối tượng hay chuỗi JSON vào `chi_tiet`.
+- `IMPORT_STUDENTS` / `IMPORT_TEACHERS`: `chi_tiet` đúng 3 khóa `created_count`, `error_count`, `file_name`; không
+  ghi danh sách tài khoản vừa tạo (đi kèm mật khẩu ban đầu).
+- Test của mỗi API thay đổi dữ liệu phải có `kiem_tra_nhat_ky(db, "<MÃ>", target_id=..., school_id=...)`
+  (`tests/du_lieu.py`) ở trường hợp thành công, và không có dòng nhật ký ở trường hợp lỗi.
+
 ## Migration
 - Mọi thay đổi bảng đều qua Alembic; không sửa migration đã chạy, tạo migration mới.
 - Bảng, cột, ràng buộc phải khớp `docs/phu-luc-csdl.md`. Khác đi thì hỏi trước.

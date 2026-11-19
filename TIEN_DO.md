@@ -15,14 +15,14 @@ màn đăng nhập và thanh bên theo vai trò. Chưa có chức năng học t�
 
 | Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|---|
-| 0 | Nền tảng kỹ thuật | 9 | 6 | 2 | 0 | 1 |
+| 0 | Nền tảng kỹ thuật | 9 | 7 | 1 | 0 | 1 |
 | 1 | Xem bài học 3D | 7 | 0 | 0 | 7 | 0 |
 | 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 | 0 |
 | 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 | 0 |
 | 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 | 0 |
 | 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 | 0 |
 | 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 | 0 |
-| | **Tổng** | **45** | **6** | **3** | **35** | **1** |
+| | **Tổng** | **45** | **7** | **2** | **35** | **1** |
 
 API (chương 3, mục 3.1.3): **6 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
@@ -40,7 +40,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | NT03 | Đăng nhập, khóa tạm khi sai 5 lần | Trưởng nhóm | 0 | Xong | d7f3456, 6eb8958, 305b484 | API + màn đăng nhập |
 | NT04 | Đổi mật khẩu | Trưởng nhóm | 0 | Xong | d7f3456, 305b484 | API + màn đổi mật khẩu bắt buộc |
 | NT05 | Phân quyền theo vai trò và theo trường | Trưởng nhóm | 0 | Xong | d7f3456 | `require_role`, `get_current_user`; phạm vi trường kiểm tra trong service từng API |
-| NT06 | Ghi nhật ký thao tác | Trưởng nhóm | 0 | Đang làm | d7f3456 | Đã ghi: đăng nhập, khóa tạm, đổi / đặt lại mật khẩu. Các thao tác khác ghi khi làm API tương ứng |
+| NT06 | Ghi nhật ký thao tác | Trưởng nhóm | 0 | Xong | d7f3456, nhánh feature/NT06-khung-nhat-ky | Khung `app/services/nhat_ky.py` (mã cố định, chặn thông tin nhạy cảm) + `kiem_tra_nhat_ky` cho test. Mỗi API tự ghi nhật ký: điều kiện hoàn thành của API đó (`backend/CLAUDE.md` mục Nhật ký) |
 | NT09 | Chốt quy ước API | Trưởng nhóm | 0 | Xong | dbf6502, d7f3456 | Khuôn dạng lỗi, mã lỗi chung, phân trang: `backend/CLAUDE.md` |
 | NT08 | Khung giao diện React và thử hiển thị mô hình 3D | Dev Bài học | 0 | Đang làm | 305b484 | Xong: bố cục, menu, gọi API. Chưa: thử mô hình 3D (Three.js) |
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
@@ -135,6 +135,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 2 | 15 model SQLAlchemy + migration đầu tiên (khớp phụ lục: 26 khóa ngoại, 16 CHECK, chỉ mục chủ nhiệm), CSDL test riêng (mỗi test một giao dịch rồi hoàn tác), test ràng buộc, script seed | ddb8eb0 |
 | 3 | 6 API nhóm 1 (đăng nhập, refresh, đăng xuất, me, đổi mật khẩu, đặt lại mật khẩu), JWT + cookie refresh, khóa tạm, `require_role`, nhật ký, năm học hiện tại | d7f3456 |
 | 3 (sửa) | Kiểm tra lại phạm vi sau khi khóa dòng khi đặt lại mật khẩu, ghi IP khi đổi mật khẩu | 6eb8958 |
+| NT06 | Khung nhật ký: `nhat_ky.ghi()` với danh sách mã cố định (45 mã, nhãn tiếng Việt cho VH01), tự ghi `actor` / `target_name`, chặn khóa nhạy cảm kể cả lồng nhau, IP chỉ cho đăng nhập / mật khẩu, quy tắc nhập Excel; `kiem_tra_nhat_ky` cho test; quy ước trong `backend/CLAUDE.md`, mục kiểm tra trong `review-code` | nhánh feature/NT06-khung-nhat-ky |
 | 4 | Frontend Vite + React 19 + Tailwind 4 + shadcn/ui: client API (token trong bộ nhớ, tự làm mới), màn đăng nhập (Hình 3-3), đổi mật khẩu bắt buộc, bố cục thanh bên theo vai trò (Hình 3-1), trang tạm; Nginx phục vụ bản build, header bảo mật, gzip | 305b484 |
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
@@ -165,7 +166,15 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Đặt lại mật khẩu trả `{user_id, username, new_password}`; khác trường → 404, cùng trường ngoài phạm vi → 403; giáo viên chủ nhiệm chỉ với lớp chủ nhiệm trong **năm học hiện tại**.
 - Mỗi yêu cầu đọc lại tài khoản trong CSDL: khóa tài khoản / trường có hiệu lực ngay.
 - Mật khẩu tối đa 72 byte UTF-8 (giới hạn bcrypt); `BCRYPT_ROUNDS` mặc định 12, bản thật không thấp hơn 12.
-- Nhật ký: `LOGIN`, `LOGIN_FAILED`, `LOGIN_LOCKED`, `CHANGE_PASSWORD`, `CHANGE_PASSWORD_FAILED`, `RESET_PASSWORD`; tên đăng nhập không tồn tại chỉ lưu 3 ký tự đầu.
+- Nhật ký (NT06): mọi service ghi qua `nhat_ky.ghi()`, mã chỉ lấy trong `HANH_DONG`; tên đăng nhập không tồn tại chỉ lưu 3 ký tự đầu.
+  - NT06 chuyển Xong khi có khung; ghi nhật ký là điều kiện hoàn thành của từng API (test `kiem_tra_nhat_ky`, `review-code` kiểm).
+  - `detail` luôn có `actor` (tên người làm) và `target_name` (bắt buộc với `DELETE_*`) để tra được sau khi xóa tài khoản / trường.
+  - IP chỉ ghi cho đăng nhập và mật khẩu, kể cả đặt lại mật khẩu (API 6 nay ghi IP). Thao tác thất bại chỉ ghi cho đăng nhập và đổi mật khẩu.
+  - Xóa tài khoản ghi thêm `full_name` (UC14: giữ tên đăng nhập và họ tên); `ghi()` phải gọi trước `db.delete()`.
+  - Sửa (`UPDATE_*`) chỉ ghi `changed_fields`; chặn khóa `config`, `options`, `correct`, `expected` để cấu hình bài, câu hỏi (công thức, sai số, đáp án) không lọt vào nhật ký.
+  - Ghi cả `CREATE_ASSIGNMENT`, `DELETE_ASSIGNMENT` (API 17, 18) dù chương 3 không liệt kê: hủy bài giao làm các bài nộp mất liên kết, cần tra được ai hủy.
+  - `IMPORT_STUDENTS` / `IMPORT_TEACHERS` chỉ ghi `created_count`, `error_count`, `file_name`; không ghi danh sách tài khoản vừa tạo (đi kèm mật khẩu ban đầu).
+  - `school_id` = trường của đối tượng bị tác động; đối tượng không thuộc trường nào thì lấy trường của người làm.
 - Nginx ghi đè `X-Forwarded-For` bằng IP thật (không nối thêm) để IP trong nhật ký không giả được.
 - Tham số id trên đường dẫn dùng `IdPath` (1 … 2.147.483.647) để id quá lớn trả 422, không 500.
 
@@ -189,7 +198,7 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 
 ## 7. Việc còn chờ
 
-- **Giai đoạn 0 còn lại:** NT06 (ghi nhật ký cho mọi thao tác quan trọng khi làm từng API), NT08 (thử hiển thị mô hình 3D bằng Three.js). QL00 đã bỏ (xem mục 9).
+- **Giai đoạn 0 còn lại:** NT08 (thử hiển thị mô hình 3D bằng Three.js). QL00 đã bỏ (xem mục 9). NT06 xong phần khung; mỗi API tự ghi nhật ký.
 - **Cần trưởng nhóm chốt:**
   - Ai viết API học tập 7–9 phía máy chủ (mục 10, dòng "API học tập").
   - VH04 (thử trên thiết bị thật, Bắt buộc) không chờ LH05 (Nên có) như kế hoạch gốc; phần điều khiển lớp thử thêm khi LH05 xong (mục 9).
@@ -273,7 +282,7 @@ trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/P
 | NT03 | — | 1–4 | Hình 3-3 | | | | | |
 | NT04 | — | 5 | Đổi mật khẩu (Bảng 3-15) | | | | | |
 | NT05 | — | | | | | | | |
-| NT06 | 30 | | | | | Có | Trưởng nhóm: khung ghi nhật ký (đã có); Dev Quản lý: ghi nhật ký trong mọi API mình viết; Dev Bài học: ghi nhật ký trong mọi API mình viết | Không làm thành một việc riêng: xong dần khi mỗi API ghi nhật ký các thao tác quan trọng |
+| NT06 | — | | | | | Có | Trưởng nhóm: khung ghi nhật ký (xong); Dev Quản lý: ghi nhật ký trong mọi API mình viết; Dev Bài học: ghi nhật ký trong mọi API mình viết | Xong phần khung; ghi nhật ký là điều kiện hoàn thành của từng API (`backend/CLAUDE.md` mục Nhật ký) |
 | NT09 | — | | | | | | | |
 | NT08 | 1 | | Hình 3-5 | feature/NT08-thu-hien-thi-mo-hinh-3d | | | | Bố cục, menu, gọi API đã xong (305b484); chỉ còn phần thử hiển thị mô hình 3D bằng Three.js |
 | QL00 | — | | | | | | | Bỏ: đã có API thật nên làm thẳng màn hình với API; file Excel mẫu nằm trong QL04 (API 26) |

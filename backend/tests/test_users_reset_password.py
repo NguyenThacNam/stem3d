@@ -210,7 +210,7 @@ def test_hieu_luc_sau_khi_dat_lai_quan_tri_truong(
     assert (nhat_ky.user_id, nhat_ky.target_id, nhat_ky.school_id) == (
         the_gioi.tk["sys"].id, target.id, target.school_id,
     )  # fmt: skip
-    assert nhat_ky.detail == {"actor": "admin", "username": "truonga.admin"}
+    assert nhat_ky.detail == {"actor": "admin", "target_name": "truonga.admin", "ip": "testclient"}
     assert mat_khau_moi not in str(nhat_ky.detail)
 
 

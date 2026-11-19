@@ -5,6 +5,7 @@ from functools import lru_cache
 
 from fastapi.testclient import TestClient
 from httpx import Response
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, create_refresh_token, hash_password
@@ -15,9 +16,11 @@ from app.models import (
     SchoolClass,
     StudentProfile,
     Subject,
+    SystemLog,
     TeacherProfile,
     User,
 )
+from app.services.nhat_ky import tim_khoa_cam
 
 MAT_KHAU = "MatKhau-Thu-1"
 
@@ -118,3 +121,19 @@ def cookie_refresh(res: Response) -> str:
 
 def gia_tri_refresh(res: Response) -> str:
     return cookie_refresh(res).split(";", 1)[0].split("=", 1)[1].strip('"')
+
+
+def kiem_tra_nhat_ky(db: Session, ma: str, **dieu_kien: object) -> SystemLog:
+    """Khẳng định có ĐÚNG MỘT dòng nhật ký mã `ma` khớp điều kiện (user_id, school_id, target_type, target_id…),
+    không chứa khóa nhạy cảm; trả dòng đó để kiểm tra thêm detail.
+
+    Ví dụ: kiem_tra_nhat_ky(db, "CREATE_STUDENT", target_id=hs_id, school_id=truong.id)
+    """
+    cau = select(SystemLog).where(SystemLog.action == ma)
+    for cot, gia_tri in dieu_kien.items():
+        cau = cau.where(getattr(SystemLog, cot) == gia_tri)
+    dong = list(db.scalars(cau))
+    assert len(dong) == 1, f"Cần đúng 1 dòng nhật ký {ma} {dieu_kien}, có {len(dong)}"
+    assert tim_khoa_cam(dong[0].detail) is None, dong[0].detail
+    assert dong[0].detail and dong[0].detail.get("actor"), "Nhật ký thiếu tên người làm (actor)"
+    return dong[0]

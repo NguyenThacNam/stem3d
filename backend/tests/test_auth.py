@@ -34,7 +34,7 @@ def _loi(res) -> dict:
 def _nhat_ky(db: Session, username: str) -> list[SystemLog]:
     db.expire_all()
     return list(
-        db.scalars(select(SystemLog).where(SystemLog.detail["username"].astext == username).order_by(SystemLog.id))
+        db.scalars(select(SystemLog).where(SystemLog.detail["actor"].astext == username).order_by(SystemLog.id))
     )
 
 
@@ -436,7 +436,7 @@ def test_doi_mat_khau_thanh_cong(client: TestClient, db: Session, dong_ho: DongH
     nhat_ky = [n for n in _nhat_ky(db, "truonga.admin") if n.action == "CHANGE_PASSWORD"]
     assert len(nhat_ky) == 1
     assert "MatKhau" not in str(nhat_ky[0].detail)
-    assert set(nhat_ky[0].detail) == {"username", "ip"}
+    assert set(nhat_ky[0].detail) == {"actor", "target_name", "ip"}
 
 
 def test_doi_mat_khau_khi_dang_khoa_khong_tang_bo_dem_khong_ghi_nhat_ky(
@@ -598,7 +598,7 @@ def test_doi_mat_khau_sai_5_lan_bi_khoa_tam(client: TestClient, db: Session, don
     assert [n.action for n in nhat_ky[:5]] == ["CHANGE_PASSWORD_FAILED"] * 4 + ["LOGIN_LOCKED"]
     assert nhat_ky[4].detail["source"] == "CHANGE_PASSWORD_FAILED"
     # Nhật ký chỉ có các khóa được phép, không có mật khẩu.
-    khoa_cho_phep = {"username", "ip", "failed_count", "source", "locked_seconds", "reason"}
+    khoa_cho_phep = {"actor", "target_name", "ip", "failed_count", "source", "locked_seconds", "reason"}
     assert all(set(n.detail) <= khoa_cho_phep for n in nhat_ky)
 
     dong_ho.tua(minutes=15)
