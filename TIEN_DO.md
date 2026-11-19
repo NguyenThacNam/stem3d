@@ -1,8 +1,11 @@
 # Tiến độ dự án Stem3D
 
-Cập nhật: 18/11/2026 · Nhánh `main` · Kế hoạch gốc: `docs/Ke_hoach_trien_khai_chuc_nang.xlsx` (45 việc, 7 giai đoạn)
+Cập nhật: 19/11/2026 · Nhánh `dev` · Kế hoạch gốc: `docs/Ke_hoach_trien_khai_chuc_nang.xlsx` (45 việc, 7 giai đoạn)
 
 Tệp này là nơi đầu tiên cần đọc khi bắt đầu một phiên làm việc. Xong mỗi phần, cập nhật tệp này trong cùng commit.
+
+Bảng phân công dạng Excel `ke-hoach/Phan_cong_cong_viec.xlsx` được SINH từ tệp này (mục 2, 9, 10) bằng
+`python ke-hoach/tao_phan_cong.py` – không sửa tay file Excel.
 
 ## 1. Tóm tắt
 
@@ -10,16 +13,16 @@ Tệp này là nơi đầu tiên cần đọc khi bắt đầu một phiên làm
 đăng nhập / khóa tạm / đổi mật khẩu / đặt lại mật khẩu, phân quyền theo vai trò, khung giao diện React với
 màn đăng nhập và thanh bên theo vai trò. Chưa có chức năng học tập, quản lý trường hay nội dung bài học.
 
-| Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm |
-|---|---|---|---|---|---|
-| 0 | Nền tảng kỹ thuật | 9 | 5 | 2 | 2 |
-| 1 | Xem bài học 3D | 7 | 0 | 0 | 7 |
-| 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 |
-| 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 |
-| 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 |
-| 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 |
-| 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 |
-| | **Tổng** | **45** | **5** | **3** | **37** |
+| Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
+|---|---|---|---|---|---|---|
+| 0 | Nền tảng kỹ thuật | 9 | 6 | 2 | 0 | 1 |
+| 1 | Xem bài học 3D | 7 | 0 | 0 | 7 | 0 |
+| 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 | 0 |
+| 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 | 0 |
+| 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 | 0 |
+| 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 | 0 |
+| 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 | 0 |
+| | **Tổng** | **45** | **6** | **3** | **35** | **1** |
 
 API (chương 3, mục 3.1.3): **6 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
@@ -40,7 +43,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | NT06 | Ghi nhật ký thao tác | Trưởng nhóm | 0 | Đang làm | d7f3456 | Đã ghi: đăng nhập, khóa tạm, đổi / đặt lại mật khẩu. Các thao tác khác ghi khi làm API tương ứng |
 | NT09 | Chốt quy ước API | Trưởng nhóm | 0 | Xong | dbf6502, d7f3456 | Khuôn dạng lỗi, mã lỗi chung, phân trang: `backend/CLAUDE.md` |
 | NT08 | Khung giao diện React và thử hiển thị mô hình 3D | Dev Bài học | 0 | Đang làm | 305b484 | Xong: bố cục, menu, gọi API. Chưa: thử mô hình 3D (Three.js) |
-| QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Chưa làm | | |
+| QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Chưa làm | | Việc khó nhất |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Chưa làm | | |
 | ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Chưa làm | | |
@@ -186,7 +189,10 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 
 ## 7. Việc còn chờ
 
-- **Giai đoạn 0 còn lại:** NT06 (ghi nhật ký cho mọi thao tác quan trọng khi làm từng API), NT08 (thử hiển thị mô hình 3D bằng Three.js), QL00 (màn quản trị với dữ liệu giả, Excel mẫu).
+- **Giai đoạn 0 còn lại:** NT06 (ghi nhật ký cho mọi thao tác quan trọng khi làm từng API), NT08 (thử hiển thị mô hình 3D bằng Three.js). QL00 đã bỏ (xem mục 9).
+- **Cần trưởng nhóm chốt:**
+  - Ai viết API học tập 7–9 phía máy chủ (mục 10, dòng "API học tập").
+  - VH04 (thử trên thiết bị thật, Bắt buộc) không chờ LH05 (Nên có) như kế hoạch gốc; phần điều khiển lớp thử thêm khi LH05 xong (mục 9).
 - `docker-compose.yml`: chỉ truyền cho `api` những biến nó cần (hiện `env_file: .env` truyền cả `POSTGRES_PASSWORD`).
 - Lớp 1–3 chưa có môn: cân nhắc thêm môn "Tự nhiên và Xã hội" (hỏi người dùng trước).
 - Trang giới thiệu (Hình 3-2) chưa làm.
@@ -240,3 +246,85 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Muốn mở cổng CSDL cho pgAdmin: bỏ chú thích trong `docker-compose.override.yml` (cổng 5433, không dùng 5432).
 - Ảnh chụp Playwright lưu trong `.playwright-mcp/` (không đưa lên Git).
 - Bản chạy thật: `docker compose -f docker-compose.yml up -d --build` (bỏ qua override dành cho máy dev).
+
+## 9. Thứ tự làm và phân công (nguồn cho file Excel)
+
+Script `ke-hoach/tao_phan_cong.py` đọc bảng này cùng mục 2 (trạng thái, commit), mục 10 và kế hoạch gốc
+trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/Phan_cong_cong_viec.xlsx`.
+
+- **Thứ tự**: số càng nhỏ càng làm trước (dùng chung cho cả nhóm; mỗi sheet dev lọc việc của mình theo số này).
+  Nguyên tắc: Bắt buộc trước Nên có; theo giai đoạn; việc đang chặn người kia lên trước (ND02 trước ND03, HT01;
+  NT07 trước HT04; ND04 trước HT05; LH01 trước LH05). Việc đã xong hoặc bỏ ghi `—`.
+- **API**: số thứ tự API trong chương 3 (Bảng 3-2…3-7). **Màn hình**: số hình trong chương 3 mục 3.2.3, hoặc tên
+  màn trong Bảng 3-15.
+- **Cần xong trước (điều chỉnh)**: để trống thì dùng cột "Cần xong trước" của kế hoạch gốc. Ghi `mã, mã` để thay
+  cho cả việc, hoặc `Người: mã, mã; Người: mã` để mỗi người một danh sách (việc tách đôi); `-` là không cần chờ gì.
+  Script báo lỗi nếu một việc được xếp thứ tự trước việc nó cần.
+- **Xuyên suốt**: `Có` với việc làm dần qua mọi việc khác (NT06); không tính khi xác định giai đoạn hiện tại.
+- **Phần việc khi tách đôi**: việc hai người cùng làm, ghi `Người: phần việc; Người: phần việc`. Người chính vẫn là
+  "Người làm" trong kế hoạch gốc; người còn lại cũng thấy việc này trong sheet của mình.
+- Đổi thứ tự, tách việc, bỏ việc: sửa bảng này (và trạng thái ở mục 2), rồi chạy lại script. Trong ô cần dấu `|`
+  thì viết `\|`.
+
+| Mã | Thứ tự | API | Màn hình | Nhánh gợi ý | Cần xong trước (điều chỉnh) | Xuyên suốt | Phần việc khi tách đôi | Điều chỉnh so với kế hoạch |
+|---|---|---|---|---|---|---|---|---|
+| NT01 | — | | | | | | | |
+| NT02 | — | | | | | | | |
+| NT03 | — | 1–4 | Hình 3-3 | | | | | |
+| NT04 | — | 5 | Đổi mật khẩu (Bảng 3-15) | | | | | |
+| NT05 | — | | | | | | | |
+| NT06 | 30 | | | | | Có | Trưởng nhóm: khung ghi nhật ký (đã có); Dev Quản lý: ghi nhật ký trong mọi API mình viết; Dev Bài học: ghi nhật ký trong mọi API mình viết | Không làm thành một việc riêng: xong dần khi mỗi API ghi nhật ký các thao tác quan trọng |
+| NT09 | — | | | | | | | |
+| NT08 | 1 | | Hình 3-5 | feature/NT08-thu-hien-thi-mo-hinh-3d | | | | Bố cục, menu, gọi API đã xong (305b484); chỉ còn phần thử hiển thị mô hình 3D bằng Three.js |
+| QL00 | — | | | | | | | Bỏ: đã có API thật nên làm thẳng màn hình với API; file Excel mẫu nằm trong QL04 (API 26) |
+| BH01 | 2 | | Hình 3-5 | feature/BH01-khung-bai-hoc-3d | | | | Việc khó nhất. Làm được ngay: chỉ cần đọc file mô hình GLB; nối API 9 sau khi có |
+| ND01 | 3 | 45–48 | Thư viện mô hình 3D (Bảng 3-15), Hình 3-11 | feature/ND01-nap-mo-hinh-3d | | | | |
+| ND02 | 4 | 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học |
+| ND03 | 5 | 56 | Hình 3-11 (thẻ Nhãn) | feature/ND03-gan-nhan-bo-phan | Dev Quản lý: ND02; Dev Bài học: ND02, BH01 | | Dev Quản lý: API 56 lưu nhãn (cùng nhóm /api/editor của ND02); Dev Bài học: chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Tách đôi: phần máy chủ giao Dev Quản lý; phần máy chủ không cần chờ BH01 |
+| HT01 | 6 | 7, 8 | Hình 3-4 | feature/HT01-thu-vien-bai-hoc | | | | API 7–8 phía máy chủ: xem mục 10, dòng "API học tập" |
+| HT02 | 7 | 9 | Hình 3-5 | feature/HT02-tu-kham-pha-mo-hinh | | | | API 9 phía máy chủ: xem mục 10, dòng "API học tập" |
+| BT01 | 8 | 46, 50–56 | Hình 3-5 | feature/BT01-bai-ca-chep | | | | Nhập nội dung qua màn soạn bài; giáo viên duyệt chú thích |
+| NT07 | 9 | 10 | | feature/NT07-bo-tinh-cong-thuc | | | | Làm trước HT04 của Dev Bài học; thống nhất cách viết công thức (mục 10) |
+| ND04 | 10 | 57–59 | Soạn câu hỏi (Bảng 3-15), Hình 3-11 | feature/ND04-soan-cau-hoi | | | | Làm trước HT05 của Dev Bài học |
+| HT04 | 11 | 9, 10 | Hình 3-6 | feature/HT04-lam-thi-nghiem | | | | Công thức hiển thị phía trình duyệt phải khớp bộ tính NT07 (mục 10) |
+| HT05 | 12 | 9, 10 | Hình 3-7 | feature/HT05-bai-kiem-tra-nhanh | | | | API 9 không trả đáp án; chấm ở máy chủ (LH03) |
+| BT02 | 13 | 46, 50–56 | Hình 3-6 | feature/BT02-bai-chuan-do | | | | Giáo viên kiểm tra công thức pH |
+| BT03 | 14 | 46, 50–56 | Hình 3-5 | feature/BT03-bai-tim-nguoi | | | | Kiểm tra giấy phép mô hình (ghi công CC BY) |
+| QL01 | 15 | 60–69 | Hình 3-12 | feature/QL01-quan-ly-truong | | | | |
+| QL03 | 16 | 22–25 | Quản lý học sinh (Bảng 3-15) | feature/QL03-quan-ly-hoc-sinh | | | | |
+| QL05 | 17 | 29–32 | Quản lý giáo viên (Bảng 3-15) | feature/QL05-quan-ly-giao-vien | | | | |
+| QL08 | 18 | 6 | Hình 3-12, Quản lý học sinh, Quản lý giáo viên (Bảng 3-15) | feature/QL08-nut-dat-lai-mat-khau | | | | API 6 đã xong (d7f3456, 6eb8958); chỉ còn nút "Đặt lại mật khẩu" và hộp thoại hiện mật khẩu mới. Nút của giáo viên chủ nhiệm trên Hình 3-8 làm cùng LH01; nút cho biên tập viên làm cùng QL02 |
+| QL04 | 19 | 26–28 | Hình 3-10 | feature/QL04-nhap-hoc-sinh-excel | | | | Gồm cả file Excel mẫu (trước thuộc QL00) |
+| QL07 | 20 | 36–42 | Lớp và phân công (Bảng 3-15) | feature/QL07-lop-va-phan-cong | | | | |
+| VH03 | 21 | | | feature/VH03-sao-luu-du-lieu | | | | Phải có trước khi nhận dữ liệu học sinh thật |
+| BH02 | 22 | | Hình 3-5 | feature/BH02-toi-uu-3d-may-yeu | | | | |
+| LH01 | 23 | 14, 15 | Hình 3-8 | feature/LH01-lop-cua-toi | | | | Làm trước LH05 của Dev Bài học |
+| LH02 | 24 | 11, 16–18 | Hình 3-8, Bài được giao (Bảng 3-15) | feature/LH02-giao-bai | | | | |
+| LH03 | 25 | 10 | Hình 3-6, Hình 3-7 | feature/LH03-nop-va-cham-bai | Dev Quản lý: NT07, LH02; Dev Bài học: HT04, NT07, LH02 | | Dev Quản lý: API 10 nộp bài, chấm lại bằng NT07, chống ghi trùng client_id; Dev Bài học: nút Nộp bài trên màn thí nghiệm và bài kiểm tra, sinh client_id, gửi lại khi mất mạng | Tách đôi theo ghi chú kế hoạch gốc |
+| HT06 | 26 | 12, 13 | Kết quả của tôi (Bảng 3-15) | feature/HT06-ket-qua-ca-nhan | | | | |
+| LH04 | 27 | 19, 20 | Hình 3-9 | feature/LH04-ket-qua-ca-lop | | | | |
+| VH04 | 28 | | | feature/VH04-thu-thiet-bi-that | BH02, LH03 | | | Kế hoạch gốc ghi cần LH05 (Nên có) xong trước; đổi thành BH02, LH03 để việc Bắt buộc không chờ việc Nên có. Phần điều khiển màn hình lớp thử thêm khi LH05 xong (chờ trưởng nhóm chốt, mục 7) |
+| VH06 | 29 | | | feature/VH06-kiem-thu-tai-trien-khai | | | | Kèm HTTPS (Let's Encrypt, cổng 443) |
+| HT03 | 31 | 9 | Phim mở đầu (Bảng 3-15) | feature/HT03-phim-mo-dau | | | | |
+| QL06 | 32 | 33–35 | Hình 3-10 | feature/QL06-nhap-giao-vien-excel | | | | |
+| QL02 | 33 | 70–73 | Quản lý biên tập viên (Bảng 3-15) | feature/QL02-quan-ly-bien-tap-vien | | | | |
+| LH05 | 34 | 21 (WebSocket) | Hình 3-5 | feature/LH05-dieu-khien-man-hinh-lop | Dev Quản lý: LH01; Dev Bài học: BH01, LH01 | | Dev Bài học: phía trình duyệt, đồng bộ góc nhìn, bộ phận của giáo viên tới học sinh; Dev Quản lý: kênh WebSocket /ws/class/{class_id} phía máy chủ (mục 3.1.6) | Tách đôi theo ghi chú kế hoạch gốc |
+| QL09 | 35 | 43, 44 | Báo cáo sử dụng (Bảng 3-15) | feature/QL09-bao-cao-su-dung | | | | |
+| VH02 | 36 | | | feature/VH02-cdn-mo-hinh | | | | |
+| VH01 | 37 | 74 | Nhật ký hệ thống (Bảng 3-15) | feature/VH01-xem-nhat-ky | | | | |
+| VH05 | 38 | | | feature/VH05-nhieu-ban-api-redis | | | | Chỉ khi số trường tăng |
+
+## 10. Phối hợp giữa hai dev
+
+Những chỗ Dev Quản lý và Dev Bài học phải thống nhất TRƯỚC khi làm (ghi kết quả vào cột cuối khi đã chốt).
+
+| Chủ đề | Việc liên quan | Dev Quản lý | Dev Bài học | Cần thống nhất | Đã thống nhất |
+|---|---|---|---|---|---|
+| Cách viết công thức chấm | NT07, HT04, BT02 | Bộ tính biểu thức an toàn phía máy chủ (Python), chấm lại khi nộp | Tính cùng công thức phía trình duyệt để vẽ hiện tượng, đồ thị | Cú pháp công thức trong lessons.config, tên biến thông số, đơn vị, cách ghi sai số; một bộ số liệu mẫu chung để test cả hai phía ra cùng kết quả | Chưa |
+| Cấu hình bài học | ND02, BH01, HT02, HT03, HT04 | Lưu và sửa lessons.config (màn soạn bài) | Đọc lessons.config để dựng khung 3D, kịch bản phim, thông số thí nghiệm | Cấu trúc JSON của lessons.config (góc camera, kịch bản phim, thông số, khoảng giá trị) | Chưa |
+| Gắn nhãn bộ phận | ND03, ND01 | API 56 lưu danh sách nhãn; API 47 trả danh sách mesh của mô hình | Chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Khuôn dạng mesh_names, camera_view; cách đặt tên mesh trong file GLB | Chưa |
+| Nộp bài | LH03, HT04, HT05 | API 10: nhận bài, chấm lại, chống ghi trùng client_id | Nút Nộp bài, sinh client_id (UUID), gửi lại khi mất mạng | Cấu trúc experiment_data, answers gửi lên; cách báo kết quả chấm | Chưa |
+| Điều khiển màn hình lớp | LH05, LH01 | Kênh WebSocket /ws/class/{class_id} phía máy chủ, xác thực, phòng trong bộ nhớ | Gửi, nhận sự kiện phía trình duyệt, đồng bộ góc nhìn, bộ phận | Danh sách sự kiện và khuôn dạng tin nhắn (mục 3.1.6 chương 3) | Chưa |
+| API học tập | HT01, HT02, HT05 | Đề xuất: viết API 7, 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 7–9 | Chưa – chờ trưởng nhóm |
+| Mô hình 3D | ND01, BH01, BH02 | Kiểm tra ngưỡng khi nạp (150 MB, 1,5 triệu tam giác, texture 4096 px) | Hiển thị, tự giảm chất lượng trên máy yếu | Mức chi tiết mục tiêu cho máy yếu, máy tính bảng; tên file có số phiên bản | Chưa |
+| File dùng chung | Mọi việc | backend/app/main.py (gắn router) | frontend/src/lib/roles.ts (menu), frontend/src/App.tsx (đường dẫn) | Chỉ thêm phần của mình, không sửa phần người khác; kéo dev về mỗi ngày | Đã có trong CLAUDE.md |
