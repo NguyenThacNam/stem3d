@@ -14,6 +14,10 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
 ## Tiến độ
 - Đầu mỗi phiên: đọc `TIEN_DO.md` (đang ở giai đoạn nào, việc nào xong, quyết định phát sinh, giới hạn đã biết).
 - Xong mỗi phần: cập nhật `TIEN_DO.md` (bảng chức năng, bảng API, commit, quyết định mới) trong CÙNG commit của phần đó.
+- Không sửa tay file Excel `ke-hoach/Phan_cong_cong_viec.xlsx`. Xong một việc: cập nhật `TIEN_DO.md` (trạng thái ở
+  mục 2; thứ tự, phân công ở mục 9; phối hợp ở mục 10) rồi chạy `python ke-hoach/tao_phan_cong.py` để sinh lại
+  Excel, commit cả hai. Excel bị xung đột khi gộp thì chạy lại script trên nhánh đã gộp.
+  Script cần `pip install openpyxl==3.1.5` (ghim phiên bản để mọi máy sinh ra cùng một file).
 
 ## Quy trình Git
 - Nhánh:
