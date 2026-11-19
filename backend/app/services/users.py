@@ -14,9 +14,9 @@ from app.core.clock import current_school_year
 from app.core.errors import AppError
 from app.core.security import generate_password, hash_password
 from app.models import User
-from app.repositories import system_logs as logs_repo
 from app.repositories import users as users_repo
 from app.schemas.users import ResetPasswordOut
+from app.services import nhat_ky
 from app.services.auth import CurrentUser
 
 # Người được đặt lại thuộc nhóm này thì phải đổi mật khẩu ở lần đăng nhập sau.
@@ -55,7 +55,9 @@ def _kiem_tra_pham_vi(db: Session, actor: CurrentUser, target: User, now: dateti
     raise _ngoai_pham_vi()
 
 
-def reset_password(db: Session, actor: CurrentUser, target_id: int, now: datetime) -> ResetPasswordOut:
+def reset_password(
+    db: Session, actor: CurrentUser, target_id: int, now: datetime, ip: str | None = None
+) -> ResetPasswordOut:
     # Kiểm tra phạm vi trên bản đọc thường, chỉ khóa dòng khi đã chắc chắn có quyền.
     target = users_repo.get_by_id(db, target_id)
     if target is None:
@@ -73,14 +75,15 @@ def reset_password(db: Session, actor: CurrentUser, target_id: int, now: datetim
     target.locked_until = None
     if target.role in VAI_TRO_BAT_DOI_MAT_KHAU:
         target.must_change_password = True
-    logs_repo.add(
+    nhat_ky.ghi(
         db,
         "RESET_PASSWORD",
-        user_id=actor.id,
-        school_id=target.school_id,
-        target_type="user",
-        target_id=target.id,
-        detail={"actor": actor.username, "username": target.username},
+        nguoi_lam=actor,
+        doi_tuong="user",
+        doi_tuong_id=target.id,
+        ten_doi_tuong=target.username,
+        truong_doi_tuong=target.school_id,
+        ip=ip,
     )
     db.commit()
     return ResetPasswordOut(user_id=target.id, username=target.username, new_password=mat_khau_moi)

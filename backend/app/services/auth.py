@@ -1,6 +1,7 @@
 """Nghiệp vụ xác thực: đăng nhập, làm mới token, đổi mật khẩu, xác thực access token.
 
-Nhật ký (system_logs): LOGIN, LOGIN_FAILED, LOGIN_LOCKED, CHANGE_PASSWORD, CHANGE_PASSWORD_FAILED.
+Nhật ký (qua app/services/nhat_ky.py): LOGIN, LOGIN_FAILED, LOGIN_LOCKED, CHANGE_PASSWORD,
+CHANGE_PASSWORD_FAILED; có ghi IP.
 Không bao giờ ghi mật khẩu; tên đăng nhập không tồn tại chỉ ghi 3 ký tự đầu.
 """
 
@@ -22,9 +23,9 @@ from app.core.security import (
     verify_password,
 )
 from app.models import School, User
-from app.repositories import system_logs as logs_repo
 from app.repositories import users as users_repo
 from app.schemas.auth import MeOut, SchoolBriefOut, TokenOut, UserBriefOut
+from app.services import nhat_ky
 
 SO_LAN_SAI_TOI_DA = 5
 VAI_TRO_KHOA_LAU = {"SYSTEM_ADMIN", "CONTENT_EDITOR", "SCHOOL_ADMIN"}
@@ -135,14 +136,17 @@ def _ghi_lan_sai(
 def _ghi_dang_nhap(
     db: Session, action: str, user: User | None, username: str, ip: str | None, **them: object
 ) -> None:
-    logs_repo.add(
+    """Người làm và đối tượng đều là tài khoản đang đăng nhập; tên không tồn tại thì chỉ ghi tên đã che."""
+    nhat_ky.ghi(
         db,
         action,
-        user_id=user.id if user else None,
-        school_id=user.school_id if user else None,
-        target_type="user" if user else None,
-        target_id=user.id if user else None,
-        detail={"username": username, "ip": ip, **them},
+        nguoi_lam=user,
+        doi_tuong="user" if user else None,
+        doi_tuong_id=user.id if user else None,
+        ten_doi_tuong=user.username if user else None,
+        ten_nguoi_lam=None if user else username,
+        ip=ip,
+        chi_tiet=them,
     )
 
 
@@ -286,14 +290,6 @@ def change_password(
     user.must_change_password = False
     user.failed_login_count = 0
     user.locked_until = None
-    logs_repo.add(
-        db,
-        "CHANGE_PASSWORD",
-        user_id=user.id,
-        school_id=user.school_id,
-        target_type="user",
-        target_id=user.id,
-        detail={"username": user.username, "ip": ip},
-    )
+    _ghi_dang_nhap(db, "CHANGE_PASSWORD", user, user.username, ip)
     db.commit()
     return _cap_token(user, users_repo.get_school(db, user.school_id), now)
