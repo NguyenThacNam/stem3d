@@ -105,11 +105,15 @@ export function KhungBaiHoc({
     const batDau = performance.now();
     let phanTramCu: number | null = null;
     canh
-      .tai(nguon, (phanTram) => {
-        if (huy || phanTram === phanTramCu) return;
-        phanTramCu = phanTram;
-        setTrangThai({ loai: "dang-tai", phanTram });
-      })
+      .tai(
+        nguon,
+        (phanTram) => {
+          if (huy || phanTram === phanTramCu) return;
+          phanTramCu = phanTram;
+          setTrangThai({ loai: "dang-tai", phanTram });
+        },
+        nguonRieng ? undefined : bai.asset?.file_size,
+      )
       .then((goc) => {
         if (huy) return;
         const tk = thongKeMoHinh(goc);

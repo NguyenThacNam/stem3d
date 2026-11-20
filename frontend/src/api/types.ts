@@ -65,18 +65,22 @@ export interface LessonViewPart {
   sort_order: number;
 }
 
+/** Chương 3 gọi là `model`; dùng `asset` để đồng bộ API 51 (lệch có chủ ý, trưởng nhóm chốt – TIEN_DO.md mục 5). */
 export interface LessonViewAsset {
   /** Đường dẫn file GLB (có số phiên bản, ví dụ /content/models/12.v1.glb); cùng tên trường với API 51. */
   file_url: string;
-  file_size: number | null;
+  /** Dung lượng file (byte), bắt buộc: dùng hiện phần trăm tải khi máy chủ không gửi Content-Length. */
+  file_size: number;
   /** Dòng ghi công hiển thị ở góc dưới khung 3D; null nếu không cần. */
   attribution: string | null;
 }
 
 /**
  * `lessons.config` ĐÃ LỌC cho học sinh (API 9). Khung `config` có đúng 3 khóa (trưởng nhóm chốt, TIEN_DO.md mục 10):
- * `camera_tong_quan` (ND03), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc, sai_so}` (HT04 + NT07).
- * API 9 chỉ trả theo danh sách cho phép: `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem.thong_so` – KHÔNG BAO GIỜ có
+ * `camera_tong_quan` (ND03), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc_hien_thi, cong_thuc, sai_so}`
+ * (HT04 + NT07).
+ * API 9 chỉ trả theo danh sách cho phép: `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem.thong_so`,
+ * `thi_nghiem.cong_thuc_hien_thi` – KHÔNG BAO GIỜ có
  * `cong_thuc`, `sai_so`. Nội dung bên trong từng khóa do việc tương ứng chốt sau.
  */
 export interface LessonConfig {
@@ -84,8 +88,9 @@ export interface LessonConfig {
   camera_tong_quan?: CameraView | null;
   /** Kịch bản phim (HT03 chốt nội dung); rỗng hoặc không có thì ẩn chế độ Phim. */
   kich_ban_phim?: unknown[] | null;
-  /** Bài thí nghiệm: chỉ có thông số (HT04 chốt nội dung). */
-  thi_nghiem?: { thong_so?: unknown } | null;
+  /** Bài thí nghiệm (HT04 chốt nội dung): thông số và công thức hiển thị (vẽ hiện tượng, đồ thị). Công thức chấm
+   * (`cong_thuc`) và sai số (`sai_so`) không bao giờ có ở đây. */
+  thi_nghiem?: { thong_so?: unknown; cong_thuc_hien_thi?: unknown } | null;
 }
 
 export interface LessonView {

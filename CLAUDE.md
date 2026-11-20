@@ -36,7 +36,8 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
   - `main`: bản ổn định; chỉ nhận từ `dev` qua Pull Request khi đã chạy thử ổn; chỉ trưởng nhóm gộp.
   - `dev`: nơi gộp code cả nhóm; chỉ nhận từ nhánh việc qua Pull Request, người làm tự gộp (xem dưới).
   - Nhánh việc tạo từ `dev`, mỗi việc một nhánh, tên theo mã việc trong `docs/Ke_hoach_trien_khai_chuc_nang.xlsx`:
-    `feature/<mã-việc>-<mô-tả-ngắn-không-dấu>` (ví dụ `feature/QL04-nhap-hoc-sinh-excel`); sửa lỗi: `fix/<mô-tả>`.
+    `feature/<mã-việc>-<mô-tả-ngắn-không-dấu>` (ví dụ `feature/QL04-nhap-hoc-sinh-excel`); sửa lỗi: `fix/<mô-tả>`;
+    thay đổi chỉ về tài liệu, quy tắc (không đụng code chạy): `docs/<mô-tả>`.
 - Không commit, merge, push thẳng vào `main` hay `dev`.
 - Bắt đầu một việc, theo thứ tự:
   1. Kéo `dev` mới nhất: `git switch dev` → `git pull`.

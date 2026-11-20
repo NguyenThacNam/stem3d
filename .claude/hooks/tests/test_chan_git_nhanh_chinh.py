@@ -26,7 +26,7 @@ def kho(tmp_path_factory: pytest.TempPathFactory) -> Path:
     _git(kho, "config", "user.email", "thu@example.com")
     _git(kho, "config", "user.name", "Thu")
     _git(kho, "commit", "-q", "--allow-empty", "-m", "Khởi tạo")
-    for nhanh in ("dev", "feature/NT01-thu", "fix/loi-nho"):
+    for nhanh in ("dev", "feature/NT01-thu", "fix/loi-nho", "docs/quy-tac"):
         _git(kho, "branch", nhanh)
     return kho
 
@@ -107,7 +107,7 @@ def test_doi_sang_nhanh_chinh_roi_commit_bi_chan(kho: Path) -> None:
     assert "Đang ở nhánh dev" in kq.stderr
 
 
-@pytest.mark.parametrize("nhanh", ["feature/NT01-thu", "fix/loi-nho"])
+@pytest.mark.parametrize("nhanh", ["feature/NT01-thu", "fix/loi-nho", "docs/quy-tac"])
 @pytest.mark.parametrize(
     "lenh",
     [
@@ -200,3 +200,16 @@ def test_khong_phai_bash_hoac_khong_co_lenh_thi_cho_qua(kho: Path) -> None:
     )
 
     assert kq.returncode == 0
+
+
+@pytest.mark.parametrize("lenh", ["git push -u origin docs/quy-tac", "git push origin HEAD"])
+def test_cho_phep_push_nhanh_docs(kho: Path, lenh: str) -> None:
+    kq = chay(kho, "docs/quy-tac", lenh)
+
+    assert kq.returncode == 0, kq.stderr
+
+
+def test_chan_push_vao_dev_tu_nhanh_docs(kho: Path) -> None:
+    kq = chay(kho, "docs/quy-tac", "git push origin docs/quy-tac:dev")
+
+    assert kq.returncode == 2
