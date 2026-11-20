@@ -1,7 +1,8 @@
 /**
  * Thẻ "Bộ phận" của màn soạn bài (Hình 3-11; UC 22; API 56 lưu cùng nút Lưu nháp / Lưu thay đổi của màn soạn).
  * Bấm vào một phần trên mô hình để gắn nhãn, giữ Shift để gộp nhiều phần vào một bộ phận; nhập nhãn, chú thích;
- * xoay mô hình rồi bấm "Lưu góc nhìn"; kéo thả (hoặc Alt + mũi tên) để sắp thứ tự.
+ * xoay mô hình rồi bấm "Lưu góc nhìn"; kéo thả (hoặc Alt + mũi tên) để sắp thứ tự. "Lưu góc tổng quan" (ND02) ghi
+ * `config.camera_tong_quan` – góc mở bài của học sinh.
  * Dùng được không cần chuột: thêm bộ phận và chọn phần bằng ô chọn "Thêm phần".
  */
 import { Camera, GripVertical, Plus, RotateCcw, Trash2, TriangleAlert, X } from "lucide-react";
@@ -35,6 +36,7 @@ function gioPhut(d: Date): string {
 export function TheBoPhan({
   asset,
   gocTongQuan,
+  onDoiGocTongQuan,
   doiMoHinhChuaLuu,
   value,
   onChange,
@@ -44,8 +46,10 @@ export function TheBoPhan({
 }: {
   /** Mô hình ĐÃ LƯU của bài (nhãn gắn theo tên phần của mô hình này). */
   asset: LessonAsset | null;
-  /** `config.camera_view` của bài (đã kiểm dạng) – để góc mở đầu, "Góc nhìn chuẩn" giống màn học sinh. */
+  /** `config.camera_tong_quan` đang soạn (đã kiểm dạng) – góc mở đầu, "Góc nhìn chuẩn" giống màn học sinh. */
   gocTongQuan: CameraView | null;
+  /** Đặt / bỏ góc tổng quan (null); lưu cùng thông tin bài bằng nút Lưu nháp. */
+  onDoiGocTongQuan: (g: CameraView | null) => void;
   /** Đã chọn mô hình khác ở thẻ Mô hình nhưng chưa lưu. */
   doiMoHinhChuaLuu: boolean;
   value: BoPhanNhap[];
@@ -58,6 +62,7 @@ export function TheBoPhan({
   const [keo, setKeo] = useState<number | null>(null);
   // Giờ lưu góc nhìn trong phiên này (máy chủ không lưu thời điểm), theo khóa bộ phận.
   const [gioLuuGoc, setGioLuuGoc] = useState<Record<string, string>>({});
+  const [gioLuuTongQuan, setGioLuuTongQuan] = useState<string | null>(null);
   const dieuKhien = useRef<DieuKhienGanNhan>(null);
   // Thành phần lazy nằm trong state: "Thử lại" tạo lazy mới để tải lại chunk (React giữ kết quả lỗi của lazy cũ).
   const [KhungGanNhan, setKhung] = useState(taoLazy);
@@ -138,6 +143,14 @@ export function TheBoPhan({
     setDangChon(conLai[Math.min(i, conLai.length - 1)]?.khoa ?? null);
   }
 
+  /** Góc tổng quan lưu vào `config.camera_tong_quan` (ND02) – ghi cùng nút Lưu nháp / Lưu thay đổi (API 52). */
+  function luuGocTongQuan() {
+    const g = dieuKhien.current?.layGocNhin();
+    if (!g) return;
+    onDoiGocTongQuan(g);
+    setGioLuuTongQuan(gioPhut(new Date()));
+  }
+
   function luuGocNhin() {
     if (!chon) return;
     const g = dieuKhien.current?.layGocNhin();
@@ -215,12 +228,37 @@ export function TheBoPhan({
             <Camera strokeWidth={1.5} aria-hidden />
             Lưu góc nhìn
           </Button>
+          {/* Góc tổng quan của bài (config.camera_tong_quan): lưu lúc không chọn bộ phận nào (mô hình lắp đủ). */}
+          <Button
+            onClick={luuGocTongQuan}
+            disabled={!!chon || disabled}
+            title={chon ? "Bấm vùng trống trên khung 3D để bỏ chọn bộ phận trước" : undefined}
+          >
+            <Camera strokeWidth={1.5} aria-hidden />
+            Lưu góc tổng quan
+          </Button>
           <Button variant="ghost" onClick={() => dieuKhien.current?.gocChuan()}>
             <RotateCcw strokeWidth={1.5} aria-hidden />
             Góc nhìn chuẩn
           </Button>
-          <p className="ml-auto text-[13px] text-text-2">
-            Bấm vào một phần trên mô hình để gắn nhãn · giữ Shift để chọn nhiều phần
+          <p className="basis-full text-[13px] text-text-2">
+            {gocTongQuan ? (
+              <>
+                {gioLuuTongQuan ? `Góc tổng quan đặt lúc ${gioLuuTongQuan}` : "Bài đã có góc tổng quan"} (góc
+                mở bài, "Góc nhìn chuẩn").{" "}
+                <button
+                  type="button"
+                  className="underline disabled:opacity-60"
+                  disabled={disabled}
+                  onClick={() => onDoiGocTongQuan(null)}
+                >
+                  Bỏ góc tổng quan
+                </button>
+              </>
+            ) : (
+              "Chưa đặt góc tổng quan: khi mở bài, mô hình tự canh vừa khung."
+            )}{" "}
+            · Bấm vào một phần trên mô hình để gắn nhãn, giữ Shift để chọn nhiều phần.
           </p>
         </div>
       </div>

@@ -37,7 +37,7 @@ import {
   thanhDauVaoBoPhan,
   tuDanhSach,
 } from "./bo-phan";
-import { cauLoi, loiTuMayChu, thanhDauVao, tuBaiHoc } from "./chuyen-doi";
+import { cauLoi, giongJson, loiTuMayChu, thanhDauVao, tuBaiHoc } from "./chuyen-doi";
 import { GoXuatBanDialog, ThieuDieuKienDialog, TrungBaiDialog } from "./HopThoai";
 import { type CauNhap, khacDaLuu as khacCauDaLuu } from "./cau-hoi";
 import { TheBoPhan } from "./TheBoPhan";
@@ -61,6 +61,8 @@ export function SoanBaiPage() {
   const [the, setThe] = useState<The>("thong-tin");
   const [form, setForm] = useState<ThongTinBai | null>(null);
   const [assetId, setAssetId] = useState<number | null>(null);
+  // `config` đang soạn: ND02 sửa `camera_tong_quan` (nút "Lưu góc tổng quan" ở thẻ Bộ phận), các khóa khác giữ nguyên.
+  const [cauHinh, setCauHinh] = useState<Record<string, unknown>>({});
   const [loi, setLoi] = useState<LoiThongTin>({});
   const [boPhan, setBoPhan] = useState<BoPhanNhap[]>([]);
   // Câu hỏi đang soạn ở thẻ Câu hỏi: giữ ở đây để đổi thẻ không mất.
@@ -81,6 +83,7 @@ export function SoanBaiPage() {
     setBai(b);
     setForm(tuBaiHoc(b));
     setAssetId(b.asset?.id ?? null);
+    setCauHinh(b.config ?? {});
     setLoi({});
     if (!giuBoPhan) {
       setBoPhan(tuDanhSach(b.parts));
@@ -124,7 +127,9 @@ export function SoanBaiPage() {
   const doiThongTin =
     !!bai &&
     !!form &&
-    (JSON.stringify(form) !== JSON.stringify(tuBaiHoc(bai)) || assetId !== (bai.asset?.id ?? null));
+    (JSON.stringify(form) !== JSON.stringify(tuBaiHoc(bai)) ||
+      assetId !== (bai.asset?.id ?? null) ||
+      !giongJson(cauHinh, bai.config ?? {}));
   const doiBoPhan = !!bai && khacDaLuu(boPhan, bai.parts);
   const thayDoi = doiThongTin || doiBoPhan;
   // Câu hỏi lưu riêng từng câu (thẻ Câu hỏi), không tính vào nút Lưu nháp; chỉ dùng để hỏi lại khi rời trang.
@@ -219,7 +224,7 @@ export function SoanBaiPage() {
     try {
       const b = await updateLesson(
         bai.id,
-        thanhDauVao(form, { asset_id: assetId, config: bai.config, confirm_duplicate: xacNhanTrung }),
+        thanhDauVao(form, { asset_id: assetId, config: cauHinh, confirm_duplicate: xacNhanTrung }),
       );
       setTrung(null);
       napBai(b, true);
@@ -499,7 +504,13 @@ export function SoanBaiPage() {
         {the === "bo-phan" && (
           <TheBoPhan
             asset={bai.asset}
-            gocTongQuan={laCameraView(bai.config.camera_view) ? bai.config.camera_view : null}
+            gocTongQuan={laCameraView(cauHinh.camera_tong_quan) ? cauHinh.camera_tong_quan : null}
+            onDoiGocTongQuan={(g) =>
+              setCauHinh((c) => {
+                const { camera_tong_quan: _bo, ...khac } = c;
+                return g ? { ...khac, camera_tong_quan: g } : khac;
+              })
+            }
             doiMoHinhChuaLuu={assetId !== (bai.asset?.id ?? null)}
             value={boPhan}
             onChange={setBoPhan}
