@@ -323,6 +323,8 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 ## 7. Việc còn chờ
 
 - **Giai đoạn 0 đã xong.** QL00 đã bỏ (xem mục 9). NT06 xong phần khung; mỗi API tự ghi nhật ký.
+- Kiểu `LessonType` khai báo trùng ở `frontend/src/api/types.ts` (API 9) và `api/editorLessons.ts` (API 51): gom về một
+  chỗ khi chốt khuôn dạng API 9.
 - **Cần trưởng nhóm chốt:**
   - Ai viết API học tập 7–9 phía máy chủ (mục 10, dòng "API học tập").
   - VH04 (thử trên thiết bị thật, Bắt buộc) không chờ LH05 (Nên có) như kế hoạch gốc; phần điều khiển lớp thử thêm khi LH05 xong (mục 9).

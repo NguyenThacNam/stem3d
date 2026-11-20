@@ -16,8 +16,8 @@ Thư viện khai báo trong `requirements.txt`. Chạy trong container `api`.
 - `tests/` – pytest, mỗi router một file `test_<ten>.py`
 
 ## Quy ước
-- BẢO MẬT: API học tập (API 7–10, `/api/lessons/...`) dùng schema đầu ra riêng, không kế thừa hay dùng lại schema của
-  `/api/editor/...`. Cụ thể: API 9 dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa hay dùng lại schema của API 51; frontend dùng kiểu `LessonView`, không dùng `LessonDetail` của editor. Schema editor có đáp án, sai số, công thức chấm.
+- BẢO MẬT: API học tập API 8–10 (`/api/lessons/...`) dùng schema đầu ra riêng, không kế thừa hay dùng lại schema của
+  `/api/editor/...`. API 7 (`/api/subjects`) chỉ trả tên môn học, dùng chung `SubjectOut` được. Cụ thể: API 9 dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa hay dùng lại schema của API 51; frontend dùng kiểu `LessonView`, không dùng `LessonDetail` của editor. Schema editor có đáp án, sai số, công thức chấm.
 - Router không gọi repository trực tiếp. Service không trả model SQLAlchemy ra ngoài router; router trả schema `...Out`.
 - Đường dẫn, tên trường JSON, mã lỗi theo đúng chương 3 (mục 3.1). Tên trường JSON = tên cột CSDL (snake_case).
 - Lỗi: ném `AppError(status, code, message, details)`; trình xử lý chung trả `{"error": {"code", "message", "details"}}`, message tiếng Việt.
