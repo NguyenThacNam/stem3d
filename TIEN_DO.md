@@ -281,8 +281,8 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 **Khung bài học 3D (BH01)**
 - Quy tắc tọa độ: tâm mô hình = tâm khối bao của TOÀN BỘ mô hình, đưa về gốc, không co giãn, không xoay. Một hàm dùng
   chung `duaTamVeGoc` (`src/components/mo-hinh-3d/tinh-toan.ts`, có test) cho BH01 (xem) và ND03 (gắn nhãn).
-- `config.camera_tong_quan` (bài) và `camera_view` (bộ phận) = `{ "position": [x, y, z], "target": [x, y, z] }` theo hệ tọa độ trên – ĐỀ XUẤT, chờ
-  thống nhất với Dev Quản lý (mục 10). Khuôn dạng API 9 đề xuất: kiểu `LessonView` trong `src/api/types.ts` (tên riêng, không trùng `LessonDetail` của API 51 –
+- `config.camera_tong_quan` (bài) và `camera_view` (bộ phận) = `{ "position": [x, y, z], "target": [x, y, z] }` theo hệ tọa độ trên – đã chốt
+  (Dev Quản lý đồng ý ở ND03, mục 10 dòng "Gắn nhãn bộ phận"). Khuôn dạng API 9 đề xuất: kiểu `LessonView` trong `src/api/types.ts` (tên riêng, không trùng `LessonDetail` của API 51 –
   xem mục 10 dòng "API học tập").
 - So tên mesh qua `chuanHoaTenMesh` (đúng hàm Three.js dùng: khoảng trắng thành `_`, bỏ `[]:./`); tên khớp với một nút
   nhóm thì lấy mọi mesh con. Tên mesh trùng nhau trong file: Three.js thêm đuôi `_1`… nên không khớp – ND01 nên cảnh báo.
