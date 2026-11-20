@@ -14,22 +14,23 @@ Bảng phân công dạng Excel `ke-hoach/Phan_cong_cong_viec.xlsx` được SIN
 theo vai trò, khung ghi nhật ký, khung giao diện React với màn đăng nhập và thanh bên theo vai trò, khung hiển thị
 mô hình 3D (Three.js). **Giai đoạn 0 đã xong** (NT08 do trưởng nhóm làm thay Dev Bài học). Giai đoạn 1 đã bắt đầu:
 ND01 (Dev Quản lý) xong – nạp mô hình GLB có kiểm tra tự động, danh sách, xem chi tiết 3D, xóa (API 45–48 và
-màn Thư viện mô hình 3D). Chưa có chức năng học tập, quản lý trường hay nội dung bài học.
+màn Thư viện mô hình 3D). ND02 đang làm – đã có API soạn bài 49–55, API môn học 7, màn danh sách bài và màn soạn bài
+(thẻ Thông tin bài, Mô hình); còn cấu hình `config` chờ thống nhất với Dev Bài học. Chưa có chức năng học tập hay quản lý trường.
 
 | Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|---|
 | 0 | Nền tảng kỹ thuật | 9 | 8 | 0 | 0 | 1 |
-| 1 | Xem bài học 3D | 7 | 1 | 0 | 6 | 0 |
+| 1 | Xem bài học 3D | 7 | 1 | 1 | 5 | 0 |
 | 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 | 0 |
 | 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 | 0 |
 | 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 | 0 |
 | 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 | 0 |
 | 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 | 0 |
-| | **Tổng** | **45** | **9** | **1** | **34** | **1** |
+| | **Tổng** | **45** | **9** | **2** | **33** | **1** |
 
-API (chương 3, mục 3.1.3): **10 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
+API (chương 3, mục 3.1.3): **18 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
-Test: backend 342 (pytest, CSDL PostgreSQL thật), frontend 39 (Vitest cho `src/api/client.ts` và phần tính toán 3D).
+Test: backend 436 (pytest, CSDL PostgreSQL thật), frontend 39 (Vitest cho `src/api/client.ts` và phần tính toán 3D).
 
 ## 2. Bảng chức năng (45 việc theo kế hoạch)
 
@@ -49,7 +50,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Chưa làm | | Việc khó nhất |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e (PR #5), ce33d83 | Phần nền (PR #5): volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB. API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
-| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Chưa làm | | |
+| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | (commit ND02) | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
 | ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Chưa làm | | |
 | HT01 | Tra cứu bài học | Dev Bài học | 1 | Chưa làm | | |
 | HT02 | Tự khám phá mô hình | Dev Bài học | 1 | Chưa làm | | |
@@ -96,7 +97,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 4 | GET | /api/auth/me | NT03 | Xong | d7f3456 |
 | 5 | POST | /api/auth/change-password | NT04 | Xong | d7f3456, 6eb8958 |
 | 6 | POST | /api/users/{id}/reset-password | QL08 | Xong | d7f3456, 6eb8958 |
-| 7 | GET | /api/subjects | HT01 | Chưa làm | |
+| 7 | GET | /api/subjects | ND02 | Xong | (commit ND02) – viết cùng ND02 cho ô chọn môn (mục 10, "API học tập") |
 | 8 | GET | /api/lessons | HT01 | Chưa làm | |
 | 9 | GET | /api/lessons/{id} | HT02 | Chưa làm | |
 | 10 | POST | /api/attempts | LH03 | Chưa làm | |
@@ -119,7 +120,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 40–42 | | /api/classes/{id}/teachers (GET, POST, DELETE) | QL07 | Chưa làm | |
 | 43–44 | GET | /api/reports/usage, usage.xlsx | QL09 | Chưa làm | |
 | 45–48 | | /api/assets (GET, POST, GET {id}, DELETE) | ND01 | Xong | ce33d83 |
-| 49–55 | | /api/editor/lessons (CRUD, publish, unpublish) | ND02 | Chưa làm | |
+| 49–55 | | /api/editor/lessons (CRUD, publish, unpublish) | ND02 | Xong | (commit ND02) |
 | 56 | PUT | /api/editor/lessons/{id}/parts | ND03 | Chưa làm | |
 | 57–59 | | /api/editor/lessons/{id}/questions, /api/editor/questions/{id} | ND04 | Chưa làm | |
 | 60–65 | | /api/schools (CRUD, lock, unlock, xóa có mã xác nhận) | QL01 | Chưa làm | Khi làm khóa trường: cân nhắc tăng `token_version` (xem mục 6) |
@@ -184,6 +185,17 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
   - `school_id` = trường của đối tượng bị tác động; đối tượng không thuộc trường nào thì lấy trường của người làm.
 - Nginx ghi đè `X-Forwarded-For` bằng IP thật (không nối thêm) để IP trong nhật ký không giả được.
 - Tham số id trên đường dẫn dùng `IdPath` (1 … 2.147.483.647) để id quá lớn trả 422, không 500.
+- Soạn bài học (ND02, API 49–55; đặc tả chỉ có một dòng cho mỗi API – đã chốt với người dùng):
+  - Thiếu điều kiện xuất bản (mô hình; ít nhất một nhãn bộ phận; ghi công với mô hình CC BY / CC BY-SA) → 400 `LESSON_INCOMPLETE`, `details` = danh sách phần thiếu. API 51 trả sẵn `missing_for_publish`.
+  - Xóa bài đã từng được giao hoặc đã có bài nộp → 409 `LESSON_IN_USE` (`details` = số bài giao, số bài nộp); gợi ý gỡ xuất bản. Xóa kéo theo nhãn bộ phận, câu hỏi (CASCADE).
+  - Trùng môn + lớp + bộ sách + số bài → 409 `DUPLICATE_LESSON` (chỉ cảnh báo, CSDL không có UNIQUE); gửi lại với `confirm_duplicate=true` để lưu. Khi sửa chỉ hỏi nếu đổi một trong bốn trường đó.
+  - Gỡ bài đang giao cho lớp còn hạn (chưa có hạn hoặc hạn sau hiện tại) → 409 `LESSON_ASSIGNED` kèm danh sách lớp; gửi lại với `{"confirm": true}`. Nhật ký ghi `active_assignment_count`.
+  - Sửa bài đã xuất bản được (UC 20 bước 7), trừ khi làm mất điều kiện xuất bản → 400 `LESSON_INCOMPLETE` (phải gỡ xuất bản trước).
+  - Gỡ xuất bản giữ `published_by` / `published_at` ("xuất bản lần gần nhất"). Xuất bản / gỡ lần hai không đổi gì, không ghi nhật ký.
+  - API 52 thay cả bản ghi: phải gửi đủ trường (thiếu `config`, `asset_id`… → 422, không âm thầm xóa công thức).
+  - `config` nhận nguyên JSON object (tối đa 1 MB), chưa kiểm tra cấu trúc bên trong (chờ mục 10, "Cấu hình bài học").
+  - Lớp phải nằm trong khoảng lớp của môn. Không có quy tắc sở hữu: biên tập viên, quản trị hệ thống sửa được mọi bài.
+  - API 7 (`/api/subjects`, mọi vai trò) viết cùng ND02 để có ô chọn môn.
 - Mô hình 3D (ND01, đặc tả không nói mã lỗi API 45, 47, 48):
   - API 48: mô hình đang được bài dùng → 409 `ASSET_IN_USE`, `details` = `[{id, title, status}]` các bài đang dùng (UC 21 luồng 6.1); không có → 404 `ASSET_NOT_FOUND` (API 47 cũng vậy).
   - API 48 khóa dòng `assets` (`FOR UPDATE`) trước khi kiểm tra để bài học không gắn được mô hình giữa lúc kiểm tra và xóa; file GLB xóa SAU commit (commit hỏng thì file vẫn còn).
@@ -201,6 +213,8 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Hộp thoại nạp xem trước 3D ngay từ file trên máy (đọc thẳng, chưa gửi lên) để biên tập viên thấy mô hình trước khi nạp (UC 21 bước 4). Tải lên dùng `XMLHttpRequest` trong `src/api/client.ts` để có % tiến độ; làm mới token trước khi gửi file lớn.
 - Xem 3D ở màn Mô hình 3D dùng thành phần chung `MoHinh3D` (NT08) qua `src/pages/mo-hinh-3d/XemTruoc3D.tsx` (nạp lười, ErrorBoundary có nút thử lại).
 - Thêm `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu` và thành phần `src/components/ui/dialog.tsx`, `dropdown-menu.tsx`.
+- Menu "Bài học" giữ một mục (cả biên tập viên và quản trị hệ thống); thẻ lọc Tất cả / Đang soạn / Đã xuất bản thay hai mục "Bài đang soạn", "Bài đã xuất bản" của file mẫu. Màn soạn bài ở `/bien-tap/bai-hoc/:id` (trang con, cùng quyền với mục Bài học – `TRANG_CON` trong `App.tsx`).
+- Màn soạn bài (ND02): thẻ Bộ phận (ND03), Câu hỏi (ND04), Thí nghiệm và nút Xem trước hiện câu "sẽ có ở bản cập nhật tới"; thẻ Mô hình chọn mô hình đã nạp, xem 3D, báo cáo kiểm tra tô vàng như Hình 3-11. Ô chọn dùng `<select>` của trình duyệt (`src/components/ui/native-select.tsx`).
 - Phiên bản thư viện tra trên npm và ghim đúng số; cần Node ≥ 22.22 (React Router 8). Docker build dùng `node:26-alpine`, chạy `nginx:1.30.6-alpine` (bản ổn định).
 
 **Nạp mô hình 3D (ND01, phần nền – Dev Quản lý, PR #5)**
@@ -246,6 +260,12 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - **Khóa tài khoản / trường** hiện chặn refresh nhờ kiểm tra `is_active`, nhưng chưa tăng `token_version` (thêm khi làm API khóa tài khoản, khóa trường).
 - **Dò được tên đăng nhập** có tồn tại qua khóa tạm (tên có thật sau 5 lần sai trả 423). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV vốn đoán được.
 - **Tin IP chuyển tiếp:** uvicorn chạy `--forwarded-allow-ips *`, tin mọi máy trong mạng compose (hiện chỉ có `web`, `db`).
+- **Soạn bài (ND02):** kiểm tra trùng bài không khóa nên hai lần tạo cùng lúc có thể cùng lọt (chỉ là cảnh báo, chấp nhận).
+  Bài đã xuất bản mà xóa hết nhãn bộ phận (API 56 của ND03) thì mọi lần sửa bài đó bị 400 cho tới khi gắn lại nhãn hoặc gỡ
+  xuất bản – cần thống nhất với ND03 (mục 10).
+  Rời màn soạn bài qua menu thanh bên khi còn thay đổi chưa lưu thì không được hỏi lại (ứng dụng dùng `BrowserRouter`, chưa
+  dùng được `useBlocker`; liên kết "Bài học" trên thanh vị trí và đóng / tải lại tab thì có hỏi).
+  Hai người cùng sửa một bài: người lưu sau ghi đè người lưu trước (API 52 chưa so `updated_at`) – cần thì bàn thêm.
 - **Mô hình 3D (ND01):** đóng hộp thoại chi tiết khi file GLB đang tải thì trình duyệt vẫn tải tiếp đến hết
   (`MoHinh3D` dùng `GLTFLoader.load`, chưa hủy được); file lớn trên mạng chậm sẽ tốn băng thông. Sửa trong `MoHinh3D` khi làm BH02.
 - **Ảnh cá chép** ở màn đăng nhập nặng 694 KB, vẫn tải trên màn hẹp.
@@ -345,7 +365,7 @@ trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/P
 | QL00 | — | | | | | | | Bỏ: đã có API thật nên làm thẳng màn hình với API; file Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | 2 | | Hình 3-5 | feature/BH01-khung-bai-hoc-3d | | | | Việc khó nhất. Làm được ngay: chỉ cần đọc file mô hình GLB; nối API 9 sau khi có |
 | ND01 | — | 45–48 | Thư viện mô hình 3D (Bảng 3-15), Hình 3-11 | feature/ND01-nap-mo-hinh-3d | | | | Xong (ce33d83). Xem 3D dùng `MoHinh3D` của NT08 |
-| ND02 | 4 | 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học |
+| ND02 | 4 | 7, 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học. Đã có API 7, 49–55 và màn soạn bài (Thông tin, Mô hình); còn soạn `config` |
 | ND03 | 5 | 56 | Hình 3-11 (thẻ Nhãn) | feature/ND03-gan-nhan-bo-phan | Dev Quản lý: ND02; Dev Bài học: ND02, BH01 | | Dev Quản lý: API 56 lưu nhãn (cùng nhóm /api/editor của ND02); Dev Bài học: chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Tách đôi: phần máy chủ giao Dev Quản lý; phần máy chủ không cần chờ BH01 |
 | HT01 | 6 | 7, 8 | Hình 3-4 | feature/HT01-thu-vien-bai-hoc | | | | API 7–8 phía máy chủ: xem mục 10, dòng "API học tập" |
 | HT02 | 7 | 9 | Hình 3-5 | feature/HT02-tu-kham-pha-mo-hinh | | | | API 9 phía máy chủ: xem mục 10, dòng "API học tập" |
@@ -388,10 +408,10 @@ Những chỗ Dev Quản lý và Dev Bài học phải thống nhất TRƯỚC k
 |---|---|---|---|---|---|
 | Cách viết công thức chấm | NT07, HT04, BT02 | Bộ tính biểu thức an toàn phía máy chủ (Python), chấm lại khi nộp | Tính cùng công thức phía trình duyệt để vẽ hiện tượng, đồ thị | Cú pháp công thức trong lessons.config, tên biến thông số, đơn vị, cách ghi sai số; một bộ số liệu mẫu chung để test cả hai phía ra cùng kết quả | Chưa |
 | Cấu hình bài học | ND02, BH01, HT02, HT03, HT04 | Lưu và sửa lessons.config (màn soạn bài) | Đọc lessons.config để dựng khung 3D, kịch bản phim, thông số thí nghiệm | Cấu trúc JSON của lessons.config (góc camera, kịch bản phim, thông số, khoảng giá trị) | Chưa |
-| Gắn nhãn bộ phận | ND03, ND01 | API 56 lưu danh sách nhãn; API 47 trả danh sách mesh của mô hình (đã có: `mesh_names` là tên node có mesh trong file GLB, theo thứ tự trong file) | Chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Khuôn dạng mesh_names, camera_view; cách đặt tên mesh trong file GLB | Chưa |
+| Gắn nhãn bộ phận | ND03, ND01, ND02 | API 56 lưu danh sách nhãn; API 47 trả danh sách mesh của mô hình (đã có: `mesh_names` là tên node có mesh trong file GLB, theo thứ tự trong file); API 51 (ND02) đã trả `parts`, `asset.mesh_names`. Đề xuất: API 56 không cho xóa hết nhãn của bài đang xuất bản (ND02 coi ≥1 nhãn là điều kiện xuất bản) | Chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Khuôn dạng mesh_names, camera_view; cách đặt tên mesh trong file GLB | Chưa |
 | Nộp bài | LH03, HT04, HT05 | API 10: nhận bài, chấm lại, chống ghi trùng client_id | Nút Nộp bài, sinh client_id (UUID), gửi lại khi mất mạng | Cấu trúc experiment_data, answers gửi lên; cách báo kết quả chấm | Chưa |
 | Điều khiển màn hình lớp | LH05, LH01 | Kênh WebSocket /ws/class/{class_id} phía máy chủ, xác thực, phòng trong bộ nhớ | Gửi, nhận sự kiện phía trình duyệt, đồng bộ góc nhìn, bộ phận | Danh sách sự kiện và khuôn dạng tin nhắn (mục 3.1.6 chương 3) | Chưa |
-| API học tập | HT01, HT02, HT05 | Đề xuất: viết API 7, 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 7–9 | Chưa – chờ trưởng nhóm |
+| API học tập | HT01, HT02, HT05 | API 7 (`/api/subjects`) đã viết cùng ND02. Đề xuất: viết API 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 8–9 | Chưa – chờ trưởng nhóm (API 7 đã xong ở ND02) |
 | Mô hình 3D | ND01, BH01, BH02 | Kiểm tra ngưỡng khi nạp (150 MB, 1,5 triệu tam giác, texture 4096 px) | Hiển thị, tự giảm chất lượng trên máy yếu | Mức chi tiết mục tiêu cho máy yếu, máy tính bảng; tên file có số phiên bản | Chưa |
 | File dùng chung | Mọi việc | backend/app/main.py (gắn router) | frontend/src/lib/roles.ts (menu), frontend/src/App.tsx (đường dẫn) | Chỉ thêm phần của mình, không sửa phần người khác; kéo dev về mỗi ngày | Đã có trong CLAUDE.md |
 
