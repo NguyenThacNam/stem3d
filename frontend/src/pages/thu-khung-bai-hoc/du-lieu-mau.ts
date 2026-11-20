@@ -1,16 +1,16 @@
 /**
- * Dữ liệu mẫu theo khuôn dạng API 9 (đề xuất, `LessonDetail`) cho trang thử khung bài học – CHỈ dùng ở bản dev.
+ * Dữ liệu mẫu theo khuôn dạng API 9 (đề xuất, `LessonView`) cho trang thử khung bài học – CHỈ dùng ở bản dev.
  * HT02 thay bằng dữ liệu thật từ GET /api/lessons/{id}.
  */
-import type { LessonDetail, LessonPart } from "@/api/types";
+import type { LessonView, LessonViewPart } from "@/api/types";
 import urlKinhHienVi from "@/assets/mo-hinh-thu/kinh-hien-vi.v1.glb?url";
 import urlPhanTuNuoc from "@/assets/mo-hinh-thu/phan-tu-nuoc.v1.glb?url";
 
-function boPhan(id: number, label: string, mesh_names: string[], description: string | null): LessonPart {
+function boPhan(id: number, label: string, mesh_names: string[], description: string | null): LessonViewPart {
   return { id, label, mesh_names, description, camera_view: null, sort_order: id };
 }
 
-export const BAI_KINH_HIEN_VI: LessonDetail = {
+export const BAI_KINH_HIEN_VI: LessonView = {
   id: 9001,
   subject: { id: 2, name: "Khoa học tự nhiên" },
   grade: 6,
@@ -18,7 +18,7 @@ export const BAI_KINH_HIEN_VI: LessonDetail = {
   lesson_no: 4,
   title: "Kính hiển vi quang học",
   lesson_type: "STRUCTURE",
-  model: { url: urlKinhHienVi, file_size: null, attribution: "Mô hình mẫu do nhóm Stem3D dựng · CC0" },
+  asset: { file_url: urlKinhHienVi, file_size: null, attribution: "Mô hình mẫu do nhóm Stem3D dựng · CC0" },
   config: { camera_view: null, film_script: null },
   parts: [
     boPhan(1, "Thị kính", ["thi_kinh"], "Thấu kính mắt nhìn vào, phóng to thêm ảnh do vật kính tạo ra."),
@@ -38,7 +38,7 @@ export const BAI_KINH_HIEN_VI: LessonDetail = {
   questions: [],
 };
 
-export const BAI_PHAN_TU_NUOC: LessonDetail = {
+export const BAI_PHAN_TU_NUOC: LessonView = {
   id: 9002,
   subject: { id: 4, name: "Hóa học" },
   grade: 10,
@@ -46,7 +46,7 @@ export const BAI_PHAN_TU_NUOC: LessonDetail = {
   lesson_no: 10,
   title: "Phân tử nước",
   lesson_type: "STRUCTURE",
-  model: { url: urlPhanTuNuoc, file_size: null, attribution: null },
+  asset: { file_url: urlPhanTuNuoc, file_size: null, attribution: null },
   config: { camera_view: null, film_script: null },
   parts: [
     boPhan(
@@ -72,7 +72,7 @@ export const BAI_PHAN_TU_NUOC: LessonDetail = {
 };
 
 /** Bài dựng từ một file GLB trên máy: mỗi mesh là một bộ phận (để đo tốc độ với mô hình thật). */
-export function baiTuTep(ten: string, tenMesh: string[]): LessonDetail {
+export function baiTuTep(ten: string, tenMesh: string[]): LessonView {
   return {
     id: 9999,
     subject: { id: 0, name: "Thử mô hình" },
@@ -81,7 +81,7 @@ export function baiTuTep(ten: string, tenMesh: string[]): LessonDetail {
     lesson_no: null,
     title: "Mô hình trên máy",
     lesson_type: "STRUCTURE",
-    model: null,
+    asset: null,
     config: { camera_view: null, film_script: null },
     parts: tenMesh.map((t, i) => boPhan(i + 1, t, [t], null)),
     questions: [],

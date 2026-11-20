@@ -14,6 +14,9 @@ Cách làm:
 
 Danh sách kiểm tra:
 - Lộ dữ liệu: `password_hash`, mật khẩu, đáp án, công thức chấm, sai số có lọt vào schema đầu ra hoặc log không?
+- Tách API học tập với API soạn bài: API học tập (`/api/lessons/...`, API 7–10) có dùng chung schema hay kiểu với
+  `/api/editor/...` không? Máy chủ phải dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa / dùng lại schema
+  API 51; frontend màn học tập dùng `LessonView`, không nhập `LessonDetail` từ `api/editorLessons.ts`.
 - Phạm vi trường: `school_id` có lấy từ người dùng hiện tại không? Truy vấn có lọc theo trường? Khác trường có trả 404?
 - Phân quyền: router có `require_role` đúng vai trò trong bảng API? Service có kiểm tra lớp mình dạy / lớp chủ nhiệm?
 - Đúng đặc tả: đường dẫn, mã HTTP, mã lỗi, tên trường JSON, phân trang.

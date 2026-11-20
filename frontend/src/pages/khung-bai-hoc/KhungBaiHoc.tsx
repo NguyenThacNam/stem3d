@@ -3,11 +3,11 @@
  * trên nền ô li (thẻ chú thích, dòng hướng dẫn, ghi công), cột bộ phận và thẻ "Đang xem".
  * Chế độ Tự khám phá: chọn bộ phận trên mô hình hoặc trong danh sách → làm nổi bật, tách ra, camera bay tới góc nhìn;
  * "Lắp lại" đưa về chỗ cũ. Phim (HT03), Thí nghiệm (HT04), Kiểm tra (HT05) làm ở việc riêng.
- * Dữ liệu theo khuôn dạng API 9 (`LessonDetail`); HT02 nối API thật.
+ * Dữ liệu theo khuôn dạng API 9 (`LessonView`); HT02 nối API thật.
  */
 import { ArrowLeft, Maximize, Minimize, Play, RotateCcw } from "lucide-react";
 import { type KeyboardEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { LessonDetail } from "@/api/types";
+import type { LessonView } from "@/api/types";
 import { CanhBaiHoc, type NguonMoHinh } from "@/components/mo-hinh-3d/canh-bai-hoc";
 import { LopTrangThai, type TrangThaiTai, trangThaiLoi } from "@/components/mo-hinh-3d/LopTrangThai";
 import { thongKeMoHinh } from "@/components/mo-hinh-3d/tinh-toan";
@@ -26,8 +26,8 @@ export function KhungBaiHoc({
   onDaTai,
   onFps,
 }: {
-  bai: LessonDetail;
-  /** Nguồn mô hình khác `bai.model` (trang thử mở file trên máy). */
+  bai: LessonView;
+  /** Nguồn mô hình khác `bai.asset` (trang thử mở file trên máy). */
   nguon?: NguonMoHinh;
   onQuayLai: () => void;
   /** LH05: giáo viên đang điều khiển lớp – hiện dải thông báo, khóa xoay và chọn. */
@@ -36,8 +36,8 @@ export function KhungBaiHoc({
   onFps?: (fps: number) => void;
 }) {
   const nguon = useMemo<NguonMoHinh | null>(
-    () => nguonRieng ?? (bai.model ? { loai: "url", url: bai.model.url, ten: bai.title } : null),
-    [nguonRieng, bai.model, bai.title],
+    () => nguonRieng ?? (bai.asset ? { loai: "url", url: bai.asset.file_url, ten: bai.title } : null),
+    [nguonRieng, bai.asset, bai.title],
   );
   const boPhan = useMemo(() => sapXepBoPhan(bai.parts), [bai.parts]);
   const cheDoCo = useMemo(() => cacCheDo(bai), [bai]);
@@ -318,8 +318,8 @@ export function KhungBaiHoc({
             <p className="min-w-0">
               Kéo để xoay · cuộn hoặc chụm hai ngón để phóng to · bấm vùng trống để bỏ chọn
             </p>
-            {bai.model?.attribution && (
-              <p className="max-w-[45%] shrink-0 text-right">Mô hình 3D: {bai.model.attribution}</p>
+            {bai.asset?.attribution && (
+              <p className="max-w-[45%] shrink-0 text-right">Mô hình 3D: {bai.asset.attribution}</p>
             )}
           </div>
         </section>

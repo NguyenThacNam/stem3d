@@ -6,13 +6,13 @@
  */
 import { type ChangeEvent, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import type { LessonDetail } from "@/api/types";
+import type { LessonView } from "@/api/types";
 import type { NguonMoHinh } from "@/components/mo-hinh-3d/canh-bai-hoc";
 import { Button } from "@/components/ui/button";
 import { KhungBaiHoc, type ThongTinKhung } from "@/pages/khung-bai-hoc/KhungBaiHoc";
 import { BAI_KINH_HIEN_VI, BAI_PHAN_TU_NUOC, baiTuTep } from "./du-lieu-mau";
 
-type Mau = { loai: "bai"; bai: LessonDetail } | { loai: "tep"; tep: File; tenMesh: string[] | null };
+type Mau = { loai: "bai"; bai: LessonView } | { loai: "tep"; tep: File; tenMesh: string[] | null };
 
 const so = (n: number) => n.toLocaleString("vi-VN", { maximumFractionDigits: 0 });
 
@@ -31,7 +31,7 @@ export default function ThuKhungBaiHocPage() {
     () => (tep ? { loai: "tep", tep, ten: tep.name } : undefined),
     [tep],
   );
-  const bai = useMemo<LessonDetail>(() => {
+  const bai = useMemo<LessonView>(() => {
     const goc = mau.loai === "bai" ? mau.bai : baiTuTep(mau.tep.name, mau.tenMesh ?? []);
     return tieuHoc ? { ...goc, grade: 4 } : goc;
   }, [mau, tieuHoc]);

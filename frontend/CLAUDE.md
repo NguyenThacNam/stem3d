@@ -43,7 +43,9 @@ Theo mục 3.2.1 chương 3. Mẫu chuẩn: `docs/giao-dien-chuong-3.html` (lấ
 ## 3D (Three.js)
 - Lõi 3D dùng chung: `src/components/mo-hinh-3d/canh-bai-hoc.ts` (`CanhBaiHoc`: tải GLB, xoay / phóng to, chọn bộ
   phận, tách ra / lắp lại, camera bay, điểm neo thẻ chú thích, khóa thao tác). Mọi màn có 3D dựng trên lớp này, không
-  tự tạo renderer riêng. Khung bài học: `src/pages/khung-bai-hoc/KhungBaiHoc.tsx` (nhận `LessonDetail` – API 9).
+  tự tạo renderer riêng. Khung bài học: `src/pages/khung-bai-hoc/KhungBaiHoc.tsx` (nhận `LessonView` – API 9).
+- BẢO MẬT: màn học tập (học sinh, giáo viên) chỉ dùng kiểu `LessonView` trong `src/api/types.ts`, KHÔNG dùng
+  `LessonDetail` của `src/api/editorLessons.ts` (API 51, có đáp án, sai số) dù tên gần giống.
 - Tọa độ: mô hình luôn đưa tâm khối bao về gốc, không co giãn (`duaTamVeGoc`); `camera_view` lưu theo hệ này. So tên
   mesh qua `chuanHoaTenMesh`, không so chuỗi trực tiếp.
 - Phần tính toán thuần (canh camera, đếm tam giác, giải phóng bộ nhớ, đếm khung hình, xếp thẻ chú thích) ở

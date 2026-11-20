@@ -3,7 +3,7 @@
  * hình nên cập nhật thẳng vào DOM (qua `capNhat`), không qua state của React.
  */
 import { forwardRef, useImperativeHandle, useRef } from "react";
-import type { LessonPart } from "@/api/types";
+import type { LessonViewPart } from "@/api/types";
 import type { CanhBaiHoc } from "@/components/mo-hinh-3d/canh-bai-hoc";
 import { cn } from "@/lib/utils";
 import { SO_THE_TOI_DA, xepChuThich } from "./bo-cuc";
@@ -20,7 +20,7 @@ type PhanTu = { ghim: HTMLDivElement | null; duong: SVGLineElement | null; the: 
 export const LopChuThich = forwardRef<
   LopChuThichHandle,
   {
-    boPhan: LessonPart[];
+    boPhan: LessonViewPart[];
     dangChon: number | null;
     hien: boolean;
     tieuHoc: boolean;

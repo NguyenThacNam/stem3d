@@ -40,7 +40,9 @@ export interface FieldError {
 /*
  * API 9 – GET /api/lessons/{id} (chi tiết bài học cho học sinh, giáo viên).
  * Chương 3 chỉ mô tả bằng lời; khuôn dạng dưới đây là ĐỀ XUẤT của BH01, chờ thống nhất với Dev Quản lý
- * (TIEN_DO.md mục 10, dòng "Cấu hình bài học", "Gắn nhãn bộ phận"). Không có đáp án, công thức chấm, sai số.
+ * (TIEN_DO.md mục 10, dòng "API học tập", "Cấu hình bài học", "Gắn nhãn bộ phận"). Không có đáp án, công thức chấm,
+ * sai số. BẢO MẬT: màn học tập chỉ dùng `LessonView`, KHÔNG dùng `LessonDetail` của `api/editorLessons.ts` (API 51,
+ * có đáp án, sai số); máy chủ cũng dùng schema đầu ra riêng `LessonViewOut`, không dùng lại schema của API 51.
  */
 export type LessonType = "STRUCTURE" | "EXPERIMENT";
 
@@ -53,7 +55,7 @@ export interface CameraView {
   target: Vec3;
 }
 
-export interface LessonPart {
+export interface LessonViewPart {
   id: number;
   label: string;
   description: string | null;
@@ -63,9 +65,9 @@ export interface LessonPart {
   sort_order: number;
 }
 
-export interface LessonModel {
-  /** Đường dẫn file GLB (có số phiên bản, ví dụ /content/models/12.v1.glb). */
-  url: string;
+export interface LessonViewAsset {
+  /** Đường dẫn file GLB (có số phiên bản, ví dụ /content/models/12.v1.glb); cùng tên trường với API 51. */
+  file_url: string;
   file_size: number | null;
   /** Dòng ghi công hiển thị ở góc dưới khung 3D; null nếu không cần. */
   attribution: string | null;
@@ -79,7 +81,7 @@ export interface LessonConfig {
   film_script?: unknown[] | null;
 }
 
-export interface LessonDetail {
+export interface LessonView {
   id: number;
   subject: { id: number; name: string };
   grade: number;
@@ -87,9 +89,9 @@ export interface LessonDetail {
   lesson_no: number | null;
   title: string;
   lesson_type: LessonType;
-  model: LessonModel | null;
+  asset: LessonViewAsset | null;
   config: LessonConfig;
-  parts: LessonPart[];
+  parts: LessonViewPart[];
   /** Câu hỏi kiểm tra nhanh (HT05), không kèm đáp án. */
   questions: unknown[];
 }

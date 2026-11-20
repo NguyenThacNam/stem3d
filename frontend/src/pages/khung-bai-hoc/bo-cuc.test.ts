@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import type { LessonPart } from "@/api/types";
+import type { LessonViewPart } from "@/api/types";
 import { boPhanTiep, cacCheDo, dongPhu, sapXepBoPhan, xepChuThich } from "./bo-cuc";
 
-const bp = (id: number, sort_order: number): LessonPart => ({
+const bp = (id: number, sort_order: number): LessonViewPart => ({
   id,
   sort_order,
   label: `BP ${id}`,

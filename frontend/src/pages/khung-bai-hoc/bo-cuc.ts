@@ -2,7 +2,7 @@
  * Phần tính thuần của khung bài học (không cần trình duyệt, có test): chế độ theo loại bài, bộ phận tiếp theo,
  * xếp thẻ chú thích hai bên mô hình.
  */
-import type { LessonDetail, LessonPart } from "@/api/types";
+import type { LessonView, LessonViewPart } from "@/api/types";
 
 export type CheDo = "phim" | "kham-pha" | "thi-nghiem" | "kiem-tra";
 
@@ -17,7 +17,7 @@ export const TEN_CHE_DO: Record<CheDo, string> = {
  * Các chế độ của bài theo Hình 3-5: Phim (ẩn khi bài không có kịch bản phim – UC5 luồng phụ 2.1), Tự khám phá,
  * Thí nghiệm (chỉ bài thí nghiệm), Kiểm tra.
  */
-export function cacCheDo(bai: Pick<LessonDetail, "lesson_type" | "config">): CheDo[] {
+export function cacCheDo(bai: Pick<LessonView, "lesson_type" | "config">): CheDo[] {
   const ds: CheDo[] = [];
   if ((bai.config.film_script?.length ?? 0) > 0) ds.push("phim");
   ds.push("kham-pha");
@@ -27,17 +27,17 @@ export function cacCheDo(bai: Pick<LessonDetail, "lesson_type" | "config">): Che
 }
 
 /** Dòng phụ dưới tên bài, ví dụ "Khoa học tự nhiên 8 · Sinh học cơ thể người". */
-export function dongPhu(bai: Pick<LessonDetail, "subject" | "grade" | "chapter">): string {
+export function dongPhu(bai: Pick<LessonView, "subject" | "grade" | "chapter">): string {
   return [`${bai.subject.name} ${bai.grade}`, bai.chapter].filter(Boolean).join(" · ");
 }
 
 /** Bộ phận theo thứ tự hiển thị (sort_order, rồi id). */
-export function sapXepBoPhan(ds: LessonPart[]): LessonPart[] {
+export function sapXepBoPhan(ds: LessonViewPart[]): LessonViewPart[] {
   return [...ds].sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
 }
 
 /** Nút "Bộ phận tiếp": bộ phận sau bộ phận đang xem, hết danh sách thì quay về đầu; chưa chọn thì lấy bộ phận đầu. */
-export function boPhanTiep(dsDaSapXep: LessonPart[], idHienTai: number | null): number | null {
+export function boPhanTiep(dsDaSapXep: LessonViewPart[], idHienTai: number | null): number | null {
   if (dsDaSapXep.length === 0) return null;
   const i = dsDaSapXep.findIndex((p) => p.id === idHienTai);
   return dsDaSapXep[(i + 1) % dsDaSapXep.length].id;
