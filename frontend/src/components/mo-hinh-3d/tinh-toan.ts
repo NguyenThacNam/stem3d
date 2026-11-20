@@ -161,3 +161,17 @@ export function huongTach(tamBoPhan: Vector3, banKinhMoHinh: number, huongDuPhon
 
 /** Khoảng tách bộ phận khỏi chỗ cũ: 25 % bán kính mô hình (TIEN_DO.md mục 5). */
 export const TI_LE_TACH = 0.25;
+
+/**
+ * Màn gắn nhãn (ND03): phần bị bấm ứng với tên nào trong `mesh_names` của mô hình (tên gốc trong file). Đi ngược từ
+ * đối tượng trúng lên cha, gặp đối tượng đầu tiên có tên khớp (qua `chuanHoaTenMesh`) thì trả tên gốc đó – cùng quy
+ * tắc với `timMeshTheoTen`, nên phần gắn nhãn ở màn soạn đúng là phần học sinh thấy. Không khớp tên nào thì null.
+ */
+export function tenPhanCuaVat(vat: Object3D | null, meshNames: readonly string[]): string | null {
+  const theoTen = new Map(meshNames.map((t) => [chuanHoaTenMesh(t), t]));
+  for (let x = vat; x; x = x.parent) {
+    const ten = theoTen.get(x.name);
+    if (ten !== undefined) return ten;
+  }
+  return null;
+}

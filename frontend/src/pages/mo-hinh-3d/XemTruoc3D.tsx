@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const taoLazy = () =>
   lazy(() => import("@/components/mo-hinh-3d/MoHinh3D").then((m) => ({ default: m.MoHinh3D })));
 
-class BatLoi extends Component<
+export class BatLoi extends Component<
   { className?: string; onRetry: () => void; children: ReactNode },
   { loi: boolean }
 > {

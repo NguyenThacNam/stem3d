@@ -1,6 +1,7 @@
-/** Soạn bài học – /api/editor/lessons (API 49–55) và môn học – /api/subjects (API 7). Biên tập viên, quản trị hệ thống. */
+/** Soạn bài học – /api/editor/lessons (API 49–56) và môn học – /api/subjects (API 7). Biên tập viên, quản trị hệ thống. */
 import type { Page } from "./assets";
 import { request } from "./client";
+import type { CameraView } from "./types";
 
 export type LessonType = "STRUCTURE" | "EXPERIMENT";
 export type LessonStatus = "DRAFT" | "PUBLISHED";
@@ -43,8 +44,18 @@ export interface LessonPart {
   mesh_names: string[];
   label: string;
   description: string | null;
+  /** `CameraView` (`{position, target}`, hệ tọa độ đã đưa tâm mô hình về gốc) hoặc null. */
   camera_view: unknown;
   sort_order: number;
+}
+
+/** Một bộ phận gửi lên API 56: có `id` thì sửa tại chỗ (giữ id), không có thì thêm mới. Thứ tự = thứ tự mảng. */
+export interface LessonPartInput {
+  id?: number;
+  mesh_names: string[];
+  label: string;
+  description: string | null;
+  camera_view: CameraView | null;
 }
 
 export interface LessonQuestion {
@@ -179,4 +190,9 @@ export function publishLesson(id: number): Promise<LessonDetail> {
 /** API 55 – 409 LESSON_ASSIGNED: hỏi rồi gửi lại với confirm. */
 export function unpublishLesson(id: number, confirm = false): Promise<LessonDetail> {
   return request<LessonDetail>(`/api/editor/lessons/${id}/unpublish`, { method: "POST", body: { confirm } });
+}
+
+/** API 56 – thay toàn bộ danh sách nhãn bộ phận. 400 LESSON_NO_ASSET, LESSON_INCOMPLETE; 422 theo `parts.<i>.<trường>`. */
+export function replaceLessonParts(id: number, parts: LessonPartInput[]): Promise<LessonDetail> {
+  return request<LessonDetail>(`/api/editor/lessons/${id}/parts`, { method: "PUT", body: { parts } });
 }

@@ -53,6 +53,11 @@ export class LoiMoHinh extends Error {
 export type SuKienCanh = {
   /** Người dùng bấm vào mô hình: id bộ phận, hoặc null khi bấm vùng trống. */
   onBam?: (idBoPhan: number | null) => void;
+  /**
+   * Màn gắn nhãn (ND03): báo đối tượng trúng đầu tiên, kể cả phần chưa gắn nhãn (null khi bấm vùng trống), và có
+   * giữ Shift không. Có hàm này thì `onBam` không được gọi.
+   */
+  onBamVat?: (vat: Object3D | null, giuShift: boolean) => void;
   /** Gọi sau mỗi khung hình đã vẽ (để cập nhật thẻ chú thích theo camera). */
   onKhungHinh?: () => void;
   /** Khoảng 2 lần mỗi giây. */
@@ -521,6 +526,10 @@ export class CanhBaiHoc {
     );
     this.tia.setFromCamera(diem, this.camera);
     const dsTrung = this.tia.intersectObject(this.moHinh, true);
+    if (this.suKien.onBamVat) {
+      this.suKien.onBamVat(dsTrung[0]?.object ?? null, e.shiftKey);
+      return;
+    }
     if (dsTrung.length === 0) {
       this.suKien.onBam?.(null); // bấm vùng trống: bỏ chọn
       return;

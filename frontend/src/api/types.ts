@@ -77,7 +77,7 @@ export interface LessonViewAsset {
 
 /**
  * `lessons.config` ĐÃ LỌC cho học sinh (API 9). Khung `config` có đúng 3 khóa (trưởng nhóm chốt, TIEN_DO.md mục 10):
- * `camera_tong_quan` (ND03), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc_hien_thi, cong_thuc, sai_so}`
+ * `camera_tong_quan` (ND02), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc_hien_thi, cong_thuc, sai_so}`
  * (HT04 + NT07).
  * API 9 chỉ trả theo danh sách cho phép: `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem.thong_so`,
  * `thi_nghiem.cong_thuc_hien_thi` – KHÔNG BAO GIỜ có
