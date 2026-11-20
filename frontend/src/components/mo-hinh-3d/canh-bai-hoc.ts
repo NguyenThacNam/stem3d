@@ -154,17 +154,24 @@ export class CanhBaiHoc {
     this.renderer.setAnimationLoop(this.ve);
   }
 
-  /** Tải mô hình; trả về gốc mô hình đã đưa tâm về gốc tọa độ. Ném `LoiMoHinh` khi lỗi. */
+  /**
+   * Tải mô hình; trả về gốc mô hình đã đưa tâm về gốc tọa độ. Ném `LoiMoHinh` khi lỗi.
+   * `dungLuongBiet`: dung lượng file (byte) biết trước (`asset.file_size`) – để tính phần trăm khi máy chủ không gửi
+   * Content-Length.
+   */
   async tai(
     nguon: NguonMoHinh,
     onTienDo?: (phanTram: number | null, tong: number | null) => void,
+    dungLuongBiet?: number,
   ): Promise<Object3D> {
     const taiMoHinh = new GLTFLoader();
     let gltf: GLTF;
     if (nguon.loai === "url") {
       try {
         gltf = await taiMoHinh.loadAsync(nguon.url, (e) => {
-          if (!this.daHuy) onTienDo?.(phanTramDaTai(e.loaded, e.total), e.total > 0 ? e.total : null);
+          if (this.daHuy) return;
+          const tong = e.total > 0 ? e.total : (dungLuongBiet ?? 0);
+          onTienDo?.(phanTramDaTai(e.loaded, tong), tong > 0 ? tong : null);
         });
       } catch (loi) {
         throw new LoiMoHinh("mang", loi);
@@ -196,7 +203,7 @@ export class CanhBaiHoc {
     return goc;
   }
 
-  /** Góc nhìn tổng quan của bài (`config.camera_view`); null thì tự canh vừa khung. */
+  /** Góc nhìn tổng quan của bài (`config.camera_tong_quan`); null thì tự canh vừa khung. */
   datGocTongQuan(goc: CameraView | null): void {
     this.gocTongQuan = goc;
   }

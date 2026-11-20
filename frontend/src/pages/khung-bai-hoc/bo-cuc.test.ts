@@ -17,7 +17,7 @@ describe("cacCheDo", () => {
   });
 
   it("có kịch bản phim thì thêm Phim ở đầu; bài thí nghiệm thêm Thí nghiệm trước Kiểm tra", () => {
-    expect(cacCheDo({ lesson_type: "EXPERIMENT", config: { film_script: [{}] } })).toEqual([
+    expect(cacCheDo({ lesson_type: "EXPERIMENT", config: { kich_ban_phim: [{}] } })).toEqual([
       "phim",
       "kham-pha",
       "thi-nghiem",
@@ -26,7 +26,7 @@ describe("cacCheDo", () => {
   });
 
   it("kịch bản phim rỗng thì ẩn Phim (UC5 luồng phụ 2.1)", () => {
-    expect(cacCheDo({ lesson_type: "STRUCTURE", config: { film_script: [] } })).not.toContain("phim");
+    expect(cacCheDo({ lesson_type: "STRUCTURE", config: { kich_ban_phim: [] } })).not.toContain("phim");
   });
 });
 

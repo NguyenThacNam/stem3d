@@ -19,7 +19,9 @@ mô hình 3D (Three.js). **Giai đoạn 0 đã xong** (NT08 do trưởng nhóm l
 - ND01 (Dev Quản lý) xong – nạp mô hình GLB có kiểm tra tự động, danh sách, xem chi tiết 3D, xóa (API 45–48 và màn
   Thư viện mô hình 3D).
 - ND02 (Dev Quản lý) đang làm – đã có API soạn bài 49–55, API môn học 7, màn danh sách bài và màn soạn bài (thẻ Thông
-  tin bài, Mô hình); còn cấu hình `config` chờ thống nhất với Dev Bài học.
+  tin bài, Mô hình); còn kiểm tra khung `config` 3 khóa ở API 50, 52, nút "Lưu góc tổng quan" (`config.camera_tong_quan`)
+  và đổi khóa đọc cũ `config.camera_view` sang `camera_tong_quan` (mục 2, 10). Soạn `kich_ban_phim`, `thi_nghiem`
+  chuyển sang HT03, HT04 + NT07.
 - ND03 (Dev Quản lý, làm cả phần giao diện) xong – API 56 lưu nhãn bộ phận (giữ id), thẻ Bộ phận trên màn soạn
   bài dựng trên lõi `CanhBaiHoc` của BH01 (bấm chọn phần, gộp nhiều phần, lưu góc nhìn, kéo thả sắp thứ tự).
 
@@ -59,18 +61,18 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Xong | 240da25 | Người làm: Trưởng nhóm (làm thay Dev Bài học). Xong: lõi `CanhBaiHoc` (chọn bộ phận, nổi bật, tách ra / lắp lại, camera bay, bàn phím, cảm ứng), màn `KhungBaiHoc` theo Hình 3-5, `duaTamVeGoc` dùng chung với ND03, trang thử `/thu-khung-bai-hoc` (dữ liệu mẫu). Chưa (việc khác): nối API 9 và trang `/bai-hoc/:id` (HT02), Phim (HT03), Thí nghiệm (HT04), Kiểm tra (HT05), giảm chất lượng máy yếu (BH02), điều khiển lớp (LH05) |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e (PR #5), ce33d83 | Phần nền (PR #5): volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB. API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
-| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | b8b03a4, 25faa7c | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
+| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | b8b03a4, 25faa7c | Phạm vi (trưởng nhóm chốt 20/11/2026): thông tin bài, chọn mô hình, xuất bản / gỡ, lưu `config`, soạn `config.camera_tong_quan`. Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa (điều kiện để Xong): (1) API 50, 52 kiểm tra khung `config` 3 khóa bằng schema Pydantic, khóa lạ 422, có test (mục 10); (2) nút "Lưu góc tổng quan" ở thẻ Bộ phận ghi `config.camera_tong_quan` (giao thêm vì ND03 đã xong trước khi chốt); (3) đổi khóa đọc cũ `config.camera_view` sang `camera_tong_quan` (`pages/bai-hoc/SoanBaiPage.tsx`, chú thích `KhungGanNhan.tsx`, `TheBoPhan.tsx`). Soạn `kich_ban_phim`, `thi_nghiem` chuyển sang HT03, HT04 + NT07; nút Xem trước sau HT02. Code hiện tại: `config: dict[str, Any]` ở `backend/app/schemas/editor_lessons.py` – đổi thành schema 3 khóa (`extra="forbid"`), sửa docstring `services/editor_lessons.py`; bài đã lưu có khóa khác sẽ bị 422 khi sửa (API 52 gửi lại toàn bộ) – kiểm tra dữ liệu cũ, cần thì dọn hoặc migration |
 | ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Xong | 1984685, 031d80f (gộp BH01) | Người làm: Dev Quản lý (cả phần giao diện của Dev Bài học, người dùng đồng ý). Xong: API 56 (thay cả danh sách, bộ phận gửi kèm id giữ nguyên id); thẻ Bộ phận Hình 3-11 (bấm chọn phần trên mô hình, Shift để gộp, nhãn, chú thích, Lưu góc nhìn / Góc nhìn chuẩn, kéo thả hoặc Alt + mũi tên sắp thứ tự, thêm phần bằng ô chọn khi không dùng chuột); khung 3D dựng trên `CanhBaiHoc` của BH01 (mục 11) |
 | HT01 | Tra cứu bài học | Dev Bài học | 1 | Chưa làm | | |
-| HT02 | Tự khám phá mô hình | Dev Bài học | 1 | Chưa làm | | |
+| HT02 | Tự khám phá mô hình | Dev Bài học | 1 | Chưa làm | | Kèm nút Xem trước của màn soạn bài, dùng lại `KhungBaiHoc` (chuyển từ ND02) |
 | BT01 | Bài 1: Cá chép (KHTN 6) | Dev Bài học | 1 | Chưa làm | | |
-| NT07 | Bộ tính công thức chấm thí nghiệm | Dev Quản lý | 2 | Chưa làm | | |
-| HT04 | Làm thí nghiệm | Dev Bài học | 2 | Chưa làm | | |
+| NT07 | Bộ tính công thức chấm thí nghiệm | Dev Quản lý | 2 | Chưa làm | | Đọc `config.thi_nghiem.cong_thuc`, `sai_so`; cùng HT04 chốt nội dung khóa `thi_nghiem` |
+| HT04 | Làm thí nghiệm | Dev Bài học | 2 | Chưa làm | | Kèm thẻ Thí nghiệm của màn soạn bài: soạn `config.thi_nghiem` (`thong_so`, `cong_thuc_hien_thi`, `cong_thuc`, `sai_so`) cùng NT07 (chuyển từ ND02) |
 | ND04 | Soạn câu hỏi kiểm tra | Dev Quản lý | 2 | Chưa làm | | |
 | HT05 | Làm bài kiểm tra nhanh | Dev Bài học | 2 | Chưa làm | | |
 | BT02 | Bài 2: Chuẩn độ axit – bazơ (Hóa 11) | Dev Bài học | 2 | Chưa làm | | |
 | BT03 | Bài 3: Cấu tạo tim người (KHTN 8) | Dev Bài học | 2 | Chưa làm | | |
-| HT03 | Xem phim mở đầu | Dev Bài học | 2 | Chưa làm | | Nên có |
+| HT03 | Xem phim mở đầu | Dev Bài học | 2 | Chưa làm | | Nên có. Kèm soạn `config.kich_ban_phim` (chuyển từ ND02) |
 | QL01 | Quản lý trường (kèm quản trị trường) | Dev Quản lý | 3 | Chưa làm | | |
 | QL03 | Quản lý học sinh | Dev Quản lý | 3 | Chưa làm | | |
 | QL04 | Nhập học sinh từ Excel | Dev Quản lý | 3 | Chưa làm | | |
@@ -266,11 +268,21 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Mã phòng khi điều khiển lớp (LH05): theo chương 3, học sinh mở bài là tự vào phòng của lớp mình, không cần mã phòng;
   UC13 (có mã phòng) là phương án cũ.
 
+**Cấu hình bài học `lessons.config` (trưởng nhóm chốt 20/11/2026)**
+- `lessons.config` có đúng 3 khóa: `camera_tong_quan` (ND02), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc_hien_thi, cong_thuc, sai_so}` (HT04 + NT07). API 50, 52 kiểm tra bằng schema Pydantic: chỉ nhận 3 khóa này, khóa lạ trả 422; nội dung bên trong mỗi khóa để mở, việc tương ứng chốt sau.
+- BẢO MẬT: API 9 (học sinh) KHÔNG trả nguyên `config`; chỉ lấy theo danh sách cho phép (`camera_tong_quan`, `kich_ban_phim`, `thi_nghiem.thong_so`, `thi_nghiem.cong_thuc_hien_thi`); tuyệt đối không có `cong_thuc`, `sai_so`.
+- Soạn nội dung `config`: `camera_tong_quan` → ND02 (nút "Lưu góc tổng quan"; trước giao ND03 nhưng ND03 đã xong trước khi chốt), `kich_ban_phim` → HT03, `thi_nghiem` → HT04 + NT07; nút Xem trước → sau HT02 (dùng lại `KhungBaiHoc`).
+- `thi_nghiem.cong_thuc_hien_thi` (gửi học sinh, để vẽ hiện tượng, đồ thị – chương 3: "công thức hiển thị để máy
+  học sinh phản hồi tức thì") tách khỏi `thi_nghiem.cong_thuc` (công thức chấm, bí mật). Lưu ý: công thức hiển thị có
+  thể trùng cách tính đáp án; chấp nhận vì máy chủ tự chấm lại và không gửi `sai_so`.
+- API 9 dùng `asset` (`file_url`, `file_size`, `attribution`) thay `model` của chương 3: lệch chương 3 có chủ ý để đồng
+  bộ API 51, trưởng nhóm chốt. `asset.file_size` bắt buộc có (chương 3 yêu cầu dung lượng để hiện phần trăm tải).
+
 **Khung bài học 3D (BH01)**
 - Quy tắc tọa độ: tâm mô hình = tâm khối bao của TOÀN BỘ mô hình, đưa về gốc, không co giãn, không xoay. Một hàm dùng
   chung `duaTamVeGoc` (`src/components/mo-hinh-3d/tinh-toan.ts`, có test) cho BH01 (xem) và ND03 (gắn nhãn).
-- `camera_view` (bài và bộ phận) = `{ "position": [x, y, z], "target": [x, y, z] }` theo hệ tọa độ trên – ĐỀ XUẤT, chờ
-  thống nhất với Dev Quản lý (mục 10). Khuôn dạng API 9 đề xuất: kiểu `LessonView` trong `src/api/types.ts` (tên riêng, không trùng `LessonDetail` của API 51 –
+- `config.camera_tong_quan` (bài) và `camera_view` (bộ phận) = `{ "position": [x, y, z], "target": [x, y, z] }` theo hệ tọa độ trên – đã chốt
+  (Dev Quản lý đồng ý ở ND03, mục 10 dòng "Gắn nhãn bộ phận"). Khuôn dạng API 9 đề xuất: kiểu `LessonView` trong `src/api/types.ts` (tên riêng, không trùng `LessonDetail` của API 51 –
   xem mục 10 dòng "API học tập").
 - So tên mesh qua `chuanHoaTenMesh` (đúng hàm Three.js dùng: khoảng trắng thành `_`, bỏ `[]:./`); tên khớp với một nút
   nhóm thì lấy mọi mesh con. Tên mesh trùng nhau trong file: Three.js thêm đuôi `_1`… nên không khớp – ND01 nên cảnh báo.
@@ -281,7 +293,7 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Thẻ chú thích: hai cột trái / phải sát mô hình, đặt ngang điểm neo rồi đẩy cho không chồng nhau; bài trên 10 bộ phận
   chỉ hiện thẻ bộ phận đang xem, các bộ phận khác chỉ còn chấm ghim. Chấm ghim đặt vào mesh gần tâm bộ phận nhất (bộ
   phận nhiều mesh rời như hai nguyên tử H thì tâm khối bao rơi vào khoảng trống). Điểm neo ra ngoài khung thì ẩn thẻ.
-- Chế độ: Phim chỉ hiện khi `config.film_script` có nội dung; Thí nghiệm chỉ với bài `EXPERIMENT`; Kiểm tra luôn hiện.
+- Chế độ: Phim chỉ hiện khi `config.kich_ban_phim` có nội dung; Thí nghiệm chỉ với bài `EXPERIMENT`; Kiểm tra luôn hiện.
   Chế độ chưa làm hiện "đang được xây dựng".
 - Bàn phím (vùng 3D): mũi tên xoay 7,5°, `+` / `-` phóng to / thu nhỏ, `Esc` bỏ chọn; danh sách bộ phận dùng Tab.
 - **Ngoại lệ cỡ nút (đã chốt):** khung bài học giữ cỡ theo ảnh mẫu Hình 3-5 khi dùng chuột – nút chế độ 32 px, dòng danh
@@ -444,14 +456,14 @@ trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/P
 | QL00 | — | | | | | | | Bỏ: đã có API thật nên làm thẳng màn hình với API; file Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | 2 | | Hình 3-5 | feature/BH01-khung-bai-hoc-3d | | | | Trưởng nhóm làm thay Dev Bài học. Chạy bằng dữ liệu mẫu khuôn dạng API 9; HT02 nối API 9 |
 | ND01 | — | 45–48 | Thư viện mô hình 3D (Bảng 3-15), Hình 3-11 | feature/ND01-nap-mo-hinh-3d | | | | Xong (ce33d83). Xem 3D dùng `MoHinh3D` của NT08 |
-| ND02 | 4 | 7, 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học. Đã có API 7, 49–55 và màn soạn bài (Thông tin, Mô hình); còn soạn `config` |
+| ND02 | 4 | 7, 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học. Đã có API 7, 49–55 và màn soạn bài (Thông tin, Mô hình); còn kiểm tra khung `config` 3 khóa ở API 50, 52, nút "Lưu góc tổng quan" (`config.camera_tong_quan`), đổi khóa đọc cũ `config.camera_view` (mục 2, 10). Soạn `kich_ban_phim`, `thi_nghiem`, nút Xem trước chuyển sang HT03, HT04, HT02 |
 | ND03 | 5 | 56 | Hình 3-11 (thẻ Nhãn) | feature/ND03-gan-nhan-bo-phan | Dev Quản lý: ND02; Dev Bài học: ND02, BH01 | | Dev Quản lý: API 56 lưu nhãn (cùng nhóm /api/editor của ND02); Dev Bài học: chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Xong cả hai phần (Dev Quản lý làm cả phần giao diện, không chờ BH01). Gộp `dev` sau BH01: khung 3D chuyển sang `CanhBaiHoc`, theo quy ước tọa độ của BH01 |
 | HT01 | 6 | 7, 8 | Hình 3-4 | feature/HT01-thu-vien-bai-hoc | | | | API 7–8 phía máy chủ: xem mục 10, dòng "API học tập" |
-| HT02 | 7 | 9 | Hình 3-5 | feature/HT02-tu-kham-pha-mo-hinh | | | | API 9 phía máy chủ: xem mục 10, dòng "API học tập" |
+| HT02 | 7 | 9 | Hình 3-5 | feature/HT02-tu-kham-pha-mo-hinh | | | | API 9 phía máy chủ: xem mục 10, dòng "API học tập". Kèm nút Xem trước của màn soạn bài (chuyển từ ND02) |
 | BT01 | 8 | 46, 50–56 | Hình 3-5 | feature/BT01-bai-ca-chep | | | | Nhập nội dung qua màn soạn bài; giáo viên duyệt chú thích |
-| NT07 | 9 | 10 | | feature/NT07-bo-tinh-cong-thuc | | | | Làm trước HT04 của Dev Bài học; thống nhất cách viết công thức (mục 10) |
+| NT07 | 9 | 10 | | feature/NT07-bo-tinh-cong-thuc | | | | Làm trước HT04 của Dev Bài học; thống nhất cách viết công thức (mục 10). Đọc `config.thi_nghiem.cong_thuc`, `sai_so` (khung đã chốt, mục 10) |
 | ND04 | 10 | 57–59 | Soạn câu hỏi (Bảng 3-15), Hình 3-11 | feature/ND04-soan-cau-hoi | | | | Làm trước HT05 của Dev Bài học |
-| HT04 | 11 | 9, 10 | Hình 3-6 | feature/HT04-lam-thi-nghiem | | | | Công thức hiển thị phía trình duyệt phải khớp bộ tính NT07 (mục 10) |
+| HT04 | 11 | 9, 10 | Hình 3-6 | feature/HT04-lam-thi-nghiem | | | | Công thức hiển thị phía trình duyệt phải khớp bộ tính NT07 (mục 10). Kèm thẻ Thí nghiệm: soạn `config.thi_nghiem` cùng NT07 (chuyển từ ND02) |
 | HT05 | 12 | 9, 10 | Hình 3-7 | feature/HT05-bai-kiem-tra-nhanh | | | | API 9 không trả đáp án; chấm ở máy chủ (LH03) |
 | BT02 | 13 | 46, 50–56 | Hình 3-6 | feature/BT02-bai-chuan-do | | | | Giáo viên kiểm tra công thức pH |
 | BT03 | 14 | 46, 50–56 | Hình 3-5 | feature/BT03-bai-tim-nguoi | | | | Kiểm tra giấy phép mô hình (ghi công CC BY) |
@@ -470,7 +482,7 @@ trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/P
 | LH04 | 27 | 19, 20 | Hình 3-9 | feature/LH04-ket-qua-ca-lop | | | | |
 | VH04 | 28 | | | feature/VH04-thu-thiet-bi-that | BH02, LH03 | | | Kế hoạch gốc ghi cần LH05 (Nên có) xong trước; đổi thành BH02, LH03 để việc Bắt buộc không chờ việc Nên có. Phần điều khiển màn hình lớp thử thêm khi LH05 xong (chờ trưởng nhóm chốt, mục 7) |
 | VH06 | 29 | | | feature/VH06-kiem-thu-tai-trien-khai | | | | Kèm HTTPS (Let's Encrypt, cổng 443) |
-| HT03 | 31 | 9 | Phim mở đầu (Bảng 3-15) | feature/HT03-phim-mo-dau | | | | |
+| HT03 | 31 | 9 | Phim mở đầu (Bảng 3-15) | feature/HT03-phim-mo-dau | | | | Kèm soạn `config.kich_ban_phim` (chuyển từ ND02) |
 | QL06 | 32 | 33–35 | Hình 3-10 | feature/QL06-nhap-giao-vien-excel | | | | |
 | QL02 | 33 | 70–73 | Quản lý biên tập viên (Bảng 3-15) | feature/QL02-quan-ly-bien-tap-vien | | | | |
 | LH05 | 34 | 21 (WebSocket) | Hình 3-5 | feature/LH05-dieu-khien-man-hinh-lop | Dev Quản lý: LH01; Dev Bài học: BH01, LH01 | | Dev Bài học: phía trình duyệt, đồng bộ góc nhìn, bộ phận của giáo viên tới học sinh; Dev Quản lý: kênh WebSocket /ws/class/{class_id} phía máy chủ (mục 3.1.6) | Tách đôi theo ghi chú kế hoạch gốc |
@@ -485,12 +497,12 @@ Những chỗ Dev Quản lý và Dev Bài học phải thống nhất TRƯỚC k
 
 | Chủ đề | Việc liên quan | Dev Quản lý | Dev Bài học | Cần thống nhất | Đã thống nhất |
 |---|---|---|---|---|---|
-| Cách viết công thức chấm | NT07, HT04, BT02 | Bộ tính biểu thức an toàn phía máy chủ (Python), chấm lại khi nộp | Tính cùng công thức phía trình duyệt để vẽ hiện tượng, đồ thị | Cú pháp công thức trong lessons.config, tên biến thông số, đơn vị, cách ghi sai số; một bộ số liệu mẫu chung để test cả hai phía ra cùng kết quả | Chưa |
-| Cấu hình bài học | ND02, BH01, HT02, HT03, HT04 | Lưu và sửa lessons.config (màn soạn bài) | Đọc lessons.config để dựng khung 3D, kịch bản phim, thông số thí nghiệm | Cấu trúc JSON của lessons.config (góc camera, kịch bản phim, thông số, khoảng giá trị). Đề xuất của BH01: `config.camera_view` (góc tổng quan, dạng như `camera_view` bộ phận), `config.film_script` (mảng, rỗng thì ẩn Phim) – kiểu `LessonConfig` trong `frontend/src/api/types.ts` | Chưa |
+| Cách viết công thức chấm | NT07, HT04, BT02 | Bộ tính biểu thức an toàn phía máy chủ (Python), chấm lại khi nộp | Tính cùng công thức phía trình duyệt để vẽ hiện tượng, đồ thị | Cú pháp công thức trong lessons.config, tên biến thông số, đơn vị, cách ghi sai số; một bộ số liệu mẫu chung để test cả hai phía ra cùng kết quả. Công thức, sai số đặt trong `config.thi_nghiem.cong_thuc`, `config.thi_nghiem.sai_so` (khung đã chốt, dòng "Cấu hình bài học") | Chưa |
+| Cấu hình bài học | ND02, ND03, BH01, HT02, HT03, HT04, NT07 | Lưu và sửa lessons.config (màn soạn bài) | Đọc lessons.config để dựng khung 3D, kịch bản phim, thông số thí nghiệm | ĐÃ CHỐT KHUNG (trưởng nhóm, 20/11/2026): `lessons.config` có đúng 3 khóa: `camera_tong_quan` (ND02), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc_hien_thi, cong_thuc, sai_so}` (HT04 + NT07). API 50, 52 kiểm tra bằng schema Pydantic: chỉ nhận 3 khóa này, khóa lạ trả 422; nội dung bên trong mỗi khóa để mở, việc tương ứng chốt sau. BẢO MẬT: API 9 (học sinh) KHÔNG trả nguyên `config`; chỉ lấy theo danh sách cho phép (`camera_tong_quan`, `kich_ban_phim`, `thi_nghiem.thong_so`, `thi_nghiem.cong_thuc_hien_thi`); tuyệt đối không có `cong_thuc`, `sai_so`. `camera_tong_quan` cùng dạng `camera_view` của bộ phận (`{position, target}`, xem dòng "Gắn nhãn bộ phận"). Còn chốt: nội dung từng khóa (ND02, HT03, HT04 + NT07) | Khung 3 khóa: đã chốt. Nội dung từng khóa: chưa |
 | Gắn nhãn bộ phận | ND03, ND01, ND02 | API 56 lưu danh sách nhãn; API 47 trả danh sách mesh của mô hình (đã có: `mesh_names` là tên node có mesh trong file GLB, theo thứ tự trong file); API 51 (ND02) đã trả `parts`, `asset.mesh_names`. Đề xuất: API 56 không cho xóa hết nhãn của bài đang xuất bản (ND02 coi ≥1 nhãn là điều kiện xuất bản) | Chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Khuôn dạng mesh_names, camera_view; cách đặt tên mesh trong file GLB. Đề xuất của BH01 (trưởng nhóm đã chốt hướng, cần Dev Quản lý đồng ý): `camera_view = {position: [x,y,z], target: [x,y,z]}` theo hệ tọa độ "tâm khối bao toàn mô hình về gốc, không co giãn" (hàm `duaTamVeGoc`); `mesh_names` lưu tên gốc trong file, so qua `chuanHoaTenMesh`; tên mesh trong một file không được trùng | Đã chốt: Dev Quản lý đồng ý đề xuất của BH01, ND03 làm theo (thẻ Bộ phận dựng trên `CanhBaiHoc`, dò tên phần bằng `tenPhanCuaVat` – cùng quy tắc `chuanHoaTenMesh`). Thêm: mỗi phần chỉ thuộc một bộ phận; API 56 giữ id bộ phận gửi kèm. Còn chờ ND04: xóa bộ phận đang được câu hỏi PICK_PART dùng |
 | Nộp bài | LH03, HT04, HT05 | API 10: nhận bài, chấm lại, chống ghi trùng client_id | Nút Nộp bài, sinh client_id (UUID), gửi lại khi mất mạng | Cấu trúc experiment_data, answers gửi lên; cách báo kết quả chấm | Chưa |
 | Điều khiển màn hình lớp | LH05, LH01 | Kênh WebSocket /ws/class/{class_id} phía máy chủ, xác thực, phòng trong bộ nhớ | Gửi, nhận sự kiện phía trình duyệt, đồng bộ góc nhìn, bộ phận | Danh sách sự kiện và khuôn dạng tin nhắn (mục 3.1.6 chương 3) | Chưa |
-| API học tập | HT01, HT02, HT05 | API 7 (`/api/subjects`) đã viết cùng ND02. Đề xuất: viết API 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 8–9. Khuôn dạng API 9 đề xuất của BH01: kiểu `LessonView` trong `frontend/src/api/types.ts` (`asset.file_url`, `asset.attribution` – cùng tên trường với API 51; `parts[]` có `mesh_names`, `camera_view`). BẢO MẬT (trưởng nhóm chốt): API 9 dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa hay dùng lại schema của API 51; frontend dùng kiểu `LessonView`, không dùng `LessonDetail` của editor (API 51 có đáp án, sai số) | Chưa – chờ trưởng nhóm (API 7 đã xong ở ND02) |
+| API học tập | HT01, HT02, HT05 | API 7 (`/api/subjects`) đã viết cùng ND02. Đề xuất: viết API 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 8–9. Khuôn dạng API 9 đề xuất của BH01: kiểu `LessonView` trong `frontend/src/api/types.ts` (`asset.file_url`, `asset.file_size` – bắt buộc, `asset.attribution` – cùng tên trường với API 51; `config` chỉ theo danh sách cho phép – dòng "Cấu hình bài học", mục 5; `parts[]` có `mesh_names`, `camera_view`). BẢO MẬT (trưởng nhóm chốt): API 9 dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa hay dùng lại schema của API 51; frontend dùng kiểu `LessonView`, không dùng `LessonDetail` của editor (API 51 có đáp án, sai số) | Chưa – chờ trưởng nhóm (API 7 đã xong ở ND02) |
 | Mô hình 3D | ND01, BH01, BH02 | Kiểm tra ngưỡng khi nạp (150 MB, 1,5 triệu tam giác, texture 4096 px) | Hiển thị, tự giảm chất lượng trên máy yếu | Mức chi tiết mục tiêu cho máy yếu, máy tính bảng; tên file có số phiên bản | Chưa |
 | File dùng chung | Mọi việc | backend/app/main.py (gắn router) | frontend/src/lib/roles.ts (menu), frontend/src/App.tsx (đường dẫn) | Chỉ thêm phần của mình, không sửa phần người khác; kéo dev về mỗi ngày | Đã có trong CLAUDE.md |
 
