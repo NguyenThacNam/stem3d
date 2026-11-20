@@ -50,7 +50,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Chưa làm | | Việc khó nhất |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e (PR #5), ce33d83 | Phần nền (PR #5): volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB. API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
-| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | b8b03a4 | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
+| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | b8b03a4, (commit sửa ND02) | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
 | ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Chưa làm | | |
 | HT01 | Tra cứu bài học | Dev Bài học | 1 | Chưa làm | | |
 | HT02 | Tự khám phá mô hình | Dev Bài học | 1 | Chưa làm | | |
@@ -145,6 +145,8 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | NT08 | Three.js 0.187.0; thành phần `MoHinh3D` (nạp GLB, kéo xoay / phóng to, tự canh camera, nền ô li, 3 trạng thái, giải phóng bộ nhớ đồ họa); phần tính toán thuần có test; trang thử `/thu-mo-hinh-3d` chỉ ở bản dev (mô hình mẫu, mở file GLB trên máy, đo thời gian tải / khung hình); CSP thêm `connect-src blob:`. Trưởng nhóm làm thay Dev Bài học | nhánh feature/NT08-thu-hien-thi-mo-hinh-3d |
 
 | ND01 | API 45–48 (danh sách phân trang + tìm tên, nạp có kiểm tra tự động, chi tiết, xóa – khóa dòng, 409 khi bài đang dùng); màn Thư viện mô hình 3D: bảng chỉ số tô vàng khi vượt mức khuyến nghị, hộp thoại nạp (kéo thả, % tải lên, xác nhận cảnh báo, báo cáo kiểm tra, xem trước 3D ngay trên máy), chi tiết (xem 3D, các phần, bài đang dùng), xóa; xem 3D dùng `MoHinh3D` (NT08), nạp lười | ce33d83 |
+| ND02 | API 7, 49–55 (môn học; tạo, sửa, xóa, xuất bản, gỡ bài – 400 `LESSON_INCOMPLETE`, 409 `LESSON_IN_USE`, `DUPLICATE_LESSON`, `LESSON_ASSIGNED`); màn Bài học (lọc, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình) | b8b03a4 |
+| ND02 (sửa) | Xuất bản khi gặp hỏi trùng bài: bấm "Vẫn lưu" giờ xuất bản tiếp (trước chỉ lưu nháp, không báo); "Vẫn lưu" sau Lưu nháp hiện "Đã lưu lúc …"; thẻ Mô hình tự tải lại danh sách khi quay về thẻ trình duyệt và có nút tải lại; lỗi ở cả ô thông tin bài lẫn mô hình thì ở lại thẻ Thông tin bài | (commit sửa ND02) |
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
 

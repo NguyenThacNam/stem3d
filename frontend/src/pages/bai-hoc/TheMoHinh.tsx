@@ -2,7 +2,7 @@
  * Thẻ "Mô hình" của màn soạn bài (UC 20 bước 3): chọn mô hình đã nạp (API 45), xem trước 3D và báo cáo kiểm tra
  * (API 47; chỉ số vượt mức cảnh báo tô vàng như Hình 3-11). Nạp mô hình mới ở màn Mô hình 3D.
  */
-import { Box, ExternalLink, Search, TriangleAlert } from "lucide-react";
+import { Box, ExternalLink, RefreshCw, Search, TriangleAlert } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { getAsset, listAssets, SOURCE_LABEL, type AssetDetail, type AssetListItem } from "@/api/assets";
@@ -49,6 +49,15 @@ export function TheMoHinh({
     return () => clearTimeout(t);
   }, [q, lanTai]);
 
+  // Nạp mô hình ở thẻ trình duyệt khác rồi quay lại thì tải lại danh sách để thấy mô hình vừa nạp.
+  useEffect(() => {
+    const khiQuayLai = () => {
+      if (document.visibilityState === "visible") setLanTai((x) => x + 1);
+    };
+    document.addEventListener("visibilitychange", khiQuayLai);
+    return () => document.removeEventListener("visibilitychange", khiQuayLai);
+  }, []);
+
   useEffect(() => {
     setChiTiet(null);
     setLoiChiTiet(null);
@@ -70,15 +79,28 @@ export function TheMoHinh({
           <h2 id="chon-mo-hinh" className="text-[15px] font-medium">
             Chọn mô hình
           </h2>
-          <Link
-            to="/bien-tap/mo-hinh"
-            target="_blank"
-            rel="noopener"
-            className="inline-flex items-center gap-1 text-[14px] text-accent-ink underline-offset-2 hover:underline"
-          >
-            Nạp mô hình mới
-            <ExternalLink className="size-3.5" strokeWidth={1.5} aria-hidden />
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link
+              to="/bien-tap/mo-hinh"
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-1 text-[14px] text-accent-ink underline-offset-2 hover:underline"
+            >
+              Nạp mô hình mới
+              <ExternalLink className="size-3.5" strokeWidth={1.5} aria-hidden />
+              <span className="sr-only"> (mở thẻ mới)</span>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-10"
+              aria-label="Tải lại danh sách mô hình"
+              title="Tải lại danh sách mô hình"
+              onClick={() => setLanTai((x) => x + 1)}
+            >
+              <RefreshCw strokeWidth={1.5} aria-hidden />
+            </Button>
+          </div>
         </div>
         <Input
           type="text"

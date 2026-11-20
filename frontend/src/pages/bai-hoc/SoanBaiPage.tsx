@@ -4,7 +4,7 @@
  * thống nhất với Dev Bài học – TIEN_DO.md mục 10).
  */
 import { ChevronRight, CircleCheck, Eye, TriangleAlert, Undo2 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { Link, useParams } from "react-router";
 import { ApiError } from "@/api/client";
 import {
@@ -30,6 +30,9 @@ import { kiemTraThongTin, ThongTinBaiForm, type LoiThongTin, type ThongTinBai } 
 
 type The = "thong-tin" | "mo-hinh" | "bo-phan" | "cau-hoi" | "thi-nghiem";
 
+/** Việc làm tiếp khi lưu xong (dùng khi máy chủ hỏi trùng bài, người dùng bấm "Vẫn lưu"). */
+type SauKhiLuu = "luu" | "xuat-ban";
+
 type TaiBai = { kind: "loading" } | { kind: "error"; message: string; notFound: boolean } | { kind: "ready" };
 
 export function SoanBaiPage() {
@@ -44,13 +47,13 @@ export function SoanBaiPage() {
   const [loi, setLoi] = useState<LoiThongTin>({});
   const [thongBao, setThongBao] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const [dangLuu, setDangLuu] = useState(false);
-  const [trung, setTrung] = useState<DuplicateLesson[] | null>(null);
+  // Hộp hỏi trùng bài nhớ luôn việc người dùng đang làm (lưu nháp hay xuất bản) để "Vẫn lưu" làm tiếp đúng việc đó.
+  const [trung, setTrung] = useState<{ ds: DuplicateLesson[]; sauDo: SauKhiLuu } | null>(null);
   const [thieu, setThieu] = useState<string[] | null>(null);
   const [moGo, setMoGo] = useState(false);
   const [giaoConHan, setGiaoConHan] = useState<ActiveAssignment[] | null>(null);
   const [loiGo, setLoiGo] = useState<string | null>(null);
   const [lanTai, setLanTai] = useState(0);
-  const xuatBanSauLuu = useRef(false);
 
   const napBai = useCallback((b: LessonDetail) => {
     setBai(b);
@@ -106,7 +109,7 @@ export function SoanBaiPage() {
   }, [thayDoi]);
 
   /** Lưu (API 52). Trả bài mới hoặc null nếu chưa lưu được (lỗi đã hiện). */
-  async function luu(xacNhanTrung = false): Promise<LessonDetail | null> {
+  async function luu(xacNhanTrung = false, sauDo: SauKhiLuu = "luu"): Promise<LessonDetail | null> {
     if (!bai || !form) return null;
     const l = kiemTraThongTin(form);
     setLoi(l);
@@ -127,7 +130,7 @@ export function SoanBaiPage() {
       return b;
     } catch (e) {
       if (e instanceof ApiError && e.code === "DUPLICATE_LESSON") {
-        setTrung((e.details as DuplicateLesson[] | null) ?? []);
+        setTrung({ ds: (e.details as DuplicateLesson[] | null) ?? [], sauDo });
         return null;
       }
       setTrung(null);
@@ -136,11 +139,18 @@ export function SoanBaiPage() {
         return null;
       }
       const loiO = loiTuMayChu(e);
-      if (loiO) {
-        setLoi(loiO);
-        setThe("thong-tin");
-      }
       const c = cauLoi(e, "Không lưu được, hãy thử lại");
+      if (loiO) setLoi(loiO);
+      if (loiO && c.loiMoHinh) {
+        // Lỗi ở cả hai thẻ: ở lại thẻ Thông tin bài (thấy ô bị đánh dấu), câu báo nhắc thêm thẻ Mô hình.
+        setThe("thong-tin");
+        setThongBao({
+          tone: "danger",
+          text: `Hãy sửa các ô được đánh dấu. ${c.text}. Kiểm tra thêm thẻ Mô hình`,
+        });
+        return null;
+      }
+      if (loiO) setThe("thong-tin");
       if (c.loiMoHinh) setThe("mo-hinh");
       setThongBao({ tone: "danger", text: c.text });
       return null;
@@ -149,22 +159,20 @@ export function SoanBaiPage() {
     }
   }
 
+  function baoDaLuu() {
+    setThongBao({
+      tone: "success",
+      text: `Đã lưu lúc ${new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`,
+    });
+  }
+
   async function luuNhap() {
-    const b = await luu();
-    if (b)
-      setThongBao({
-        tone: "success",
-        text: `Đã lưu lúc ${new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`,
-      });
+    if (await luu()) baoDaLuu();
   }
 
   async function xuatBan(daLuu?: LessonDetail) {
     let b = daLuu ?? bai;
-    if (!daLuu && thayDoi) {
-      xuatBanSauLuu.current = true;
-      b = await luu();
-    }
-    xuatBanSauLuu.current = false;
+    if (!daLuu && thayDoi) b = await luu(false, "xuat-ban");
     if (!b) return;
     setDangLuu(true);
     setThongBao(null);
@@ -418,14 +426,16 @@ export function SoanBaiPage() {
       </div>
 
       <TrungBaiDialog
-        trung={trung}
+        trung={trung?.ds ?? null}
         dangLuu={dangLuu}
         onClose={() => setTrung(null)}
         onConfirm={async () => {
           // Đang bấm Xuất bản thì bị hỏi trùng: lưu xong xuất bản tiếp, không bắt bấm lại.
-          const tiep = xuatBanSauLuu.current;
-          const b = await luu(true);
-          if (b && tiep) await xuatBan(b);
+          const sauDo = trung?.sauDo ?? "luu";
+          const b = await luu(true, sauDo);
+          if (!b) return;
+          if (sauDo === "xuat-ban") await xuatBan(b);
+          else baoDaLuu();
         }}
       />
       <ThieuDieuKienDialog thieu={thieu} onClose={() => setThieu(null)} />
