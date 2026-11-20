@@ -66,7 +66,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | BT01 | Bài 1: Cá chép (KHTN 6) | Dev Bài học | 1 | Chưa làm | | |
 | NT07 | Bộ tính công thức chấm thí nghiệm | Dev Quản lý | 2 | Chưa làm | | |
 | HT04 | Làm thí nghiệm | Dev Bài học | 2 | Chưa làm | | |
-| ND04 | Soạn câu hỏi kiểm tra | Dev Quản lý | 2 | Chưa làm | | |
+| ND04 | Soạn câu hỏi kiểm tra | Dev Quản lý | 2 | Đang làm | | Người làm: Dev Quản lý. Mới bắt đầu (API 57–59, thẻ Câu hỏi Hình 3-11) |
 | HT05 | Làm bài kiểm tra nhanh | Dev Bài học | 2 | Chưa làm | | |
 | BT02 | Bài 2: Chuẩn độ axit – bazơ (Hóa 11) | Dev Bài học | 2 | Chưa làm | | |
 | BT03 | Bài 3: Cấu tạo tim người (KHTN 8) | Dev Bài học | 2 | Chưa làm | | |
