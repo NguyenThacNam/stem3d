@@ -150,3 +150,24 @@ def add_part(db: Session, part: LessonPart) -> None:
 def delete_parts(db: Session, parts: list[LessonPart]) -> None:
     for p in parts:
         db.delete(p)
+
+
+# ---------------------------------------------------------------- câu hỏi (API 57–59)
+def get_question(db: Session, question_id: int, *, doc_lai: bool = False) -> Question | None:
+    """`doc_lai`: đọc lại từ CSDL (bỏ bản trong phiên) – dùng sau khi đã khóa dòng bài để thấy thay đổi của người khác."""
+    if not doc_lai:
+        return db.get(Question, question_id)
+    return db.scalar(
+        select(Question).where(Question.id == question_id).execution_options(populate_existing=True)
+    )
+
+
+def add_question(db: Session, q: Question) -> Question:
+    db.add(q)
+    db.flush()
+    return q
+
+
+def delete_question(db: Session, q: Question) -> None:
+    db.delete(q)
+    db.flush()

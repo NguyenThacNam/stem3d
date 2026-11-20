@@ -1,8 +1,8 @@
 /**
  * Màn soạn bài (Hình 3-11; API 51, 52, 54–56; UC 20, 22). ND02 làm khung, thẻ "Thông tin bài" và "Mô hình"; ND03
  * làm thẻ "Bộ phận" (nút Lưu gọi API 52 rồi API 56 cho phần nào có thay đổi).
- * Thẻ Câu hỏi (ND04), Thí nghiệm và nút Xem trước chờ việc sau (cấu trúc lessons.config chưa thống nhất với
- * Dev Bài học – TIEN_DO.md mục 10).
+ * ND04 làm thẻ "Câu hỏi" (lưu riêng từng câu, API 57–59). Thẻ Thí nghiệm và nút Xem trước chờ việc sau (cấu trúc
+ * lessons.config chưa thống nhất với Dev Bài học – TIEN_DO.md mục 10).
  */
 import { ChevronRight, CircleCheck, Eye, TriangleAlert, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useState, type KeyboardEvent, type MouseEvent } from "react";
@@ -17,6 +17,7 @@ import {
   updateLesson,
   type ActiveAssignment,
   type DuplicateLesson,
+  type PartInUse,
   type LessonDetail,
   type Subject,
 } from "@/api/editorLessons";
@@ -38,7 +39,9 @@ import {
 } from "./bo-phan";
 import { cauLoi, loiTuMayChu, thanhDauVao, tuBaiHoc } from "./chuyen-doi";
 import { GoXuatBanDialog, ThieuDieuKienDialog, TrungBaiDialog } from "./HopThoai";
+import { type CauNhap, khacDaLuu as khacCauDaLuu } from "./cau-hoi";
 import { TheBoPhan } from "./TheBoPhan";
+import { TheCauHoi } from "./TheCauHoi";
 import { TheMoHinh } from "./TheMoHinh";
 import { kiemTraThongTin, ThongTinBaiForm, type LoiThongTin, type ThongTinBai } from "./ThongTinBaiForm";
 
@@ -60,6 +63,8 @@ export function SoanBaiPage() {
   const [assetId, setAssetId] = useState<number | null>(null);
   const [loi, setLoi] = useState<LoiThongTin>({});
   const [boPhan, setBoPhan] = useState<BoPhanNhap[]>([]);
+  // Câu hỏi đang soạn ở thẻ Câu hỏi: giữ ở đây để đổi thẻ không mất.
+  const [cauNhap, setCauNhap] = useState<CauNhap | null>(null);
   const [loiBoPhan, setLoiBoPhan] = useState<LoiBoPhan>({});
   const [thongBao, setThongBao] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const [dangLuu, setDangLuu] = useState(false);
@@ -122,14 +127,18 @@ export function SoanBaiPage() {
     (JSON.stringify(form) !== JSON.stringify(tuBaiHoc(bai)) || assetId !== (bai.asset?.id ?? null));
   const doiBoPhan = !!bai && khacDaLuu(boPhan, bai.parts);
   const thayDoi = doiThongTin || doiBoPhan;
+  // Câu hỏi lưu riêng từng câu (thẻ Câu hỏi), không tính vào nút Lưu nháp; chỉ dùng để hỏi lại khi rời trang.
+  const cauChuaLuu =
+    !!bai && !!cauNhap && khacCauDaLuu(cauNhap, bai.questions.find((q) => q.id === cauNhap.id) ?? null);
+  const conChuaLuu = thayDoi || cauChuaLuu;
 
   // Đóng tab / tải lại khi còn thay đổi chưa lưu: trình duyệt hỏi lại.
   useEffect(() => {
-    if (!thayDoi) return;
+    if (!conChuaLuu) return;
     const chan = (e: BeforeUnloadEvent) => e.preventDefault();
     window.addEventListener("beforeunload", chan);
     return () => window.removeEventListener("beforeunload", chan);
-  }, [thayDoi]);
+  }, [conChuaLuu]);
 
   /**
    * Lưu thông tin bài (API 52) rồi nhãn bộ phận (API 56), phần nào có thay đổi thì gửi phần đó.
@@ -187,9 +196,14 @@ export function SoanBaiPage() {
       setThe("bo-phan");
       const cau = lb
         ? "Có bộ phận chưa hợp lệ, hãy sửa các bộ phận có dấu cảnh báo"
-        : e instanceof ApiError
-          ? e.message
-          : "Không lưu được nhãn bộ phận, hãy thử lại";
+        : e instanceof ApiError && e.code === "PART_IN_USE" && Array.isArray(e.details)
+          ? // Bộ phận đang là đáp án câu "chọn bộ phận" (ND04): nói rõ câu nào.
+            `${e.message}: ${(e.details as PartInUse[])
+              .map((d) => `câu ${d.question_no} dùng "${d.part_label}"`)
+              .join("; ")}`
+          : e instanceof ApiError
+            ? e.message
+            : "Không lưu được nhãn bộ phận, hãy thử lại";
       // Thông tin bài vừa lưu xong mà nhãn lỗi: nói rõ phần nào đã lưu.
       setThongBao({
         tone: "danger",
@@ -293,7 +307,7 @@ export function SoanBaiPage() {
 
   /** Rời màn soạn qua liên kết khi còn thay đổi chưa lưu: hỏi lại (menu thanh bên chưa chặn được – TIEN_DO.md mục 6). */
   function hoiKhiRoi(e: MouseEvent) {
-    if (thayDoi && !window.confirm("Bài còn thay đổi chưa lưu. Rời trang và bỏ các thay đổi này?"))
+    if (conChuaLuu && !window.confirm("Bài còn thay đổi chưa lưu. Rời trang và bỏ các thay đổi này?"))
       e.preventDefault();
   }
 
@@ -494,21 +508,27 @@ export function SoanBaiPage() {
             onDenTheMoHinh={() => setThe("mo-hinh")}
           />
         )}
-        {(the === "cau-hoi" || the === "thi-nghiem") && (
+        {the === "cau-hoi" && (
+          <TheCauHoi
+            bai={bai}
+            boPhanChuaLuu={doiBoPhan}
+            nhap={cauNhap}
+            onNhap={setCauNhap}
+            onDoiCauHoi={(ds) => setBai((b) => (b ? { ...b, questions: ds } : b))}
+            onDenTheBoPhan={() => setThe("bo-phan")}
+          />
+        )}
+        {the === "thi-nghiem" && (
           <section className="flex flex-col items-center justify-center gap-2 rounded-card border border-line bg-surface px-6 py-16 text-center">
             <p className="font-medium">
-              {the === "cau-hoi"
-                ? "Soạn câu hỏi sẽ có ở bản cập nhật tới"
-                : laThiNghiem
-                  ? "Cấu hình thí nghiệm sẽ có ở bản cập nhật tới"
-                  : "Bài cấu tạo không có phần thí nghiệm"}
+              {laThiNghiem
+                ? "Cấu hình thí nghiệm sẽ có ở bản cập nhật tới"
+                : "Bài cấu tạo không có phần thí nghiệm"}
             </p>
             <p className="max-w-md text-[14px] text-text-2">
-              {the === "cau-hoi"
-                ? `Bài đang có ${bai.questions.length} câu hỏi.`
-                : laThiNghiem
-                  ? "Thông số, công thức đáp án và sai số cho phép sẽ khai báo ở đây."
-                  : "Đổi loại bài sang Thí nghiệm ở thẻ Thông tin bài nếu bài có thông số, chấm điểm."}
+              {laThiNghiem
+                ? "Thông số, công thức đáp án và sai số cho phép sẽ khai báo ở đây."
+                : "Đổi loại bài sang Thí nghiệm ở thẻ Thông tin bài nếu bài có thông số, chấm điểm."}
             </p>
           </section>
         )}

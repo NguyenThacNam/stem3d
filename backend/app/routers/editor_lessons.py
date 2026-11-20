@@ -1,4 +1,4 @@
-"""Soạn bài học – /api/editor/lessons (Bảng 3-6, API 49–56). Biên tập viên, quản trị hệ thống (kế thừa).
+"""Soạn bài học – /api/editor/lessons (Bảng 3-6, API 49–57), /api/editor/questions (API 58, 59). Biên tập viên, quản trị hệ thống (kế thừa).
 
 Tách khỏi /api/lessons (API học tập 8, 9): các API ở đây trả đầy đủ cấu hình, công thức đáp án, câu hỏi kèm đáp án.
 """
@@ -18,16 +18,21 @@ from app.schemas.editor_lessons import (
     LessonIn,
     LessonListOut,
     LessonPartsIn,
+    QuestionIn,
+    QuestionOut,
+    QuestionUpdate,
     LessonUpdate,
     LessonStatus,
     SubjectOut,
     UnpublishIn,
 )
 from app.services import editor_lessons as service
+from app.services import editor_questions
 from app.services.auth import CurrentUser
 
 router = APIRouter(prefix="/api/editor/lessons", tags=["Soạn bài học"])
 subjects_router = APIRouter(prefix="/api/subjects", tags=["Môn học"])
+questions_router = APIRouter(prefix="/api/editor/questions", tags=["Soạn bài học"])
 
 BienTap = require_role("CONTENT_EDITOR")
 
@@ -135,3 +140,36 @@ def replace_parts(
 ) -> LessonDetailOut:
     """API 56 – lưu toàn bộ danh sách nhãn bộ phận (thay cả danh sách; bộ phận gửi kèm id giữ nguyên id)."""
     return service.replace_parts(db, actor, lesson_id, data, now)
+
+
+@router.post("/{lesson_id}/questions", response_model=QuestionOut, status_code=201)
+def create_question(
+    lesson_id: IdPath,
+    data: QuestionIn,
+    actor: CurrentUser = Depends(BienTap),
+    db: Session = Depends(get_db),
+) -> QuestionOut:
+    """API 57 – thêm câu hỏi vào cuối danh sách (chỉ bài nháp)."""
+    return editor_questions.create_question(db, actor, lesson_id, data)
+
+
+@questions_router.put("/{question_id}", response_model=QuestionOut)
+def update_question(
+    question_id: IdPath,
+    data: QuestionUpdate,
+    actor: CurrentUser = Depends(BienTap),
+    db: Session = Depends(get_db),
+) -> QuestionOut:
+    """API 58 – sửa câu hỏi (thay cả câu; `sort_order` để đổi thứ tự). Chỉ bài nháp."""
+    return editor_questions.update_question(db, actor, question_id, data)
+
+
+@questions_router.delete("/{question_id}", status_code=204)
+def delete_question(
+    question_id: IdPath,
+    actor: CurrentUser = Depends(BienTap),
+    db: Session = Depends(get_db),
+) -> Response:
+    """API 59 – xóa câu hỏi (chỉ bài nháp)."""
+    editor_questions.delete_question(db, actor, question_id)
+    return Response(status_code=204)

@@ -17,5 +17,6 @@ class LessonPart(Base):
     mesh_names: Mapped[Any] = mapped_column(JSONB)
     label: Mapped[str] = mapped_column(Text)
     description: Mapped[str | None] = mapped_column(Text)
-    camera_view: Mapped[Any | None] = mapped_column(JSONB)
+    # none_as_null: None ghi thành NULL của SQL (không phải JSON 'null').
+    camera_view: Mapped[Any | None] = mapped_column(JSONB(none_as_null=True))
     sort_order: Mapped[int] = mapped_column(SmallInteger, server_default=text("0"))

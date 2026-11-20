@@ -18,7 +18,8 @@ class Question(Base):
     lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id", ondelete="CASCADE"))
     question_type: Mapped[str] = mapped_column(String(12))
     content: Mapped[str] = mapped_column(Text)
-    options: Mapped[Any | None] = mapped_column(JSONB)
+    # none_as_null: None ghi thành NULL của SQL (không phải JSON 'null').
+    options: Mapped[Any | None] = mapped_column(JSONB(none_as_null=True))
     # Đáp án và sai số: không bao giờ gửi xuống máy học sinh trước khi nộp.
     answer: Mapped[Any] = mapped_column(JSONB)
     tolerance: Mapped[Decimal | None] = mapped_column(Numeric)
