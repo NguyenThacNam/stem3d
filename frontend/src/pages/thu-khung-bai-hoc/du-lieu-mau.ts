@@ -18,8 +18,8 @@ export const BAI_KINH_HIEN_VI: LessonView = {
   lesson_no: 4,
   title: "Kính hiển vi quang học",
   lesson_type: "STRUCTURE",
-  asset: { file_url: urlKinhHienVi, file_size: null, attribution: "Mô hình mẫu do nhóm Stem3D dựng · CC0" },
-  config: { camera_view: null, film_script: null },
+  asset: { file_url: urlKinhHienVi, file_size: 49992, attribution: "Mô hình mẫu do nhóm Stem3D dựng · CC0" },
+  config: { camera_tong_quan: null, kich_ban_phim: null },
   parts: [
     boPhan(1, "Thị kính", ["thi_kinh"], "Thấu kính mắt nhìn vào, phóng to thêm ảnh do vật kính tạo ra."),
     boPhan(2, "Ống kính", ["ong_kinh"], "Ống nối thị kính với vật kính, giữ hai thấu kính thẳng hàng."),
@@ -46,8 +46,8 @@ export const BAI_PHAN_TU_NUOC: LessonView = {
   lesson_no: 10,
   title: "Phân tử nước",
   lesson_type: "STRUCTURE",
-  asset: { file_url: urlPhanTuNuoc, file_size: null, attribution: null },
-  config: { camera_view: null, film_script: null },
+  asset: { file_url: urlPhanTuNuoc, file_size: 63928, attribution: null },
+  config: { camera_tong_quan: null, kich_ban_phim: null },
   parts: [
     boPhan(
       1,
@@ -82,7 +82,7 @@ export function baiTuTep(ten: string, tenMesh: string[]): LessonView {
     title: "Mô hình trên máy",
     lesson_type: "STRUCTURE",
     asset: null,
-    config: { camera_view: null, film_script: null },
+    config: { camera_tong_quan: null, kich_ban_phim: null },
     parts: tenMesh.map((t, i) => boPhan(i + 1, t, [t], null)),
     questions: [],
   };
