@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import type { Role } from "@/api/types";
 import { useAuth } from "@/auth/AuthProvider";
@@ -6,7 +7,13 @@ import { ErrorScreen, LoadingScreen } from "@/components/FullScreenStatus";
 import { ALL_PAGES, homePath } from "@/lib/roles";
 import { DangNhapPage } from "@/pages/dang-nhap/DangNhapPage";
 import { DoiMatKhauPage } from "@/pages/doi-mat-khau/DoiMatKhauPage";
+import { MoHinh3DPage } from "@/pages/mo-hinh-3d/MoHinh3DPage";
 import { TrangTamPage } from "@/pages/trang-tam/TrangTamPage";
+
+/** Màn hình đã làm, theo đường dẫn menu (src/lib/roles.ts); mục chưa làm dùng trang tạm. */
+const TRANG_DA_LAM: Record<string, ReactNode> = {
+  "/bien-tap/mo-hinh": <MoHinh3DPage />,
+};
 
 const TRANG_XAC_THUC = ["/", "/dang-nhap", "/doi-mat-khau"];
 
@@ -72,7 +79,7 @@ export function App() {
           <Route element={<AppLayout />}>
             {ALL_PAGES.map(({ item, roles }) => (
               <Route key={item.path} element={<RequireRole roles={roles} />}>
-                <Route path={item.path} element={<TrangTamPage item={item} />} />
+                <Route path={item.path} element={TRANG_DA_LAM[item.path] ?? <TrangTamPage item={item} />} />
               </Route>
             ))}
           </Route>

@@ -168,6 +168,12 @@ async function requestOnce<T>(path: string, options: RequestOptions, mayRetry: b
     handlers.onSessionExpired?.();
     throw error;
   }
+  handleAuthError(error);
+  throw error;
+}
+
+/** Báo cho ứng dụng các lỗi làm mất phiên / bắt đổi mật khẩu (dùng chung cho request và upload). */
+function handleAuthError(error: ApiError): void {
   if (error.status === 401) {
     accessToken = null;
     handlers.onSessionExpired?.();
@@ -177,5 +183,123 @@ async function requestOnce<T>(path: string, options: RequestOptions, mayRetry: b
   } else if (error.code === "PASSWORD_CHANGE_REQUIRED") {
     handlers.onPasswordChangeRequired?.();
   }
+}
+
+export interface UploadOptions {
+  method?: string;
+  /** Phần đã gửi, từ 0 đến 1. */
+  onProgress?: (fraction: number) => void;
+  signal?: AbortSignal;
+}
+
+export const UPLOAD_ABORTED = "UPLOAD_ABORTED";
+
+/**
+ * Gửi multipart/form-data (nạp file mô hình). Dùng XMLHttpRequest vì fetch chưa báo được phần trăm đã gửi.
+ * Cùng quy tắc với request(): gắn access token, gặp TOKEN_EXPIRED thì làm mới rồi gửi lại đúng một lần.
+ * Hủy bằng `signal` thì ném ApiError mã UPLOAD_ABORTED.
+ */
+export async function upload<T>(path: string, form: FormData, options: UploadOptions = {}): Promise<T> {
+  // Máy chủ chỉ kiểm tra token sau khi nhận hết file: làm mới trước để lần gửi (có thể nhiều phút trên mạng
+  // trường) có đủ 15 phút, không phải gửi lại cả file vì TOKEN_EXPIRED. Lỗi refresh thì vẫn gửi, để lỗi
+  // thật (hết phiên, mạng) đi theo luồng xử lý chung.
+  if (accessToken) {
+    try {
+      await refreshSession();
+    } catch {
+      // bỏ qua
+    }
+  }
+  return uploadOnce<T>(path, form, options, true);
+}
+
+/**
+ * Tải file nhị phân công khai (file mô hình /content/models/...) có báo tiến độ và hủy được.
+ * Không gắn token: file mô hình phục vụ công khai (Nginx). Hủy bằng `signal` thì ném ApiError UPLOAD_ABORTED.
+ */
+export function downloadBinary(
+  url: string,
+  { onProgress, signal }: { onProgress?: (fraction: number) => void; signal?: AbortSignal } = {},
+): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new ApiError(0, UPLOAD_ABORTED, "Đã hủy tải file"));
+      return;
+    }
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url);
+    xhr.responseType = "arraybuffer";
+    xhr.onprogress = (e) => {
+      if (e.lengthComputable && e.total > 0) onProgress?.(e.loaded / e.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response as ArrayBuffer);
+      else reject(new ApiError(xhr.status, "HTTP_ERROR", "Không tải được file mô hình, hãy thử lại"));
+    };
+    xhr.onerror = () => reject(new ApiError(0, "NETWORK_ERROR", LOI_MANG));
+    xhr.onabort = () => reject(new ApiError(0, UPLOAD_ABORTED, "Đã hủy tải file"));
+    const huy = () => xhr.abort();
+    signal?.addEventListener("abort", huy, { once: true });
+    xhr.onloadend = () => signal?.removeEventListener("abort", huy);
+    xhr.send();
+  });
+}
+
+function sendXhr(
+  path: string,
+  form: FormData,
+  token: string | null,
+  { method = "POST", onProgress, signal }: UploadOptions,
+): Promise<{ status: number; text: string }> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new ApiError(0, UPLOAD_ABORTED, "Đã hủy nạp file"));
+      return;
+    }
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, path);
+    xhr.withCredentials = true;
+    xhr.setRequestHeader("Accept", "application/json");
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && e.total > 0) onProgress?.(e.loaded / e.total);
+    };
+    xhr.onload = () => resolve({ status: xhr.status, text: xhr.responseText });
+    xhr.onerror = () => reject(new ApiError(0, "NETWORK_ERROR", LOI_MANG));
+    xhr.onabort = () => reject(new ApiError(0, UPLOAD_ABORTED, "Đã hủy nạp file"));
+    const huy = () => xhr.abort();
+    signal?.addEventListener("abort", huy, { once: true });
+    xhr.onloadend = () => signal?.removeEventListener("abort", huy);
+    xhr.send(form);
+  });
+}
+
+async function uploadOnce<T>(
+  path: string,
+  form: FormData,
+  options: UploadOptions,
+  mayRetry: boolean,
+): Promise<T> {
+  const usedToken = accessToken;
+  const { status, text } = await sendXhr(path, form, usedToken, options);
+  let data: unknown = undefined;
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = text;
+    }
+  }
+  if (status >= 200 && status < 300) return data as T;
+
+  const error = toApiError(status, data);
+  if (error.code === "TOKEN_EXPIRED" && mayRetry) {
+    if (accessToken && accessToken !== usedToken) return uploadOnce<T>(path, form, options, false);
+    const session = await refreshSession();
+    if (session) return uploadOnce<T>(path, form, options, false);
+    handlers.onSessionExpired?.();
+    throw error;
+  }
+  handleAuthError(error);
   throw error;
 }
