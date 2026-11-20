@@ -2,7 +2,7 @@
  * Phần tính toán thuần của khung 3D (không cần WebGL) – tách riêng để viết test.
  */
 import type { Material, Object3D, Texture } from "three";
-import { Line, Mesh, Points } from "three";
+import { Box3, Line, Mesh, Points, PropertyBinding, Sphere, Vector3 } from "three";
 
 export type ThongKeMoHinh = {
   soMesh: number;
@@ -21,6 +21,19 @@ export function khoangCachVuaKhung(banKinh: number, fovDocDo: number, tiLe: numb
   const fovNgang = 2 * Math.atan(Math.tan(fovDoc / 2) * tiLe);
   const fovHep = Math.min(fovDoc, fovNgang);
   return (banKinh / Math.sin(fovHep / 2)) * le;
+}
+
+/**
+ * Giới hạn camera theo cỡ mô hình (bán kính `banKinh`, đơn vị gì cũng được – file GLB tính bằng mm hay m đều đúng):
+ * mặt cắt gần / xa đủ rộng để không cắt mô hình, khoảng phóng to từ sát mặt mô hình tới 3 lần khoảng nhìn vừa khung.
+ */
+export function gioiHanCamera(
+  banKinh: number,
+  fovDocDo: number,
+  tiLe: number,
+): { near: number; far: number; minDistance: number; maxDistance: number } {
+  const vua = khoangCachVuaKhung(banKinh, fovDocDo, tiLe);
+  return { near: vua / 100, far: vua * 100, minDistance: banKinh * 0.8, maxDistance: vua * 3 };
 }
 
 /** Đếm mesh và tam giác (geometry có index thì tính theo index, không thì theo số đỉnh). */
@@ -88,3 +101,63 @@ export class DemKhungHinh {
     return khoang > 0 ? ((this.moc.length - 1) * 1000) / khoang : 0;
   }
 }
+
+/**
+ * Quy tắc tọa độ dùng chung cho xem bài (BH01) và gắn nhãn (ND03): dời gốc mô hình sao cho TÂM KHỐI BAO của toàn bộ
+ * mô hình nằm ở gốc tọa độ, KHÔNG co giãn, không xoay. `camera_view` của bài và bộ phận lưu theo hệ tọa độ này, nên
+ * hai màn hình phải dựng mô hình bằng đúng hàm này thì góc nhìn mới khớp.
+ * Gọi trên mô hình vừa tải (gốc chưa gắn vào cha có biến đổi). Trả null nếu mô hình không có hình nào.
+ */
+export function duaTamVeGoc(goc: Object3D): { banKinh: number } | null {
+  goc.updateWorldMatrix(true, true);
+  const hop = new Box3().setFromObject(goc);
+  if (hop.isEmpty()) return null;
+  goc.position.sub(hop.getCenter(new Vector3()));
+  goc.updateWorldMatrix(true, true);
+  return { banKinh: hop.getBoundingSphere(new Sphere()).radius };
+}
+
+/**
+ * Tên mesh như Three.js đặt khi đọc GLB: khoảng trắng thành "_", bỏ các ký tự [ ] . : /
+ * (`PropertyBinding.sanitizeNodeName`). `mesh_names` trong CSDL giữ tên gốc trong file; so khớp qua hàm này.
+ */
+export function chuanHoaTenMesh(ten: string): string {
+  return PropertyBinding.sanitizeNodeName(ten);
+}
+
+/**
+ * Tìm mesh theo danh sách tên: đối tượng nào có tên khớp (sau chuẩn hóa) thì lấy nó và mọi mesh con
+ * (một node GLB có nhiều phần hình được Three.js dựng thành nhóm). Trả kèm các tên không tìm thấy.
+ */
+export function timMeshTheoTen(goc: Object3D, dsTen: string[]): { meshes: Mesh[]; thieu: string[] } {
+  const canTim = new Map(dsTen.map((t) => [chuanHoaTenMesh(t), t]));
+  const daThay = new Set<string>();
+  const meshes = new Set<Mesh>();
+  goc.traverse((vat) => {
+    if (!canTim.has(vat.name)) return;
+    daThay.add(vat.name);
+    vat.traverse((con) => {
+      if (con instanceof Mesh) meshes.add(con);
+    });
+  });
+  const thieu = [...canTim].filter(([chuan]) => !daThay.has(chuan)).map(([, goc]) => goc);
+  return { meshes: [...meshes], thieu };
+}
+
+/** Chuyển động chậm – nhanh – chậm cho tách bộ phận, camera bay; t trong [0, 1]. */
+export function chuyenDongMem(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+/**
+ * Hướng tách một bộ phận: từ tâm mô hình ra tâm bộ phận. Bộ phận nằm gần tâm (dưới 5 % bán kính mô hình) thì
+ * dùng `huongDuPhong` (hướng về phía camera) để bộ phận vẫn tách ra trước mặt người xem.
+ */
+export function huongTach(tamBoPhan: Vector3, banKinhMoHinh: number, huongDuPhong: Vector3): Vector3 {
+  if (tamBoPhan.length() < 0.05 * banKinhMoHinh) return huongDuPhong.clone().normalize();
+  return tamBoPhan.clone().normalize();
+}
+
+/** Khoảng tách bộ phận khỏi chỗ cũ: 25 % bán kính mô hình (TIEN_DO.md mục 5). */
+export const TI_LE_TACH = 0.25;
