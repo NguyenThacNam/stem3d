@@ -1,17 +1,18 @@
 # Tiến độ dự án Stem3D
 
-Cập nhật: 19/11/2026 · Nhánh `dev` · Kế hoạch gốc: `docs/Ke_hoach_trien_khai_chuc_nang.xlsx` (45 việc, 7 giai đoạn)
+Cập nhật: 20/11/2026 · Nhánh `dev` · Kế hoạch gốc: `docs/Ke_hoach_trien_khai_chuc_nang.xlsx` (45 việc, 7 giai đoạn)
 
 Tệp này là nơi đầu tiên cần đọc khi bắt đầu một phiên làm việc. Xong mỗi phần, cập nhật tệp này trong cùng commit.
 
 Bảng phân công dạng Excel `ke-hoach/Phan_cong_cong_viec.xlsx` được SINH từ tệp này (mục 2, 9, 10) bằng
-`python ke-hoach/tao_phan_cong.py` – không sửa tay file Excel.
+`python ke-hoach/tao_phan_cong.py` – không sửa tay file Excel. Mục 11 là nguồn của sheet "Nền tảng đã bàn giao".
 
 ## 1. Tóm tắt
 
-Đang ở **giai đoạn 0 – Nền tảng kỹ thuật**. Hệ thống rỗng đã chạy được: Docker 3 dịch vụ, CSDL 15 bảng,
-đăng nhập / khóa tạm / đổi mật khẩu / đặt lại mật khẩu, phân quyền theo vai trò, khung giao diện React với
-màn đăng nhập và thanh bên theo vai trò. Chưa có chức năng học tập, quản lý trường hay nội dung bài học.
+**Trưởng nhóm đã xong toàn bộ phần nền tảng** (NT01–NT06, NT09) và bàn giao cho hai dev (mục 11). Hệ thống rỗng
+đã chạy được: Docker 3 dịch vụ, CSDL 15 bảng, đăng nhập / khóa tạm / đổi mật khẩu / đặt lại mật khẩu, phân quyền
+theo vai trò, khung ghi nhật ký, khung giao diện React với màn đăng nhập và thanh bên theo vai trò. Giai đoạn 0
+còn NT08 (phần thử hiển thị mô hình 3D, Dev Bài học). Chưa có chức năng học tập, quản lý trường hay nội dung bài học.
 
 | Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|---|
@@ -26,7 +27,7 @@ màn đăng nhập và thanh bên theo vai trò. Chưa có chức năng học t�
 
 API (chương 3, mục 3.1.3): **6 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
-Test: backend 171 (pytest, CSDL PostgreSQL thật), frontend 25 (Vitest cho `src/api/client.ts`).
+Test: backend 225 (pytest, CSDL PostgreSQL thật), frontend 25 (Vitest cho `src/api/client.ts`).
 
 ## 2. Bảng chức năng (45 việc theo kế hoạch)
 
@@ -40,7 +41,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | NT03 | Đăng nhập, khóa tạm khi sai 5 lần | Trưởng nhóm | 0 | Xong | d7f3456, 6eb8958, 305b484 | API + màn đăng nhập |
 | NT04 | Đổi mật khẩu | Trưởng nhóm | 0 | Xong | d7f3456, 305b484 | API + màn đổi mật khẩu bắt buộc |
 | NT05 | Phân quyền theo vai trò và theo trường | Trưởng nhóm | 0 | Xong | d7f3456 | `require_role`, `get_current_user`; phạm vi trường kiểm tra trong service từng API |
-| NT06 | Ghi nhật ký thao tác | Trưởng nhóm | 0 | Xong | d7f3456, nhánh feature/NT06-khung-nhat-ky | Khung `app/services/nhat_ky.py` (mã cố định, chặn thông tin nhạy cảm) + `kiem_tra_nhat_ky` cho test. Mỗi API tự ghi nhật ký: điều kiện hoàn thành của API đó (`backend/CLAUDE.md` mục Nhật ký) |
+| NT06 | Ghi nhật ký thao tác | Trưởng nhóm | 0 | Xong | d7f3456, d6c8030 | Khung `app/services/nhat_ky.py` (mã cố định, chặn thông tin nhạy cảm) + `kiem_tra_nhat_ky` cho test. Mỗi API tự ghi nhật ký: điều kiện hoàn thành của API đó (`backend/CLAUDE.md` mục Nhật ký) |
 | NT09 | Chốt quy ước API | Trưởng nhóm | 0 | Xong | dbf6502, d7f3456 | Khuôn dạng lỗi, mã lỗi chung, phân trang: `backend/CLAUDE.md` |
 | NT08 | Khung giao diện React và thử hiển thị mô hình 3D | Dev Bài học | 0 | Đang làm | 305b484 | Xong: bố cục, menu, gọi API. Chưa: thử mô hình 3D (Three.js) |
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
@@ -135,7 +136,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 2 | 15 model SQLAlchemy + migration đầu tiên (khớp phụ lục: 26 khóa ngoại, 16 CHECK, chỉ mục chủ nhiệm), CSDL test riêng (mỗi test một giao dịch rồi hoàn tác), test ràng buộc, script seed | ddb8eb0 |
 | 3 | 6 API nhóm 1 (đăng nhập, refresh, đăng xuất, me, đổi mật khẩu, đặt lại mật khẩu), JWT + cookie refresh, khóa tạm, `require_role`, nhật ký, năm học hiện tại | d7f3456 |
 | 3 (sửa) | Kiểm tra lại phạm vi sau khi khóa dòng khi đặt lại mật khẩu, ghi IP khi đổi mật khẩu | 6eb8958 |
-| NT06 | Khung nhật ký: `nhat_ky.ghi()` với danh sách mã cố định (45 mã, nhãn tiếng Việt cho VH01), tự ghi `actor` / `target_name`, chặn khóa nhạy cảm kể cả lồng nhau, IP chỉ cho đăng nhập / mật khẩu, quy tắc nhập Excel; `kiem_tra_nhat_ky` cho test; quy ước trong `backend/CLAUDE.md`, mục kiểm tra trong `review-code` | nhánh feature/NT06-khung-nhat-ky |
+| NT06 | Khung nhật ký: `nhat_ky.ghi()` với danh sách mã cố định (45 mã, nhãn tiếng Việt cho VH01), tự ghi `actor` / `target_name`, chặn khóa nhạy cảm kể cả lồng nhau, IP chỉ cho đăng nhập / mật khẩu, quy tắc nhập Excel; `kiem_tra_nhat_ky` cho test; quy ước trong `backend/CLAUDE.md`, mục kiểm tra trong `review-code` | d6c8030 |
 | 4 | Frontend Vite + React 19 + Tailwind 4 + shadcn/ui: client API (token trong bộ nhớ, tự làm mới), màn đăng nhập (Hình 3-3), đổi mật khẩu bắt buộc, bố cục thanh bên theo vai trò (Hình 3-1), trang tạm; Nginx phục vụ bản build, header bảo mật, gzip | 305b484 |
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
@@ -337,3 +338,20 @@ Những chỗ Dev Quản lý và Dev Bài học phải thống nhất TRƯỚC k
 | API học tập | HT01, HT02, HT05 | Đề xuất: viết API 7, 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 7–9 | Chưa – chờ trưởng nhóm |
 | Mô hình 3D | ND01, BH01, BH02 | Kiểm tra ngưỡng khi nạp (150 MB, 1,5 triệu tam giác, texture 4096 px) | Hiển thị, tự giảm chất lượng trên máy yếu | Mức chi tiết mục tiêu cho máy yếu, máy tính bảng; tên file có số phiên bản | Chưa |
 | File dùng chung | Mọi việc | backend/app/main.py (gắn router) | frontend/src/lib/roles.ts (menu), frontend/src/App.tsx (đường dẫn) | Chỉ thêm phần của mình, không sửa phần người khác; kéo dev về mỗi ngày | Đã có trong CLAUDE.md |
+
+## 11. Phần nền tảng đã bàn giao
+
+Trưởng nhóm đã làm xong phần nền tảng; bảng dưới cho hai dev biết đã có gì, dùng thế nào, đọc ở đâu.
+Script sinh sheet "Nền tảng đã bàn giao" từ bảng này (cột Mã là mã việc trong kế hoạch, hoặc `—` với phần ngoài kế hoạch).
+
+| Mã | Đã có | Dev dùng thế nào | Xem ở đâu | Commit |
+|---|---|---|---|---|
+| NT01 | Docker 3 dịch vụ: `web` (Nginx phục vụ bản build React, header bảo mật, gzip), `api` (FastAPI), `db` (PostgreSQL 16); `docker-compose.override.yml` cho máy dev | `docker compose up -d --build`; frontend dev: `cd frontend && npm run dev` (cổng 5173, proxy `/api` sang 8080) | `CLAUDE.md` mục Lệnh; mục 8 tệp này | dbf6502, 305b484 |
+| NT02 | 15 bảng khớp phụ lục CSDL (khóa ngoại, CHECK, chỉ mục chủ nhiệm), Alembic, CSDL test riêng (mỗi test một giao dịch rồi hoàn tác), dữ liệu mẫu | Đổi bảng: tạo migration MỚI (skill `tao-migration`), kéo `dev` trước khi tạo; dữ liệu test: `tao_truong`, `tao_tai_khoan`, `tao_lop`… trong `backend/tests/du_lieu.py`; dữ liệu mẫu: `python -m scripts.seed` | `backend/CLAUDE.md` mục Migration, Test | ddb8eb0 |
+| NT03 | API 1–4 (đăng nhập, làm mới phiên, đăng xuất, thông tin tài khoản), JWT + cookie refresh, khóa tạm khi sai 5 lần; màn đăng nhập (Hình 3-3) | Frontend gọi API qua `frontend/src/api/client.ts` (token trong bộ nhớ, tự làm mới khi hết hạn); test API: `bearer(user, now)`, `dang_nhap(client, ...)` | `frontend/CLAUDE.md`; `backend/tests/du_lieu.py` | d7f3456, 6eb8958, 305b484 |
+| NT04 | API 5 (đổi mật khẩu), API 6 (đặt lại mật khẩu theo phạm vi); màn đổi mật khẩu bắt buộc | Tạo tài khoản (học sinh, giáo viên, quản trị trường, biên tập viên): `generate_password()`, `hash_password()` trong `app/core/security.py`; trả mật khẩu một lần, đặt `Cache-Control: no-store` | `backend/app/services/users.py` (mẫu kiểm tra phạm vi) | d7f3456, 6eb8958, 305b484 |
+| NT05 | `require_role`, `get_current_user` (đọc lại tài khoản mỗi yêu cầu, chặn tài khoản phải đổi mật khẩu); thanh bên, menu theo vai trò | Router: `Depends(require_role(...))`; service: `school_id` lấy từ `CurrentUser`, bản ghi trường khác trả 404; thêm menu: `frontend/src/lib/roles.ts`, thêm trang: `frontend/src/App.tsx` (chỉ thêm phần của mình) | `backend/CLAUDE.md` mục Quy ước; `app/core/deps.py` | d7f3456, 305b484 |
+| NT06 | Khung nhật ký `nhat_ky.ghi()`: 45 mã cố định có nhãn tiếng Việt, tự ghi tên người làm / đối tượng, chặn thông tin nhạy cảm; `kiem_tra_nhat_ky` cho test | Mỗi API thay đổi dữ liệu gọi `ghi()` trước `db.commit()` (xóa: trước `db.delete()`); test có `kiem_tra_nhat_ky` – điều kiện hoàn thành của API | `backend/CLAUDE.md` mục Nhật ký | d7f3456, d6c8030 |
+| NT09 | Khuôn dạng lỗi chung (`AppError`), mã lỗi chung, phân trang, `IdPath`, `UtcDatetime` / `UtcInputDatetime`, `get_now`, `current_school_year` | Ném `AppError(status, code, message)`; id trên đường dẫn dùng `IdPath`; giờ lấy qua `get_now`; danh sách trả `{items, total, page, page_size}` | `backend/CLAUDE.md` mục Quy ước; `app/schemas/common.py` | dbf6502, d7f3456 |
+| NT08 | Phần khung giao diện: bố cục thanh bên, menu theo vai trò, client API, trang tạm, quy ước giao diện | Dev Bài học làm tiếp phần thử hiển thị mô hình 3D (Three.js) – việc thứ tự 1 | `frontend/CLAUDE.md` | 305b484 |
+| — | Quy trình làm việc: nhánh `main` / `dev` / `feature/...`, hook chặn commit / push vào `main`, `dev`, subagent `review-code`, `tra-cuu-dac-ta`, skill viết API / màn hình / migration, file Excel phân công sinh từ tệp này | Làm theo mục 8 (Git – việc đầu tiên); xong việc: cập nhật mục 2, chạy `python ke-hoach/tao_phan_cong.py`, commit cả hai | `CLAUDE.md` mục Quy trình Git, Tiến độ | 6c4a137, 6a187b9, 6d9648f |

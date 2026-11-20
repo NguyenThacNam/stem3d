@@ -10,6 +10,7 @@ Nguồn dữ liệu (KHÔNG nhập tay trạng thái vào Excel):
 - TIEN_DO.md mục 9  – thứ tự nên làm, API, màn hình, nhánh gợi ý, cần xong trước (điều chỉnh), xuyên suốt,
                       phần việc khi tách đôi, điều chỉnh so với kế hoạch
 - TIEN_DO.md mục 10 – các chỗ hai dev phải phối hợp
+- TIEN_DO.md mục 11 – phần nền tảng trưởng nhóm đã bàn giao (đã có gì, dùng thế nào, xem ở đâu)
 - docs/Ke_hoach_trien_khai_chuc_nang.xlsx – tên việc, người làm, ai dùng, cần xong trước, mức, giai đoạn
 
 Không sửa tay file Excel. Đổi gì thì sửa TIEN_DO.md rồi chạy lại script. Excel bị xung đột khi gộp nhánh
@@ -112,14 +113,15 @@ def bang_trong_muc(noi_dung: str, so_muc: int) -> list[dict[str, str]]:
     return ket_qua
 
 
-def doc_tien_do() -> tuple[dict, dict, list, tuple[int, int, int]]:
+def doc_tien_do() -> tuple[dict, dict, list, list, tuple[int, int, int]]:
     noi_dung = TIEN_DO.read_text(encoding="utf-8")
     trang_thai = {d["Mã"]: d for d in bang_trong_muc(noi_dung, 2)}
     phan_cong = {d["Mã"]: d for d in bang_trong_muc(noi_dung, 9)}
     phoi_hop = bang_trong_muc(noi_dung, 10)
+    ban_giao = bang_trong_muc(noi_dung, 11)
     m = re.search(r"Cập nhật:\s*(\d{1,2})/(\d{1,2})/(\d{4})", noi_dung)
     ngay = (int(m.group(3)), int(m.group(2)), int(m.group(1))) if m else (2026, 1, 1)
-    return trang_thai, phan_cong, phoi_hop, ngay
+    return trang_thai, phan_cong, phoi_hop, ban_giao, ngay
 
 
 # ---------------------------------------------------------------- đọc kế hoạch gốc
@@ -187,8 +189,8 @@ def chuoi_can_truoc(v: dict, nguoi: str | None = None) -> str:
     return ", ".join(can_truoc(v, nguoi))
 
 
-def ghep() -> tuple[list, list, list, tuple[int, int, int]]:
-    trang_thai, phan_cong, phoi_hop, ngay = doc_tien_do()
+def ghep() -> tuple[list, list, list, list, tuple[int, int, int]]:
+    trang_thai, phan_cong, phoi_hop, ban_giao, ngay = doc_tien_do()
     viec, giai_doan = doc_ke_hoach()
     ma_ke_hoach = [v["ma"] for v in viec]
     for ten_bang, bang in (("mục 2", trang_thai), ("mục 9", phan_cong)):
@@ -226,6 +228,9 @@ def ghep() -> tuple[list, list, list, tuple[int, int, int]]:
         v["nguoi_lam"] = [v["nguoi"]] + [n for n in v["phan_viec"] if n != v["nguoi"]]
 
     theo_ma = {v["ma"]: v for v in viec}
+    for b in ban_giao:
+        if b["Mã"] != KHONG_CO_THU_TU and b["Mã"] not in theo_ma:
+            loi(f"TIEN_DO.md mục 11: mã lạ '{b['Mã']}' (dùng mã việc trong kế hoạch hoặc '—')")
     for v in viec:
         la = set(v["can_truoc_rieng"]) - set(v["nguoi_lam"])
         if la:
@@ -241,7 +246,7 @@ def ghep() -> tuple[list, list, list, tuple[int, int, int]]:
                         and dv["thu_tu"] > v["thu_tu"]):
                     loi(f"{v['ma']} (thứ tự {v['thu_tu']}) cần {d} xong trước nhưng {d} xếp thứ tự {dv['thu_tu']} – "
                         f"sửa thứ tự hoặc cột 'Cần xong trước (điều chỉnh)' ở mục 9")
-    return viec, giai_doan, phoi_hop, ngay
+    return viec, giai_doan, phoi_hop, ban_giao, ngay
 
 
 def san_sang(v: dict, theo_ma: dict, nguoi_xem: str) -> str:
@@ -354,13 +359,25 @@ def sheet_tong_quan(wb, viec: list, giai_doan: list) -> None:
                 + (f"   ·   Việc xuyên suốt: {', '.join(xuyen_suot)}" if xuyen_suot else ""))
     ws["B4"].font, ws["B4"].fill, ws["B4"].alignment = font(12, True, NAVY), fill(NEN_GIAI_DOAN), al("left")
     ws.row_dimensions[4].height = 28
+    viec_tn = [v for v in viec if v["nguoi"] == "Trưởng nhóm" and v["trang_thai"] != "Bỏ"]
+    tn_xong = [v for v in viec_tn if v["trang_thai"] == "Xong"]
+    ws.merge_cells("B5:L5")
+    if viec_tn and len(tn_xong) == len(viec_tn):
+        ws["B5"] = (f"Trưởng nhóm: đã xong toàn bộ phần nền tảng ({len(tn_xong)}/{len(viec_tn)} việc) và bàn giao cho hai dev"
+                    " – xem sheet \"" + TEN_SHEET_BAN_GIAO + "\"")
+        ws["B5"].font, ws["B5"].fill = font(12, True, "006100"), fill("C6EFCE")
+    else:
+        ws["B5"] = f"Trưởng nhóm: đã xong {len(tn_xong)}/{len(viec_tn)} việc nền tảng"
+        ws["B5"].font, ws["B5"].fill = font(12, True, "7A5A00"), fill("FFEB9C")
+    ws["B5"].alignment = al("left")
+    ws.row_dimensions[5].height = 28
 
     dem = lambda dk: sum(1 for v in viec if dk(v))
-    ws["B6"] = "THEO NGƯỜI"
-    ws["B6"].font = font(12, True, NAVY)
-    tieu_de(ws, 7, ["Người", "Cần giỏi", "Phụ trách", "Số việc", "Bắt buộc"] + DEM_TRANG_THAI + ["Bắt buộc đã xong"], 2)
+    ws["B7"] = "THEO NGƯỜI"
+    ws["B7"].font = font(12, True, NAVY)
+    tieu_de(ws, 8, ["Người", "Cần giỏi", "Phụ trách", "Số việc", "Bắt buộc"] + DEM_TRANG_THAI + ["Bắt buộc đã xong"], 2)
     for k, (ten, pham_vi, gioi, _, _) in enumerate(NGUOI):
-        d = 8 + k
+        d = 9 + k
         cua = lambda v, ten=ten: v["nguoi"] == ten
         bat_buoc = dem(lambda v: cua(v) and v["muc"] == "Bắt buộc" and v["trang_thai"] != "Bỏ")
         bat_buoc_xong = dem(lambda v: cua(v) and v["muc"] == "Bắt buộc" and v["trang_thai"] == "Xong")
@@ -373,7 +390,7 @@ def sheet_tong_quan(wb, viec: list, giai_doan: list) -> None:
         to_mau_nguoi(ws.cell(d, 2), ten)
         ws.cell(d, 12).number_format = "0%"
         ws.row_dimensions[d].height = 48
-    d_ghi = 8 + len(NGUOI)
+    d_ghi = 9 + len(NGUOI)
     ws.merge_cells(start_row=d_ghi, start_column=2, end_row=d_ghi, end_column=12)
     ws.cell(d_ghi, 2, "Đếm theo người làm chính trong kế hoạch gốc. Việc tách đôi (TIEN_DO.md mục 9) hiện ở sheet của cả hai dev; "
                      "chỗ cần thống nhất xem sheet \"Phối hợp\".").font = font(10, italic=True, color="64748B")
@@ -415,6 +432,36 @@ def sheet_tong_quan(wb, viec: list, giai_doan: list) -> None:
             to_mau_nguoi(ws.cell(d, 2), ten)
             ws.row_dimensions[d].height = 22
             d += 1
+
+
+TEN_SHEET_BAN_GIAO = "Nền tảng đã bàn giao"
+COT_BAN_GIAO = [("Mã", 7), ("Việc", 28), ("Người làm", 14), ("Trạng thái", 11), ("Đã có", 50), ("Dev dùng thế nào", 54),
+                ("Xem ở đâu", 30), ("Commit", 20)]
+
+
+def sheet_ban_giao(wb, viec: list, ban_giao: list) -> None:
+    ws = wb.create_sheet(TEN_SHEET_BAN_GIAO)
+    rong = [w for _, w in COT_BAN_GIAO]
+    dat_rong(ws, rong)
+    dau_trang(ws, "PHẦN NỀN TẢNG TRƯỞNG NHÓM ĐÃ BÀN GIAO",
+              "Đọc trước khi bắt đầu việc của mình: đã có gì, dùng thế nào, tài liệu ở đâu. " + GHI_CHU_SINH)
+    tieu_de(ws, 4, [h for h, _ in COT_BAN_GIAO])
+    theo_ma = {v["ma"]: v for v in viec}
+    for k, b in enumerate(ban_giao):
+        d = 5 + k
+        if b["Mã"] in theo_ma:
+            v = theo_ma[b["Mã"]]
+            ten, nguoi, tt = v["ten"], v["nguoi"], v["trang_thai"]
+            if nguoi != "Trưởng nhóm":
+                ten += " (phần khung do Trưởng nhóm làm)"
+        else:
+            ten, nguoi, tt = "Quy trình làm việc của nhóm", "Trưởng nhóm", "Xong"
+        gia_tri = [b["Mã"], ten, nguoi, tt, b["Đã có"], b["Dev dùng thế nào"], b["Xem ở đâu"], b["Commit"]]
+        dong_du_lieu(ws, d, gia_tri, {1, 3, 4}, rong)
+        ws.cell(d, 1).font = font(11, True)
+        to_mau_nguoi(ws.cell(d, 3), nguoi)
+        to_mau_trang_thai(ws.cell(d, 4), tt)
+    ws.freeze_panes = "C5"
 
 
 COT_DEV = [("Thứ tự", 7), ("Mã", 7), ("Tên việc", 40), ("GĐ", 5), ("Mức", 9), ("Cần xong trước", 14),
@@ -527,10 +574,11 @@ def luu_co_dinh(wb, ngay: tuple[int, int, int]) -> None:
 
 
 def main() -> None:
-    viec, giai_doan, phoi_hop, ngay = ghep()
+    viec, giai_doan, phoi_hop, ban_giao, ngay = ghep()
     wb = Workbook()
     wb.properties.creator = "ke-hoach/tao_phan_cong.py"
     sheet_tong_quan(wb, viec, giai_doan)
+    sheet_ban_giao(wb, viec, ban_giao)
     sheet_dev(wb, viec, "Dev Quản lý")
     sheet_dev(wb, viec, "Dev Bài học")
     sheet_tat_ca(wb, viec, giai_doan)
