@@ -5,6 +5,8 @@ import { useAuth } from "@/auth/AuthProvider";
 import { AppLayout } from "@/components/AppLayout";
 import { ErrorScreen, LoadingScreen } from "@/components/FullScreenStatus";
 import { ALL_PAGES, homePath } from "@/lib/roles";
+import { BaiHocPage } from "@/pages/bai-hoc/BaiHocPage";
+import { SoanBaiPage } from "@/pages/bai-hoc/SoanBaiPage";
 import { DangNhapPage } from "@/pages/dang-nhap/DangNhapPage";
 import { DoiMatKhauPage } from "@/pages/doi-mat-khau/DoiMatKhauPage";
 import { MoHinh3DPage } from "@/pages/mo-hinh-3d/MoHinh3DPage";
@@ -12,7 +14,13 @@ import { TrangTamPage } from "@/pages/trang-tam/TrangTamPage";
 
 /** Màn hình đã làm, theo đường dẫn menu (src/lib/roles.ts); mục chưa làm dùng trang tạm. */
 const TRANG_DA_LAM: Record<string, ReactNode> = {
+  "/bien-tap/bai-hoc": <BaiHocPage />,
   "/bien-tap/mo-hinh": <MoHinh3DPage />,
+};
+
+/** Trang con của một mục menu (cùng quyền với mục đó), ví dụ màn soạn một bài. */
+const TRANG_CON: Record<string, { path: string; element: ReactNode }[]> = {
+  "/bien-tap/bai-hoc": [{ path: "/bien-tap/bai-hoc/:id", element: <SoanBaiPage /> }],
 };
 
 const TRANG_XAC_THUC = ["/", "/dang-nhap", "/doi-mat-khau"];
@@ -110,6 +118,9 @@ export function App() {
             {ALL_PAGES.map(({ item, roles }) => (
               <Route key={item.path} element={<RequireRole roles={roles} />}>
                 <Route path={item.path} element={TRANG_DA_LAM[item.path] ?? <TrangTamPage item={item} />} />
+                {TRANG_CON[item.path]?.map((con) => (
+                  <Route key={con.path} path={con.path} element={con.element} />
+                ))}
               </Route>
             ))}
           </Route>
