@@ -108,6 +108,38 @@ class LessonPartsIn(BaseModel):
     parts: list[LessonPartIn] = Field(max_length=SO_BO_PHAN_TOI_DA)
 
 
+# ---------------------------------------------------------------- đầu vào API 57, 58
+QuestionType = Literal["CHOICE", "PICK_PART", "NUMERIC"]
+SO_CAU_HOI_TOI_DA = 50
+
+NoiDungCauHoi = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=2000),
+    BeforeValidator(lambda s: unicodedata.normalize("NFC", s) if isinstance(s, str) else s),
+]
+
+
+class QuestionIn(BaseModel):
+    """Đầu vào API 57 (thêm câu hỏi). `options`, `answer`, `tolerance` theo loại câu (kiểm tra trong service):
+
+    - CHOICE: `options` = 2–6 phương án (chuỗi), `answer` = `{"index": i}` (vị trí phương án đúng, từ 0).
+    - PICK_PART: `options` = null, `answer` = `{"part_id": id}` (bộ phận của chính bài này).
+    - NUMERIC: `options` = `{"unit": "mL"}` hoặc null, `answer` = `{"value": số}`, `tolerance` ≥ 0 bắt buộc.
+    """
+
+    question_type: QuestionType
+    content: NoiDungCauHoi
+    options: Any = None
+    answer: Any = None
+    tolerance: Decimal | None = Field(default=None, ge=0, le=10**12, allow_inf_nan=False)
+
+
+class QuestionUpdate(QuestionIn):
+    """Đầu vào API 58: thay cả câu hỏi; `sort_order` (vị trí mới, từ 0) gửi khi muốn đổi thứ tự."""
+
+    sort_order: int | None = Field(default=None, ge=0, le=SO_CAU_HOI_TOI_DA)
+
+
 class UnpublishIn(BaseModel):
     # Bài đang được giao cho lớp còn hạn: lần đầu trả 409 LESSON_ASSIGNED, gửi lại với true để gỡ.
     confirm: bool = False

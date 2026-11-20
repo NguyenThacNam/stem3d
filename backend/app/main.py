@@ -21,6 +21,7 @@ def create_app() -> FastAPI:
     app.include_router(assets.router)
     app.include_router(editor_lessons.subjects_router)
     app.include_router(editor_lessons.router)
+    app.include_router(editor_lessons.questions_router)
     return app
 
 

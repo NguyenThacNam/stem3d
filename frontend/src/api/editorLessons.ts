@@ -1,4 +1,4 @@
-/** Soạn bài học – /api/editor/lessons (API 49–56) và môn học – /api/subjects (API 7). Biên tập viên, quản trị hệ thống. */
+/** Soạn bài học – /api/editor/lessons (API 49–57), /api/editor/questions (API 58, 59) và môn học – /api/subjects (API 7). Biên tập viên, quản trị hệ thống. */
 import type { Page } from "./assets";
 import { request } from "./client";
 import type { CameraView } from "./types";
@@ -58,9 +58,16 @@ export interface LessonPartInput {
   camera_view: CameraView | null;
 }
 
+export type QuestionType = "CHOICE" | "PICK_PART" | "NUMERIC";
+
+/**
+ * Câu hỏi KÈM đáp án (chỉ màn soạn bài). Theo loại câu (ND04):
+ * CHOICE: `options` = string[], `answer` = `{index}`; PICK_PART: `answer` = `{part_id}`;
+ * NUMERIC: `options` = `{unit}` | null, `answer` = `{value}`, `tolerance` (chuỗi số).
+ */
 export interface LessonQuestion {
   id: number;
-  question_type: string;
+  question_type: QuestionType;
   content: string;
   options: unknown;
   answer: unknown;
@@ -195,4 +202,47 @@ export function unpublishLesson(id: number, confirm = false): Promise<LessonDeta
 /** API 56 – thay toàn bộ danh sách nhãn bộ phận. 400 LESSON_NO_ASSET, LESSON_INCOMPLETE; 422 theo `parts.<i>.<trường>`. */
 export function replaceLessonParts(id: number, parts: LessonPartInput[]): Promise<LessonDetail> {
   return request<LessonDetail>(`/api/editor/lessons/${id}/parts`, { method: "PUT", body: { parts } });
+}
+
+/** Dữ liệu gửi lên API 57, 58. */
+export interface QuestionInput {
+  question_type: QuestionType;
+  content: string;
+  options: string[] | { unit: string } | null;
+  answer: { index: number } | { part_id: number } | { value: number } | null;
+  tolerance: number | null;
+  /** Chỉ API 58: vị trí mới (từ 0) khi đổi thứ tự. */
+  sort_order?: number;
+}
+
+/** `details` của 409 PART_IN_USE (API 56). */
+export interface PartInUse {
+  question_id: number;
+  question_no: number;
+  content: string;
+  part_label: string;
+}
+
+export const QUESTION_TYPE_LABEL: Record<QuestionType, string> = {
+  CHOICE: "Trắc nghiệm",
+  PICK_PART: "Chọn bộ phận",
+  NUMERIC: "Nhập số",
+};
+
+/** API 57 – chỉ bài nháp (409 LESSON_PUBLISHED); 400 QUESTION_LIMIT; 422 theo trường. */
+export function createQuestion(lessonId: number, input: QuestionInput): Promise<LessonQuestion> {
+  return request<LessonQuestion>(`/api/editor/lessons/${lessonId}/questions`, {
+    method: "POST",
+    body: input,
+  });
+}
+
+/** API 58. */
+export function updateQuestion(id: number, input: QuestionInput): Promise<LessonQuestion> {
+  return request<LessonQuestion>(`/api/editor/questions/${id}`, { method: "PUT", body: input });
+}
+
+/** API 59. */
+export function deleteQuestion(id: number): Promise<void> {
+  return request<void>(`/api/editor/questions/${id}`, { method: "DELETE" });
 }

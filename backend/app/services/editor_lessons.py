@@ -442,6 +442,29 @@ def replace_parts(
 
     giu = {p.id for p in data.parts if p.id is not None}
     bo = [p for pid, p in cu.items() if pid not in giu]
+    # Bộ phận đang là đáp án của câu "chọn bộ phận" (ND04) thì không xóa được: sửa / xóa câu hỏi đó trước.
+    id_bo = {p.id for p in bo}
+    dang_dung = [
+        c
+        for c in repo.questions_of(db, lesson.id)
+        if c.question_type == "PICK_PART" and isinstance(c.answer, dict) and c.answer.get("part_id") in id_bo
+    ]
+    if dang_dung:
+        raise AppError(
+            409,
+            "PART_IN_USE",
+            "Có bộ phận đang là đáp án của câu hỏi nên chưa xóa được. Hãy sửa hoặc xóa các câu hỏi đó trước",
+            # Không trả đáp án: chỉ id, thứ tự, nội dung câu hỏi và nhãn bộ phận bị xóa (biên tập viên vốn thấy).
+            [
+                {
+                    "question_id": c.id,
+                    "question_no": c.sort_order + 1,
+                    "content": c.content,
+                    "part_label": cu[c.answer["part_id"]].label,
+                }
+                for c in dang_dung
+            ],
+        )
     repo.delete_parts(db, bo)
     doi: set[str] = set()
     so_them = 0
