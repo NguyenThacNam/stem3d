@@ -40,6 +40,17 @@ Theo mục 3.2.1 chương 3. Mẫu chuẩn: `docs/giao-dien-chuong-3.html` (lấ
   (kèm lý do với 403). Đăng xuất gọi `endSession()` trước để refresh đang chạy không làm phiên sống lại.
 - Thông báo lỗi: bọc trong MỘT vùng `aria-live`; thành phần `Alert` không đặt `role="alert"` (tránh đọc 2 lần).
 
+## 3D (Three.js)
+- Hiển thị mô hình dùng `src/components/mo-hinh-3d/MoHinh3D.tsx`; phần tính toán thuần (canh camera, đếm tam giác,
+  giải phóng bộ nhớ, đếm khung hình) ở `tinh-toan.ts`, có test Vitest. Thêm tính năng 3D: tách phần tính được ra đây.
+- Rời trang / đổi mô hình phải giải phóng (`giaiPhong`, `renderer.dispose()`, `forceContextLoss()`); trình duyệt chỉ
+  giữ khoảng 16 ngữ cảnh WebGL.
+- Không nén mô hình (Draco / meshopt); file GLB tên có số phiên bản (`ten.v3.glb`) theo `docs/quyet-dinh.md`.
+- Trang nào dùng Three.js thì nạp lười (`lazy`) để màn đăng nhập, thư viện không phải tải Three.js.
+- CSP cho `connect-src blob:` vì GLTFLoader đọc texture nhúng bằng `fetch(blob:...)`; không nới thêm.
+- Trang thử `/thu-mo-hinh-3d` (chỉ `npm run dev`): mở file GLB trên máy để xem tên mesh, đo thời gian tải, khung hình.
+  Mô hình mẫu sinh bằng `node scripts/tao-mo-hinh-mau.mjs`.
+
 ## Nginx (bản build)
 - Header bảo mật trong `nginx/security-headers.conf`, include ở mọi `location`. CSP `script-src 'self'`:
   không dùng script inline, không tải script/phông/ảnh từ máy chủ ngoài.
@@ -49,6 +60,7 @@ Theo mục 3.2.1 chương 3. Mẫu chuẩn: `docs/giao-dien-chuong-3.html` (lấ
 - Chạy dev: `npm run dev` (trong `frontend/`, cổng 5173, proxy `/api` sang Nginx cổng 8080 – cần `docker compose up`)
 - Kiểm tra kiểu: `npm run typecheck`; build: `npm run build`; định dạng: `npm run format`
 - Test: `npm test` (Vitest). Trên Windows phải chạy từ đường dẫn ổ đĩa viết HOA (`E:\stem3d\frontend`); mở terminal
-  ở `e:\...` (chữ thường) thì Vitest nạp trùng module và báo "failed to find the runner".
+  ở `e:\...` (chữ thường) thì Vitest nạp trùng module và báo "failed to find the runner". `npm run dev` cũng vậy:
+  chạy từ `e:\` thì Vite nạp hai bản React, trang báo "Invalid hook call".
 - Kiểm tra giao diện: dùng MCP Playwright mở trang, chụp màn hình, so với ảnh trong `docs/hinh-giao-dien/`
   (ảnh mẫu chụp ở tỉ lệ 1,5× của 1440 × 900). Ảnh chụp lưu trong `.playwright-mcp/` (không đưa lên Git).
