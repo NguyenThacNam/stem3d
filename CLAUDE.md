@@ -14,6 +14,18 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
 ## Tiến độ
 - Đầu mỗi phiên: đọc `TIEN_DO.md` (đang ở giai đoạn nào, việc nào xong, quyết định phát sinh, giới hạn đã biết).
 - Xong mỗi phần: cập nhật `TIEN_DO.md` (bảng chức năng, bảng API, commit, quyết định mới) trong CÙNG commit của phần đó.
+- **Mỗi phần đã chạy đủ test và `review-code` soát đạt thì BẮT BUỘC cập nhật `TIEN_DO.md` trước khi commit / tạo PR
+  vào `dev`**, kể cả khi việc mới xong một phần. PR vào `dev` không kèm cập nhật tiến độ thì chưa được gộp.
+  Cập nhật những gì có thay đổi:
+  - Mục 1: số việc theo giai đoạn (Xong / Đang làm / Chưa làm), tóm tắt, số test backend / frontend.
+  - Mục 2: trạng thái việc (`Đang làm` khi mới xong một phần, `Xong` khi xong hết), commit, ghi chú nói rõ
+    "Xong: …. Chưa: …" để người khác biết còn thiếu gì; làm thay người khác thì ghi "Người làm: …".
+  - Mục 3: trạng thái, commit của từng API vừa làm.
+  - Mục 4: một dòng tóm tắt phần vừa làm. Mục 5: quyết định mới. Mục 6: giới hạn đã biết. Mục 7: việc còn chờ.
+  - Mục 11: thêm dòng khi phần vừa làm là thứ người khác sẽ dùng lại (thành phần, hàm, quy ước).
+  - Rồi chạy `python ke-hoach/tao_phan_cong.py` và commit `TIEN_DO.md` + Excel cùng phần code đó.
+- Chỉ sửa dòng của việc mình; thấy dòng của người khác chưa cập nhật thì nhắc người đó (hoặc trưởng nhóm), trừ khi
+  trưởng nhóm giao sửa.
 - Không sửa tay file Excel `ke-hoach/Phan_cong_cong_viec.xlsx`. Xong một việc: cập nhật `TIEN_DO.md` (trạng thái ở
   mục 2; thứ tự, phân công ở mục 9; phối hợp ở mục 10) rồi chạy `python ke-hoach/tao_phan_cong.py` để sinh lại
   Excel, commit cả hai. Excel bị xung đột khi gộp thì chạy lại script trên nhánh đã gộp.
