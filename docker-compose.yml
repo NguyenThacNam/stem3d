@@ -28,6 +28,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      # File mô hình GLB (CONTENT_DIR mặc định /data/content): api ghi khi nạp / xóa mô hình.
+      - content:/data/content
     # Không mở cổng ra ngoài: mọi yêu cầu đi qua web (Nginx) tại /api/.
 
   web:
@@ -38,8 +41,13 @@ services:
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-8080}:80"
+    volumes:
+      # Cùng volume với api nhưng chỉ đọc: Nginx phục vụ file GLB tại /content/models/.
+      - content:/srv/content:ro
     depends_on:
       - api
 
 volumes:
   pgdata:
+  # File mô hình 3D gốc (docs/chuong-2 mục triển khai: "volume content"). Cần sao lưu cùng pgdata (VH03).
+  content:
