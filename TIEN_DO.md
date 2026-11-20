@@ -20,23 +20,26 @@ mô hình 3D (Three.js). **Giai đoạn 0 đã xong** (NT08 do trưởng nhóm l
   Thư viện mô hình 3D).
 - ND02 (Dev Quản lý) đang làm – đã có API soạn bài 49–55, API môn học 7, màn danh sách bài và màn soạn bài (thẻ Thông
   tin bài, Mô hình); còn cấu hình `config` chờ thống nhất với Dev Bài học.
+- ND03 (Dev Quản lý, làm cả phần giao diện) xong – API 56 lưu nhãn bộ phận (giữ id), thẻ Bộ phận trên màn soạn
+  bài dựng trên lõi `CanhBaiHoc` của BH01 (bấm chọn phần, gộp nhiều phần, lưu góc nhìn, kéo thả sắp thứ tự).
 
 Chưa có chức năng học tập hay quản lý trường.
 
 | Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|---|
 | 0 | Nền tảng kỹ thuật | 9 | 8 | 0 | 0 | 1 |
-| 1 | Xem bài học 3D | 7 | 2 | 1 | 4 | 0 |
+| 1 | Xem bài học 3D | 7 | 3 | 1 | 3 | 0 |
 | 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 | 0 |
 | 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 | 0 |
 | 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 | 0 |
 | 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 | 0 |
 | 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 | 0 |
-| | **Tổng** | **45** | **10** | **2** | **32** | **1** |
+| | **Tổng** | **45** | **11** | **2** | **31** | **1** |
 
-API (chương 3, mục 3.1.3): **18 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
+API (chương 3, mục 3.1.3): **19 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
-Test: backend 436 (pytest, CSDL PostgreSQL thật), frontend 59 (Vitest cho `src/api/client.ts`, phần tính toán 3D và bố cục khung bài học).
+Test: backend 471 (pytest, CSDL PostgreSQL thật), frontend 73 (Vitest cho `src/api/client.ts`, phần tính toán 3D,
+bố cục khung bài học và phần xử lý nhãn bộ phận).
 
 ## 2. Bảng chức năng (45 việc theo kế hoạch)
 
@@ -57,7 +60,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Xong | 240da25 | Người làm: Trưởng nhóm (làm thay Dev Bài học). Xong: lõi `CanhBaiHoc` (chọn bộ phận, nổi bật, tách ra / lắp lại, camera bay, bàn phím, cảm ứng), màn `KhungBaiHoc` theo Hình 3-5, `duaTamVeGoc` dùng chung với ND03, trang thử `/thu-khung-bai-hoc` (dữ liệu mẫu). Chưa (việc khác): nối API 9 và trang `/bai-hoc/:id` (HT02), Phim (HT03), Thí nghiệm (HT04), Kiểm tra (HT05), giảm chất lượng máy yếu (BH02), điều khiển lớp (LH05) |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e (PR #5), ce33d83 | Phần nền (PR #5): volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB. API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
 | ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | b8b03a4, 25faa7c | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
-| ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Chưa làm | | |
+| ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Xong | 1984685, 031d80f (gộp BH01) | Người làm: Dev Quản lý (cả phần giao diện của Dev Bài học, người dùng đồng ý). Xong: API 56 (thay cả danh sách, bộ phận gửi kèm id giữ nguyên id); thẻ Bộ phận Hình 3-11 (bấm chọn phần trên mô hình, Shift để gộp, nhãn, chú thích, Lưu góc nhìn / Góc nhìn chuẩn, kéo thả hoặc Alt + mũi tên sắp thứ tự, thêm phần bằng ô chọn khi không dùng chuột); khung 3D dựng trên `CanhBaiHoc` của BH01 (mục 11) |
 | HT01 | Tra cứu bài học | Dev Bài học | 1 | Chưa làm | | |
 | HT02 | Tự khám phá mô hình | Dev Bài học | 1 | Chưa làm | | |
 | BT01 | Bài 1: Cá chép (KHTN 6) | Dev Bài học | 1 | Chưa làm | | |
@@ -127,7 +130,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 43–44 | GET | /api/reports/usage, usage.xlsx | QL09 | Chưa làm | |
 | 45–48 | | /api/assets (GET, POST, GET {id}, DELETE) | ND01 | Xong | ce33d83 |
 | 49–55 | | /api/editor/lessons (CRUD, publish, unpublish) | ND02 | Xong | b8b03a4 |
-| 56 | PUT | /api/editor/lessons/{id}/parts | ND03 | Chưa làm | |
+| 56 | PUT | /api/editor/lessons/{id}/parts | ND03 | Xong | 1984685 |
 | 57–59 | | /api/editor/lessons/{id}/questions, /api/editor/questions/{id} | ND04 | Chưa làm | |
 | 60–65 | | /api/schools (CRUD, lock, unlock, xóa có mã xác nhận) | QL01 | Chưa làm | Khi làm khóa trường: cân nhắc tăng `token_version` (xem mục 6) |
 | 66–69 | | /api/schools/{id}/admins | QL01 | Chưa làm | |
@@ -153,6 +156,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 
 | ND01 | API 45–48 (danh sách phân trang + tìm tên, nạp có kiểm tra tự động, chi tiết, xóa – khóa dòng, 409 khi bài đang dùng); màn Thư viện mô hình 3D: bảng chỉ số tô vàng khi vượt mức khuyến nghị, hộp thoại nạp (kéo thả, % tải lên, xác nhận cảnh báo, báo cáo kiểm tra, xem trước 3D ngay trên máy), chi tiết (xem 3D, các phần, bài đang dùng), xóa; xem 3D dùng `MoHinh3D` (NT08), nạp lười | ce33d83 |
 | ND02 | API 7, 49–55 (môn học; tạo, sửa, xóa, xuất bản, gỡ bài – 400 `LESSON_INCOMPLETE`, 409 `LESSON_IN_USE`, `DUPLICATE_LESSON`, `LESSON_ASSIGNED`); màn Bài học (lọc, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình) | b8b03a4 |
+| ND03 | API 56 (thay cả danh sách trong một giao dịch, giữ id bộ phận gửi kèm; 400 `LESSON_NO_ASSET`, `LESSON_INCOMPLETE`; 422 theo `parts.<i>.<trường>`); thẻ Bộ phận Hình 3-11 (khung 3D trên `CanhBaiHoc`, thêm sự kiện `onBamVat`, hàm `tenPhanCuaVat`) | 1984685, 031d80f (gộp BH01) |
 | ND02 (sửa) | Xuất bản khi gặp hỏi trùng bài: bấm "Vẫn lưu" giờ xuất bản tiếp (trước chỉ lưu nháp, không báo); "Vẫn lưu" sau Lưu nháp hiện "Đã lưu lúc …"; thẻ Mô hình tự tải lại danh sách khi quay về thẻ trình duyệt và có nút tải lại; lỗi ở cả ô thông tin bài lẫn mô hình thì ở lại thẻ Thông tin bài | 25faa7c |
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
@@ -205,6 +209,25 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
   - `config` nhận nguyên JSON object (tối đa 1 MB), chưa kiểm tra cấu trúc bên trong (chờ mục 10, "Cấu hình bài học").
   - Lớp phải nằm trong khoảng lớp của môn. Không có quy tắc sở hữu: biên tập viên, quản trị hệ thống sửa được mọi bài.
   - API 7 (`/api/subjects`, mọi vai trò) viết cùng ND02 để có ô chọn môn.
+- Gắn nhãn bộ phận (ND03, API 56; đặc tả chỉ có một dòng – chốt với người dùng, `review-code` đã soát):
+  - Thay cả danh sách trong một giao dịch nhưng **giữ id**: bộ phận gửi kèm `id` (của chính bài đó) thì sửa tại chỗ,
+    không có `id` thì thêm mới, bộ phận cũ không gửi lên thì xóa. Để câu hỏi "chọn bộ phận" (PICK_PART, ND04) không mất liên kết.
+  - Thứ tự trong mảng gửi lên là `sort_order` (máy chủ tự đặt 0, 1, 2…).
+  - Bài chưa có mô hình mà gửi danh sách khác rỗng → 400 `LESSON_NO_ASSET` (UC 22: tiền điều kiện). Gửi rỗng vẫn được (dọn nhãn cũ).
+  - Bài đã xuất bản mà gửi rỗng → 400 `LESSON_INCOMPLETE` (giữ điều kiện xuất bản của ND02; giao diện chặn sẵn).
+  - `mesh_names` phải có trong `assets.mesh_names` của mô hình đang gắn với bài; mỗi phần chỉ thuộc một bộ phận;
+    nhãn không trùng (chuẩn hóa NFC, không phân biệt hoa thường; lưu dạng NFC). Câu báo lỗi chỉ nói vị trí, không vọng lại tên.
+  - Giới hạn: tối đa 200 bộ phận, 100 phần mỗi bộ phận; nhãn 1–100 ký tự, chú thích ≤ 1000 ký tự.
+  - `camera_view` = `{"position": [x, y, z], "target": [x, y, z]}` theo hệ tọa độ chung với BH01: mô hình đưa tâm khối
+    bao về gốc, không co giãn (`duaTamVeGoc`); số hữu hạn trong ±1.000.000, không nhận khóa khác.
+  - Nhật ký `UPDATE_LESSON_PARTS`: `changed_fields` (trường của bộ phận đã đổi) kèm `part_count`, `added_count`,
+    `removed_count`; không ghi nhãn, chú thích. Lưu lại không đổi gì thì không ghi, không đổi `updated_at`.
+  - Giao diện: nút Lưu nháp / Lưu thay đổi gọi API 52 (nếu thông tin bài đổi) rồi API 56 (nếu bộ phận đổi). Thẻ Bộ phận
+    khóa khi vừa đổi mô hình mà chưa lưu.
+  - Khung 3D của thẻ Bộ phận dựng trên lõi `CanhBaiHoc` (BH01): biên tập viên thấy đúng như học sinh (bộ phận chọn
+    tách ra, phần khác mờ đi), "Lưu góc nhìn" lưu lúc bộ phận đang tách. Lõi thêm sự kiện `onBamVat` (báo cả phần chưa
+    gắn nhãn); tên phần dò bằng `tenPhanCuaVat` – đi ngược lên cha tới tên khớp qua `chuanHoaTenMesh`, cùng quy tắc
+    `timMeshTheoTen` của màn học sinh.
 - Mô hình 3D (ND01, đặc tả không nói mã lỗi API 45, 47, 48):
   - API 48: mô hình đang được bài dùng → 409 `ASSET_IN_USE`, `details` = `[{id, title, status}]` các bài đang dùng (UC 21 luồng 6.1); không có → 404 `ASSET_NOT_FOUND` (API 47 cũng vậy).
   - API 48 khóa dòng `assets` (`FOR UPDATE`) trước khi kiểm tra để bài học không gắn được mô hình giữa lúc kiểm tra và xóa; file GLB xóa SAU commit (commit hỏng thì file vẫn còn).
@@ -305,11 +328,15 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - **Dò được tên đăng nhập** có tồn tại qua khóa tạm (tên có thật sau 5 lần sai trả 423). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV vốn đoán được.
 - **Tin IP chuyển tiếp:** uvicorn chạy `--forwarded-allow-ips *`, tin mọi máy trong mạng compose (hiện chỉ có `web`, `db`).
 - **Soạn bài (ND02):** kiểm tra trùng bài không khóa nên hai lần tạo cùng lúc có thể cùng lọt (chỉ là cảnh báo, chấp nhận).
-  Bài đã xuất bản mà xóa hết nhãn bộ phận (API 56 của ND03) thì mọi lần sửa bài đó bị 400 cho tới khi gắn lại nhãn hoặc gỡ
-  xuất bản – cần thống nhất với ND03 (mục 10).
+  (Bài đã xuất bản không còn xóa hết nhãn được: API 56 của ND03 chặn 400 `LESSON_INCOMPLETE`.)
   Rời màn soạn bài qua menu thanh bên khi còn thay đổi chưa lưu thì không được hỏi lại (ứng dụng dùng `BrowserRouter`, chưa
   dùng được `useBlocker`; liên kết "Bài học" trên thanh vị trí và đóng / tải lại tab thì có hỏi).
   Hai người cùng sửa một bài: người lưu sau ghi đè người lưu trước (API 52 chưa so `updated_at`) – cần thì bàn thêm.
+- **Gắn nhãn (ND03):** một lần Lưu vừa đổi mô hình (API 52) vừa sửa nhãn (API 56) có thể chỉ lưu được nửa đầu: API 56 báo
+  422 vì phần của mô hình cũ không có trong mô hình mới (giao diện khóa thẻ Bộ phận khi đổi mô hình chưa lưu và báo rõ
+  "Đã lưu thông tin bài, chưa lưu được nhãn"). Đổi mô hình thì nhãn cũ vẫn còn, các phần không còn trong mô hình tô đỏ
+  để bỏ. Mô hình có phần không tên thì phần đó không gắn nhãn được (API 46 đã báo `unnamed_meshes`). Hai người cùng sửa
+  nhãn một bài: người lưu sau ghi đè.
 - **Mô hình 3D (ND01):** đóng hộp thoại chi tiết khi file GLB đang tải thì trình duyệt vẫn tải tiếp đến hết
   (`MoHinh3D` dùng `GLTFLoader.load`, chưa hủy được); file lớn trên mạng chậm sẽ tốn băng thông. Sửa trong `MoHinh3D` khi làm BH02.
 - **Ảnh cá chép** ở màn đăng nhập nặng 694 KB, vẫn tải trên màn hẹp.
@@ -330,6 +357,8 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
   - VH04 (thử trên thiết bị thật, Bắt buộc) không chờ LH05 (Nên có) như kế hoạch gốc; phần điều khiển lớp thử thêm khi LH05 xong (mục 9).
 - `docker-compose.yml`: chỉ truyền cho `api` những biến nó cần (hiện `env_file: .env` truyền cả `POSTGRES_PASSWORD`).
 - Lớp 1–3 chưa có môn: cân nhắc thêm môn "Tự nhiên và Xã hội" (hỏi người dùng trước).
+- ND04: API 56 xóa bộ phận không gửi lên mà chưa kiểm tra câu hỏi PICK_PART nào đang trỏ tới id bộ phận đó (ND04 chưa
+  có). Làm ND04 thì chặn 409 hoặc xử lý câu hỏi khi xóa bộ phận đang được dùng (mục 10, dòng "Gắn nhãn bộ phận").
 - Trang giới thiệu (Hình 3-2) chưa làm.
 - Đổi ảnh cá chép sang webp, thêm `width` / `height`.
 - HTTPS: Nginx tự giữ chứng chỉ Let's Encrypt, mở cổng 443 – làm khi triển khai thật.
@@ -416,7 +445,7 @@ trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/P
 | BH01 | 2 | | Hình 3-5 | feature/BH01-khung-bai-hoc-3d | | | | Trưởng nhóm làm thay Dev Bài học. Chạy bằng dữ liệu mẫu khuôn dạng API 9; HT02 nối API 9 |
 | ND01 | — | 45–48 | Thư viện mô hình 3D (Bảng 3-15), Hình 3-11 | feature/ND01-nap-mo-hinh-3d | | | | Xong (ce33d83). Xem 3D dùng `MoHinh3D` của NT08 |
 | ND02 | 4 | 7, 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học. Đã có API 7, 49–55 và màn soạn bài (Thông tin, Mô hình); còn soạn `config` |
-| ND03 | 5 | 56 | Hình 3-11 (thẻ Nhãn) | feature/ND03-gan-nhan-bo-phan | Dev Quản lý: ND02; Dev Bài học: ND02, BH01 | | Dev Quản lý: API 56 lưu nhãn (cùng nhóm /api/editor của ND02); Dev Bài học: chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Tách đôi: phần máy chủ giao Dev Quản lý; phần máy chủ không cần chờ BH01 |
+| ND03 | 5 | 56 | Hình 3-11 (thẻ Nhãn) | feature/ND03-gan-nhan-bo-phan | Dev Quản lý: ND02; Dev Bài học: ND02, BH01 | | Dev Quản lý: API 56 lưu nhãn (cùng nhóm /api/editor của ND02); Dev Bài học: chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Xong cả hai phần (Dev Quản lý làm cả phần giao diện, không chờ BH01). Gộp `dev` sau BH01: khung 3D chuyển sang `CanhBaiHoc`, theo quy ước tọa độ của BH01 |
 | HT01 | 6 | 7, 8 | Hình 3-4 | feature/HT01-thu-vien-bai-hoc | | | | API 7–8 phía máy chủ: xem mục 10, dòng "API học tập" |
 | HT02 | 7 | 9 | Hình 3-5 | feature/HT02-tu-kham-pha-mo-hinh | | | | API 9 phía máy chủ: xem mục 10, dòng "API học tập" |
 | BT01 | 8 | 46, 50–56 | Hình 3-5 | feature/BT01-bai-ca-chep | | | | Nhập nội dung qua màn soạn bài; giáo viên duyệt chú thích |
@@ -458,7 +487,7 @@ Những chỗ Dev Quản lý và Dev Bài học phải thống nhất TRƯỚC k
 |---|---|---|---|---|---|
 | Cách viết công thức chấm | NT07, HT04, BT02 | Bộ tính biểu thức an toàn phía máy chủ (Python), chấm lại khi nộp | Tính cùng công thức phía trình duyệt để vẽ hiện tượng, đồ thị | Cú pháp công thức trong lessons.config, tên biến thông số, đơn vị, cách ghi sai số; một bộ số liệu mẫu chung để test cả hai phía ra cùng kết quả | Chưa |
 | Cấu hình bài học | ND02, BH01, HT02, HT03, HT04 | Lưu và sửa lessons.config (màn soạn bài) | Đọc lessons.config để dựng khung 3D, kịch bản phim, thông số thí nghiệm | Cấu trúc JSON của lessons.config (góc camera, kịch bản phim, thông số, khoảng giá trị). Đề xuất của BH01: `config.camera_view` (góc tổng quan, dạng như `camera_view` bộ phận), `config.film_script` (mảng, rỗng thì ẩn Phim) – kiểu `LessonConfig` trong `frontend/src/api/types.ts` | Chưa |
-| Gắn nhãn bộ phận | ND03, ND01, ND02 | API 56 lưu danh sách nhãn; API 47 trả danh sách mesh của mô hình (đã có: `mesh_names` là tên node có mesh trong file GLB, theo thứ tự trong file); API 51 (ND02) đã trả `parts`, `asset.mesh_names`. Đề xuất: API 56 không cho xóa hết nhãn của bài đang xuất bản (ND02 coi ≥1 nhãn là điều kiện xuất bản) | Chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Khuôn dạng mesh_names, camera_view; cách đặt tên mesh trong file GLB. Đề xuất của BH01 (trưởng nhóm đã chốt hướng, cần Dev Quản lý đồng ý): `camera_view = {position: [x,y,z], target: [x,y,z]}` theo hệ tọa độ "tâm khối bao toàn mô hình về gốc, không co giãn" (hàm `duaTamVeGoc`); `mesh_names` lưu tên gốc trong file, so qua `chuanHoaTenMesh`; tên mesh trong một file không được trùng | Chưa |
+| Gắn nhãn bộ phận | ND03, ND01, ND02 | API 56 lưu danh sách nhãn; API 47 trả danh sách mesh của mô hình (đã có: `mesh_names` là tên node có mesh trong file GLB, theo thứ tự trong file); API 51 (ND02) đã trả `parts`, `asset.mesh_names`. Đề xuất: API 56 không cho xóa hết nhãn của bài đang xuất bản (ND02 coi ≥1 nhãn là điều kiện xuất bản) | Chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Khuôn dạng mesh_names, camera_view; cách đặt tên mesh trong file GLB. Đề xuất của BH01 (trưởng nhóm đã chốt hướng, cần Dev Quản lý đồng ý): `camera_view = {position: [x,y,z], target: [x,y,z]}` theo hệ tọa độ "tâm khối bao toàn mô hình về gốc, không co giãn" (hàm `duaTamVeGoc`); `mesh_names` lưu tên gốc trong file, so qua `chuanHoaTenMesh`; tên mesh trong một file không được trùng | Đã chốt: Dev Quản lý đồng ý đề xuất của BH01, ND03 làm theo (thẻ Bộ phận dựng trên `CanhBaiHoc`, dò tên phần bằng `tenPhanCuaVat` – cùng quy tắc `chuanHoaTenMesh`). Thêm: mỗi phần chỉ thuộc một bộ phận; API 56 giữ id bộ phận gửi kèm. Còn chờ ND04: xóa bộ phận đang được câu hỏi PICK_PART dùng |
 | Nộp bài | LH03, HT04, HT05 | API 10: nhận bài, chấm lại, chống ghi trùng client_id | Nút Nộp bài, sinh client_id (UUID), gửi lại khi mất mạng | Cấu trúc experiment_data, answers gửi lên; cách báo kết quả chấm | Chưa |
 | Điều khiển màn hình lớp | LH05, LH01 | Kênh WebSocket /ws/class/{class_id} phía máy chủ, xác thực, phòng trong bộ nhớ | Gửi, nhận sự kiện phía trình duyệt, đồng bộ góc nhìn, bộ phận | Danh sách sự kiện và khuôn dạng tin nhắn (mục 3.1.6 chương 3) | Chưa |
 | API học tập | HT01, HT02, HT05 | API 7 (`/api/subjects`) đã viết cùng ND02. Đề xuất: viết API 8, 9 phía máy chủ cùng lúc với ND02 (cùng bảng lessons) | Màn thư viện, khung bài học, bài kiểm tra | Kế hoạch giao HT01, HT02 cho Dev Bài học (Three.js, React) nhưng các việc này có API máy chủ: trưởng nhóm chốt ai viết API 8–9. Khuôn dạng API 9 đề xuất của BH01: kiểu `LessonView` trong `frontend/src/api/types.ts` (`asset.file_url`, `asset.attribution` – cùng tên trường với API 51; `parts[]` có `mesh_names`, `camera_view`). BẢO MẬT (trưởng nhóm chốt): API 9 dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa hay dùng lại schema của API 51; frontend dùng kiểu `LessonView`, không dùng `LessonDetail` của editor (API 51 có đáp án, sai số) | Chưa – chờ trưởng nhóm (API 7 đã xong ở ND02) |
@@ -482,3 +511,4 @@ Script sinh sheet "Nền tảng đã bàn giao" từ bảng này (cột Mã là 
 | NT08 | Khung giao diện: bố cục thanh bên, menu theo vai trò, client API, trang tạm, quy ước giao diện. Khung 3D: thành phần `MoHinh3D` (nạp GLB, xoay, phóng to, 3 trạng thái, giải phóng bộ nhớ), trang thử `/thu-mo-hinh-3d` (chỉ bản dev) | BH01 dựng khung bài học trên `MoHinh3D` (`src/components/mo-hinh-3d/`); xem tên mesh của file GLB bằng trang thử (nút "Mở file GLB trên máy"); số liệu đo cho BH02 ở mục 5 | `frontend/CLAUDE.md` mục 3D | 305b484, nhánh feature/NT08-thu-hien-thi-mo-hinh-3d |
 | BH01 | Khung bài học 3D (Hình 3-5): màn `KhungBaiHoc` nhận dữ liệu khuôn dạng API 9 (`LessonView`); lõi `CanhBaiHoc` (chọn bộ phận, tách ra / lắp lại, camera bay, `gocNhinHienTai`, `khoaThaoTac`); `duaTamVeGoc`, `chuanHoaTenMesh`; trang thử `/thu-khung-bai-hoc` | HT02: trang `/bai-hoc/:id` gọi API 9 rồi render `<KhungBaiHoc bai={...} />` (kiểu `LessonView`, KHÔNG dùng `LessonDetail` của editor); ND03: dựng mô hình bằng `CanhBaiHoc` (đã gọi `duaTamVeGoc`), chọn mesh, "Lưu góc nhìn" = `gocNhinHienTai()`; HT03: tách lần lượt bằng `chon`; LH05: `chon`, `datGocNhin`, `khoaThaoTac`, prop `dangBiDieuKhien` | `frontend/CLAUDE.md` mục 3D; mục 5 tệp này | 240da25 |
 | — | Quy trình làm việc: nhánh `main` / `dev` / `feature/...`, hook chặn commit / push vào `main`, `dev`, subagent `review-code`, `tra-cuu-dac-ta`, skill viết API / màn hình / migration, file Excel phân công sinh từ tệp này | Làm theo mục 8 (Git – việc đầu tiên); xong việc: cập nhật mục 2, chạy `python ke-hoach/tao_phan_cong.py`, commit cả hai | `CLAUDE.md` mục Quy trình Git, Tiến độ | 6c4a137, 6a187b9, 6d9648f |
+| ND03 | API 56 (lưu nhãn bộ phận, giữ id); `CanhBaiHoc` thêm sự kiện `onBamVat(vat, giuShift)` (báo cả phần chưa gắn nhãn, dùng cho màn soạn); `tinh-toan.ts` thêm `tenPhanCuaVat(vat, meshNames)` (có test); khung `KhungGanNhan` (thẻ Bộ phận) | ND04 (câu hỏi chọn bộ phận) có thể dùng lại `KhungGanNhan` / `onBamVat` để chọn đáp án trên mô hình; LH05 dùng `gocNhinHienTai` như ND03 | `frontend/src/pages/bai-hoc/TheBoPhan.tsx`, `KhungGanNhan.tsx`; mục 5 (Gắn nhãn bộ phận) | 1984685, 031d80f (gộp BH01) |

@@ -1,7 +1,8 @@
 /**
- * Màn soạn bài (Hình 3-11; API 51, 52, 54, 55; UC 20). ND02 làm khung, thẻ "Thông tin bài" và "Mô hình".
- * Thẻ Bộ phận (ND03), Câu hỏi (ND04), Thí nghiệm và nút Xem trước chờ việc sau (cấu trúc lessons.config chưa
- * thống nhất với Dev Bài học – TIEN_DO.md mục 10).
+ * Màn soạn bài (Hình 3-11; API 51, 52, 54–56; UC 20, 22). ND02 làm khung, thẻ "Thông tin bài" và "Mô hình"; ND03
+ * làm thẻ "Bộ phận" (nút Lưu gọi API 52 rồi API 56 cho phần nào có thay đổi).
+ * Thẻ Câu hỏi (ND04), Thí nghiệm và nút Xem trước chờ việc sau (cấu trúc lessons.config chưa thống nhất với
+ * Dev Bài học – TIEN_DO.md mục 10).
  */
 import { ChevronRight, CircleCheck, Eye, TriangleAlert, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useState, type KeyboardEvent, type MouseEvent } from "react";
@@ -11,6 +12,7 @@ import {
   getLesson,
   listSubjects,
   publishLesson,
+  replaceLessonParts,
   unpublishLesson,
   updateLesson,
   type ActiveAssignment,
@@ -23,8 +25,20 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { TrangThaiBai } from "./BaiHocPage";
+import {
+  type BoPhanNhap,
+  giuKhoa,
+  khacDaLuu,
+  kiemTraBoPhan,
+  laCameraView,
+  type LoiBoPhan,
+  loiBoPhanTuMayChu,
+  thanhDauVaoBoPhan,
+  tuDanhSach,
+} from "./bo-phan";
 import { cauLoi, loiTuMayChu, thanhDauVao, tuBaiHoc } from "./chuyen-doi";
 import { GoXuatBanDialog, ThieuDieuKienDialog, TrungBaiDialog } from "./HopThoai";
+import { TheBoPhan } from "./TheBoPhan";
 import { TheMoHinh } from "./TheMoHinh";
 import { kiemTraThongTin, ThongTinBaiForm, type LoiThongTin, type ThongTinBai } from "./ThongTinBaiForm";
 
@@ -45,6 +59,8 @@ export function SoanBaiPage() {
   const [form, setForm] = useState<ThongTinBai | null>(null);
   const [assetId, setAssetId] = useState<number | null>(null);
   const [loi, setLoi] = useState<LoiThongTin>({});
+  const [boPhan, setBoPhan] = useState<BoPhanNhap[]>([]);
+  const [loiBoPhan, setLoiBoPhan] = useState<LoiBoPhan>({});
   const [thongBao, setThongBao] = useState<{ tone: "success" | "danger"; text: string } | null>(null);
   const [dangLuu, setDangLuu] = useState(false);
   // Hộp hỏi trùng bài nhớ luôn việc người dùng đang làm (lưu nháp hay xuất bản) để "Vẫn lưu" làm tiếp đúng việc đó.
@@ -55,11 +71,16 @@ export function SoanBaiPage() {
   const [loiGo, setLoiGo] = useState<string | null>(null);
   const [lanTai, setLanTai] = useState(0);
 
-  const napBai = useCallback((b: LessonDetail) => {
+  /** Nạp bài từ máy chủ. `giuBoPhan`: giữ danh sách bộ phận đang soạn (vừa lưu thông tin bài, bộ phận lưu tiếp sau). */
+  const napBai = useCallback((b: LessonDetail, giuBoPhan = false) => {
     setBai(b);
     setForm(tuBaiHoc(b));
     setAssetId(b.asset?.id ?? null);
     setLoi({});
+    if (!giuBoPhan) {
+      setBoPhan(tuDanhSach(b.parts));
+      setLoiBoPhan({});
+    }
   }, []);
 
   useEffect(() => {
@@ -95,10 +116,12 @@ export function SoanBaiPage() {
     };
   }, [lessonId, lanTai, napBai]);
 
-  const thayDoi =
+  const doiThongTin =
     !!bai &&
     !!form &&
     (JSON.stringify(form) !== JSON.stringify(tuBaiHoc(bai)) || assetId !== (bai.asset?.id ?? null));
+  const doiBoPhan = !!bai && khacDaLuu(boPhan, bai.parts);
+  const thayDoi = doiThongTin || doiBoPhan;
 
   // Đóng tab / tải lại khi còn thay đổi chưa lưu: trình duyệt hỏi lại.
   useEffect(() => {
@@ -108,7 +131,10 @@ export function SoanBaiPage() {
     return () => window.removeEventListener("beforeunload", chan);
   }, [thayDoi]);
 
-  /** Lưu (API 52). Trả bài mới hoặc null nếu chưa lưu được (lỗi đã hiện). */
+  /**
+   * Lưu thông tin bài (API 52) rồi nhãn bộ phận (API 56), phần nào có thay đổi thì gửi phần đó.
+   * Trả bài mới hoặc null nếu chưa lưu được (lỗi đã hiện).
+   */
   async function luu(xacNhanTrung = false, sauDo: SauKhiLuu = "luu"): Promise<LessonDetail | null> {
     if (!bai || !form) return null;
     const l = kiemTraThongTin(form);
@@ -118,15 +144,71 @@ export function SoanBaiPage() {
       setThongBao({ tone: "danger", text: "Thông tin bài chưa hợp lệ, hãy sửa các ô được đánh dấu" });
       return null;
     }
+    if (doiBoPhan) {
+      if (bai.status === "PUBLISHED" && boPhan.length === 0) {
+        setThe("bo-phan");
+        setThongBao({
+          tone: "danger",
+          text: "Bài đã xuất bản phải có ít nhất một nhãn bộ phận. Hãy gỡ xuất bản trước nếu muốn xóa hết nhãn",
+        });
+        return null;
+      }
+      const lb = kiemTraBoPhan(boPhan, bai.asset?.mesh_names ?? []);
+      setLoiBoPhan(lb);
+      if (Object.keys(lb).length) {
+        setThe("bo-phan");
+        setThongBao({ tone: "danger", text: "Có bộ phận chưa hợp lệ, hãy sửa các bộ phận có dấu cảnh báo" });
+        return null;
+      }
+    }
     setDangLuu(true);
     setThongBao(null);
+    try {
+      let b: LessonDetail | null = bai;
+      if (doiThongTin) b = await luuThongTin(xacNhanTrung, sauDo);
+      if (b && doiBoPhan) b = await luuBoPhan(b);
+      return b;
+    } finally {
+      setDangLuu(false);
+    }
+  }
+
+  /** API 56 (gọi trong luu()). */
+  async function luuBoPhan(b: LessonDetail): Promise<LessonDetail | null> {
+    try {
+      const moi = await replaceLessonParts(b.id, thanhDauVaoBoPhan(boPhan));
+      napBai(moi);
+      // Máy chủ trả đúng thứ tự đã gửi: giữ khóa cũ để bộ phận đang chọn ở thẻ Bộ phận vẫn được chọn.
+      setBoPhan(giuKhoa(tuDanhSach(moi.parts), boPhan));
+      return moi;
+    } catch (e) {
+      const lb = loiBoPhanTuMayChu(e, boPhan);
+      if (lb) setLoiBoPhan(lb);
+      setThe("bo-phan");
+      const cau = lb
+        ? "Có bộ phận chưa hợp lệ, hãy sửa các bộ phận có dấu cảnh báo"
+        : e instanceof ApiError
+          ? e.message
+          : "Không lưu được nhãn bộ phận, hãy thử lại";
+      // Thông tin bài vừa lưu xong mà nhãn lỗi: nói rõ phần nào đã lưu.
+      setThongBao({
+        tone: "danger",
+        text: doiThongTin ? `Đã lưu thông tin bài, chưa lưu được nhãn bộ phận. ${cau}` : cau,
+      });
+      return null;
+    }
+  }
+
+  /** API 52 (gọi trong luu()); giữ danh sách bộ phận đang soạn để lưu tiếp bằng API 56. */
+  async function luuThongTin(xacNhanTrung: boolean, sauDo: SauKhiLuu): Promise<LessonDetail | null> {
+    if (!bai || !form) return null;
     try {
       const b = await updateLesson(
         bai.id,
         thanhDauVao(form, { asset_id: assetId, config: bai.config, confirm_duplicate: xacNhanTrung }),
       );
       setTrung(null);
-      napBai(b);
+      napBai(b, true);
       return b;
     } catch (e) {
       if (e instanceof ApiError && e.code === "DUPLICATE_LESSON") {
@@ -154,8 +236,6 @@ export function SoanBaiPage() {
       if (c.loiMoHinh) setThe("mo-hinh");
       setThongBao({ tone: "danger", text: c.text });
       return null;
-    } finally {
-      setDangLuu(false);
     }
   }
 
@@ -197,7 +277,8 @@ export function SoanBaiPage() {
     setDangLuu(true);
     setLoiGo(null);
     try {
-      napBai(await unpublishLesson(bai.id, xacNhan));
+      // Giữ nhãn bộ phận đang soạn (chưa lưu) khi gỡ xuất bản.
+      napBai(await unpublishLesson(bai.id, xacNhan), true);
       setMoGo(false);
       setGiaoConHan(null);
       setThongBao({ tone: "success", text: "Đã gỡ xuất bản, bài chuyển về nháp" });
@@ -267,7 +348,7 @@ export function SoanBaiPage() {
   const THE_DS: { key: The; label: string; off?: boolean }[] = [
     { key: "thong-tin", label: "Thông tin bài" },
     { key: "mo-hinh", label: "Mô hình" },
-    { key: "bo-phan", label: `Bộ phận · ${bai.parts.length}` },
+    { key: "bo-phan", label: `Bộ phận · ${boPhan.length}` },
     { key: "cau-hoi", label: `Câu hỏi · ${bai.questions.length}` },
     { key: "thi-nghiem", label: "Thí nghiệm", off: !laThiNghiem },
   ];
@@ -401,25 +482,33 @@ export function SoanBaiPage() {
           </div>
         )}
         {the === "mo-hinh" && <TheMoHinh assetId={assetId} onChange={setAssetId} disabled={dangLuu} />}
-        {(the === "bo-phan" || the === "cau-hoi" || the === "thi-nghiem") && (
+        {the === "bo-phan" && (
+          <TheBoPhan
+            asset={bai.asset}
+            gocTongQuan={laCameraView(bai.config.camera_view) ? bai.config.camera_view : null}
+            doiMoHinhChuaLuu={assetId !== (bai.asset?.id ?? null)}
+            value={boPhan}
+            onChange={setBoPhan}
+            loi={loiBoPhan}
+            disabled={dangLuu}
+            onDenTheMoHinh={() => setThe("mo-hinh")}
+          />
+        )}
+        {(the === "cau-hoi" || the === "thi-nghiem") && (
           <section className="flex flex-col items-center justify-center gap-2 rounded-card border border-line bg-surface px-6 py-16 text-center">
             <p className="font-medium">
-              {the === "bo-phan"
-                ? "Gắn nhãn bộ phận sẽ có ở bản cập nhật tới"
-                : the === "cau-hoi"
-                  ? "Soạn câu hỏi sẽ có ở bản cập nhật tới"
-                  : laThiNghiem
-                    ? "Cấu hình thí nghiệm sẽ có ở bản cập nhật tới"
-                    : "Bài cấu tạo không có phần thí nghiệm"}
+              {the === "cau-hoi"
+                ? "Soạn câu hỏi sẽ có ở bản cập nhật tới"
+                : laThiNghiem
+                  ? "Cấu hình thí nghiệm sẽ có ở bản cập nhật tới"
+                  : "Bài cấu tạo không có phần thí nghiệm"}
             </p>
             <p className="max-w-md text-[14px] text-text-2">
-              {the === "bo-phan"
-                ? `Bài đang có ${bai.parts.length} nhãn bộ phận. Cần ít nhất một nhãn để xuất bản.`
-                : the === "cau-hoi"
-                  ? `Bài đang có ${bai.questions.length} câu hỏi.`
-                  : laThiNghiem
-                    ? "Thông số, công thức đáp án và sai số cho phép sẽ khai báo ở đây."
-                    : "Đổi loại bài sang Thí nghiệm ở thẻ Thông tin bài nếu bài có thông số, chấm điểm."}
+              {the === "cau-hoi"
+                ? `Bài đang có ${bai.questions.length} câu hỏi.`
+                : laThiNghiem
+                  ? "Thông số, công thức đáp án và sai số cho phép sẽ khai báo ở đây."
+                  : "Đổi loại bài sang Thí nghiệm ở thẻ Thông tin bài nếu bài có thông số, chấm điểm."}
             </p>
           </section>
         )}

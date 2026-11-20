@@ -1,4 +1,4 @@
-"""Nghiệp vụ soạn bài học (UC 20; API 49–55) và danh sách môn (API 7).
+"""Nghiệp vụ soạn bài học (UC 20; API 49–55), gắn nhãn bộ phận (UC 22; API 56) và danh sách môn (API 7).
 
 Bài học không thuộc trường nào: biên tập viên, quản trị hệ thống sửa được mọi bài (không có quy tắc sở hữu).
 
@@ -20,7 +20,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
-from app.models import Asset, Lesson
+from app.models import Asset, Lesson, LessonPart
 from app.repositories import editor_lessons as repo
 from app.schemas.assets import NGUON_CAN_GHI_CONG
 from app.schemas.editor_lessons import (
@@ -30,6 +30,7 @@ from app.schemas.editor_lessons import (
     LessonListItem,
     LessonListOut,
     LessonPartOut,
+    LessonPartsIn,
     QuestionOut,
     SubjectBrief,
     SubjectOut,
@@ -373,5 +374,111 @@ def unpublish_lesson(
         # Gỡ dù đang giao (đã xác nhận): ghi số bài giao bị ảnh hưởng để tra cứu sau.
         chi_tiet={"active_assignment_count": len(dang_giao)} if dang_giao else None,
     )
+    db.commit()
+    return _chi_tiet(db, lesson)
+
+
+# ---------------------------------------------------------------- API 56
+TRUONG_BO_PHAN = ("mesh_names", "label", "description", "camera_view", "sort_order")
+
+
+def _kiem_tra_bo_phan(asset: Asset | None, cu: dict[int, LessonPart], data: LessonPartsIn) -> None:
+    """Id thuộc bài và không lặp; mesh có trong mô hình, mỗi mesh thuộc một bộ phận; nhãn không trùng.
+
+    Câu báo lỗi chỉ nói vị trí (bộ phận thứ mấy, phần thứ mấy), không vọng lại tên gửi lên."""
+    loi: list[dict[str, str]] = []
+    mesh_co = set(asset.mesh_names or []) if asset else set()
+    id_da_gap: set[int] = set()
+    mesh_da_gap: set[str] = set()
+    nhan_da_gap: set[str] = set()
+    for i, p in enumerate(data.parts):
+        thu = i + 1
+        if p.id is not None:
+            if p.id not in cu:
+                loi.append({"field": f"parts.{i}.id", "message": f"Bộ phận thứ {thu} không thuộc bài này, hãy tải lại trang"})
+            elif p.id in id_da_gap:
+                loi.append({"field": f"parts.{i}.id", "message": f"Bộ phận thứ {thu} bị gửi lặp, hãy tải lại trang"})
+            id_da_gap.add(p.id)
+        for j, ten in enumerate(p.mesh_names):
+            if ten not in mesh_co:
+                loi.append({
+                    "field": f"parts.{i}.mesh_names.{j}",
+                    "message": f"Phần thứ {j + 1} của bộ phận thứ {thu} không có trong mô hình, hãy bỏ phần này",
+                })
+            elif ten in mesh_da_gap:
+                loi.append({
+                    "field": f"parts.{i}.mesh_names.{j}",
+                    "message": f"Phần thứ {j + 1} của bộ phận thứ {thu} đã thuộc bộ phận khác, mỗi phần chỉ gắn một nhãn",
+                })
+            mesh_da_gap.add(ten)
+        khoa_nhan = p.label.casefold()
+        if khoa_nhan in nhan_da_gap:
+            loi.append({"field": f"parts.{i}.label", "message": f"Nhãn của bộ phận thứ {thu} trùng với bộ phận khác"})
+        nhan_da_gap.add(khoa_nhan)
+    if loi:
+        raise AppError(422, "VALIDATION_ERROR", "Dữ liệu chưa hợp lệ, hãy kiểm tra các bộ phận được đánh dấu", loi)
+
+
+def replace_parts(
+    db: Session, actor: CurrentUser, lesson_id: int, data: LessonPartsIn, now: datetime
+) -> LessonDetailOut:
+    """Thay toàn bộ danh sách bộ phận trong một giao dịch. Bộ phận gửi kèm id thì sửa tại chỗ (giữ id để câu hỏi
+    "chọn bộ phận" của ND04 không mất liên kết), không id thì thêm mới, bộ phận cũ không gửi lên thì xóa."""
+    lesson = repo.get(db, lesson_id, for_update=True)
+    if lesson is None:
+        raise _khong_tim_thay()
+    asset = repo.get_asset(db, lesson.asset_id) if lesson.asset_id else None
+    if asset is None and data.parts:
+        raise AppError(400, "LESSON_NO_ASSET", "Bài chưa chọn mô hình 3D, hãy chọn mô hình ở thẻ Mô hình trước khi gắn nhãn")
+    if lesson.status == "PUBLISHED" and not data.parts:
+        raise AppError(
+            400,
+            "LESSON_INCOMPLETE",
+            "Bài đã xuất bản phải có ít nhất một nhãn bộ phận. Hãy gỡ xuất bản trước nếu muốn xóa hết nhãn",
+            ["Chưa gắn nhãn bộ phận nào"],
+        )
+    cu = {p.id: p for p in repo.parts_of(db, lesson.id)}
+    _kiem_tra_bo_phan(asset, cu, data)
+
+    giu = {p.id for p in data.parts if p.id is not None}
+    bo = [p for pid, p in cu.items() if pid not in giu]
+    repo.delete_parts(db, bo)
+    doi: set[str] = set()
+    so_them = 0
+    for i, p in enumerate(data.parts):
+        moi = {
+            "mesh_names": list(p.mesh_names),
+            "label": p.label,
+            "description": p.description or None,
+            "camera_view": p.camera_view.model_dump(mode="json") if p.camera_view else None,
+            "sort_order": i,
+        }
+        if p.id is None:
+            repo.add_part(db, LessonPart(lesson_id=lesson.id, **moi))
+            so_them += 1
+            continue
+        dong = cu[p.id]
+        for k, v in moi.items():
+            if getattr(dong, k) != v:
+                setattr(dong, k, v)
+                doi.add(k)
+
+    if bo or so_them or doi:
+        lesson.updated_at = now
+        # Chỉ ghi tên trường đã đổi và số bộ phận, không ghi nhãn / chú thích.
+        nhat_ky.ghi(
+            db,
+            "UPDATE_LESSON_PARTS",
+            nguoi_lam=actor,
+            doi_tuong="lesson",
+            doi_tuong_id=lesson.id,
+            ten_doi_tuong=lesson.title,
+            chi_tiet={
+                "changed_fields": [k for k in TRUONG_BO_PHAN if k in doi],
+                "part_count": len(data.parts),
+                "added_count": so_them,
+                "removed_count": len(bo),
+            },
+        )
     db.commit()
     return _chi_tiet(db, lesson)

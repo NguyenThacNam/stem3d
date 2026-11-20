@@ -25,6 +25,7 @@ import {
   huongTach,
   khoangCachVuaKhung,
   phanTramDaTai,
+  tenPhanCuaVat,
   thongKeMoHinh,
   timMeshTheoTen,
 } from "./tinh-toan";
@@ -236,5 +237,21 @@ describe("gioiHanCamera", () => {
       expect(gh.minDistance - r).toBeLessThan(0); // phóng sát vào được tới gần mặt mô hình
       expect(gh.minDistance).toBeGreaterThan(gh.near);
     }
+  });
+});
+
+describe("tenPhanCuaVat", () => {
+  it("đi ngược lên cha tới tên khớp sau chuẩn hóa, trả tên gốc", () => {
+    const goc = new Group();
+    const nhom = new Group();
+    nhom.name = chuanHoaTenMesh("Vây lưng.001");
+    const con = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    nhom.add(con);
+    const la = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    la.name = "khong_co";
+    goc.add(nhom, la);
+    expect(tenPhanCuaVat(con, ["mat", "Vây lưng.001"])).toBe("Vây lưng.001");
+    expect(tenPhanCuaVat(la, ["mat"])).toBeNull();
+    expect(tenPhanCuaVat(null, ["mat"])).toBeNull();
   });
 });
