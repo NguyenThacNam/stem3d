@@ -38,6 +38,9 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
   - Nhánh việc tạo từ `dev`, mỗi việc một nhánh, tên theo mã việc trong `docs/Ke_hoach_trien_khai_chuc_nang.xlsx`:
     `feature/<mã-việc>-<mô-tả-ngắn-không-dấu>` (ví dụ `feature/QL04-nhap-hoc-sinh-excel`); sửa lỗi: `fix/<mô-tả>`.
 - Không commit, merge, push thẳng vào `main` hay `dev`.
+- Bắt đầu một việc: trước tiên xem trên GitHub đã có nhánh của việc đó chưa (`git fetch --prune` rồi
+  `git branch -r | grep <mã-việc>`), có rồi thì hỏi người kia. Tạo nhánh xong thì ngay lập tức đổi trạng thái việc
+  trong `TIEN_DO.md` thành 'Đang làm – <tên người>', commit và đẩy nhánh lên để giữ chỗ.
 - Bắt đầu việc mới: `git switch dev` → `git pull` → `git switch -c feature/...`.
 - Mỗi ngày và trước khi tạo PR: kéo `dev` mới nhất về nhánh mình (`git pull origin dev`), tự giải quyết xung đột.
 - Migration: kéo `dev` mới nhất về TRƯỚC khi tạo migration; nếu Alembic báo nhiều head thì tạo migration gộp
