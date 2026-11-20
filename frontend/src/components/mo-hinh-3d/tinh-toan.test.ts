@@ -13,7 +13,17 @@ import {
   Texture,
 } from "three";
 import { describe, expect, it, vi } from "vitest";
-import { DemKhungHinh, giaiPhong, khoangCachVuaKhung, phanTramDaTai, thongKeMoHinh } from "./tinh-toan";
+import {
+  banDoTenPhan,
+  DemKhungHinh,
+  emDan,
+  giaiPhong,
+  khoangCachVuaKhung,
+  laGocNhin,
+  phanTramDaTai,
+  tenPhanGoc,
+  thongKeMoHinh,
+} from "./tinh-toan";
 
 describe("khoangCachVuaKhung", () => {
   it("khung vuông, fov 90°: khoảng cách = r / sin(45°) × lề", () => {
@@ -119,5 +129,56 @@ describe("DemKhungHinh", () => {
     expect(dem.fps()).toBe(0);
     dem.ghi(10);
     expect(dem.fps()).toBe(0);
+  });
+});
+
+describe("tenPhanGoc / banDoTenPhan", () => {
+  const json = {
+    nodes: [{ name: "Vây lưng", mesh: 0 }, { name: "  ", mesh: 1 }, { mesh: 2 }, { name: "Nhóm" }],
+    meshes: [{ name: "m0" }, { name: "mat.001" }, {}],
+  };
+
+  it("tên node trước, node không tên thì tên mesh, không có tên nào thì null (giống máy chủ)", () => {
+    expect(tenPhanGoc(json, 0)).toBe("Vây lưng");
+    expect(tenPhanGoc(json, 1)).toBe("mat.001");
+    expect(tenPhanGoc(json, 2)).toBeNull();
+    expect(tenPhanGoc(json, 9)).toBeNull();
+  });
+
+  it("mesh nhiều primitive (Group chứa Mesh con) lấy tên theo node của Group", () => {
+    const goc = new Group();
+    const vay = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    const nhom = new Group();
+    const con1 = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    const con2 = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    const khongTen = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    nhom.add(con1, con2);
+    goc.add(vay, nhom, khongTen);
+    const lienKet = new Map<unknown, { nodes?: number }>([
+      [vay, { nodes: 0 }],
+      [nhom, { nodes: 1 }],
+      [con1, {}],
+      [khongTen, { nodes: 2 }],
+    ]);
+    const bd = banDoTenPhan(goc, lienKet, json);
+    expect(bd.get(vay)).toBe("Vây lưng");
+    expect(bd.get(con1)).toBe("mat.001");
+    expect(bd.get(con2)).toBe("mat.001");
+    expect(bd.has(khongTen)).toBe(false);
+  });
+});
+
+describe("laGocNhin / emDan", () => {
+  it("chỉ nhận hai bộ ba số hữu hạn", () => {
+    expect(laGocNhin({ position: [1, 2, 3], target: [0, 0, 0] })).toBe(true);
+    expect(laGocNhin({ position: [1, 2], target: [0, 0, 0] })).toBe(false);
+    expect(laGocNhin({ position: [1, 2, Number.NaN], target: [0, 0, 0] })).toBe(false);
+    expect(laGocNhin(null)).toBe(false);
+  });
+
+  it("đi từ 0 tới 1, kẹp ngoài khoảng", () => {
+    expect(emDan(-1)).toBe(0);
+    expect(emDan(0.5)).toBeCloseTo(0.5, 6);
+    expect(emDan(2)).toBe(1);
   });
 });

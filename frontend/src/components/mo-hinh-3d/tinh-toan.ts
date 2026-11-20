@@ -88,3 +88,72 @@ export class DemKhungHinh {
     return khoang > 0 ? ((this.moc.length - 1) * 1000) / khoang : 0;
   }
 }
+
+// ---------------------------------------------------------------- gắn nhãn bộ phận (ND03, BH01)
+/** Phần JSON của file glTF cần để lấy tên phần (GLTFLoader để ở `gltf.parser.json`). */
+export type GltfJson = {
+  nodes?: { name?: unknown; mesh?: unknown }[];
+  meshes?: { name?: unknown }[];
+};
+
+function tenHopLe(x: unknown): string | null {
+  return typeof x === "string" && x.trim() ? x : null;
+}
+
+/**
+ * Tên gốc (chưa bị Three.js đổi) của node có hình số `nodeIndex`: tên node, node không tên thì tên mesh; không có
+ * tên nào thì null. Phải khớp cách máy chủ lấy `assets.mesh_names` (backend `app/services/glb.py`), vì nhãn bộ phận
+ * lưu theo tên này.
+ */
+export function tenPhanGoc(json: GltfJson, nodeIndex: number): string | null {
+  const node = json.nodes?.[nodeIndex];
+  if (!node) return null;
+  const tenNode = tenHopLe(node.name);
+  if (tenNode) return tenNode;
+  return typeof node.mesh === "number" ? tenHopLe(json.meshes?.[node.mesh]?.name) : null;
+}
+
+/**
+ * Gắn tên phần cho từng Mesh của mô hình. Node có mesh nhiều primitive thành một Group chứa nhiều Mesh con, nên
+ * mỗi Mesh đi ngược lên cha tới đối tượng đầu tiên GLTFLoader ghi số node (`parser.associations`).
+ */
+export function banDoTenPhan(
+  goc: Object3D,
+  associations: Map<unknown, { nodes?: number }>,
+  json: GltfJson,
+): Map<Mesh, string> {
+  const ketQua = new Map<Mesh, string>();
+  goc.traverse((vat) => {
+    if (!(vat instanceof Mesh)) return;
+    for (let x: Object3D | null = vat; x && x !== goc.parent; x = x.parent) {
+      const so = associations.get(x)?.nodes;
+      if (so === undefined) continue;
+      const ten = tenPhanGoc(json, so);
+      if (ten) ketQua.set(vat, ten);
+      return;
+    }
+  });
+  return ketQua;
+}
+
+/**
+ * Góc camera lưu cho một bộ phận (`lesson_parts.camera_view`), theo tọa độ GỐC của file GLB – trước khi khung 3D
+ * dời tâm mô hình về gốc tọa độ. Nhờ vậy khung khác (BH01) canh mô hình cách khác vẫn dùng lại được.
+ */
+export type GocNhin = { position: [number, number, number]; target: [number, number, number] };
+
+function laBoBaSo(x: unknown): x is [number, number, number] {
+  return Array.isArray(x) && x.length === 3 && x.every((s) => typeof s === "number" && Number.isFinite(s));
+}
+
+export function laGocNhin(x: unknown): x is GocNhin {
+  if (typeof x !== "object" || x === null) return false;
+  const g = x as Record<string, unknown>;
+  return laBoBaSo(g.position) && laBoBaSo(g.target);
+}
+
+/** Đường cong chậm – nhanh – chậm cho camera bay tới góc nhìn; `t` ngoài [0, 1] được kẹp lại. */
+export function emDan(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+}

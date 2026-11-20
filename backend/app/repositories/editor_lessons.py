@@ -140,3 +140,13 @@ def delete(db: Session, lesson: Lesson) -> None:
     """lesson_parts, questions xóa theo (ON DELETE CASCADE)."""
     db.delete(lesson)
     db.flush()
+
+
+# ---------------------------------------------------------------- nhãn bộ phận (API 56)
+def add_part(db: Session, part: LessonPart) -> None:
+    db.add(part)
+
+
+def delete_parts(db: Session, parts: list[LessonPart]) -> None:
+    for p in parts:
+        db.delete(p)

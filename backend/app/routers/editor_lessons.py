@@ -1,4 +1,4 @@
-"""Soạn bài học – /api/editor/lessons (Bảng 3-6, API 49–55). Biên tập viên, quản trị hệ thống (kế thừa).
+"""Soạn bài học – /api/editor/lessons (Bảng 3-6, API 49–56). Biên tập viên, quản trị hệ thống (kế thừa).
 
 Tách khỏi /api/lessons (API học tập 8, 9): các API ở đây trả đầy đủ cấu hình, công thức đáp án, câu hỏi kèm đáp án.
 """
@@ -17,6 +17,7 @@ from app.schemas.editor_lessons import (
     LessonDetailOut,
     LessonIn,
     LessonListOut,
+    LessonPartsIn,
     LessonUpdate,
     LessonStatus,
     SubjectOut,
@@ -122,3 +123,15 @@ def unpublish_lesson(
 ) -> LessonDetailOut:
     """API 55 – gỡ xuất bản, chuyển về nháp; bài đang giao còn hạn thì hỏi xác nhận (`{"confirm": true}`)."""
     return service.unpublish_lesson(db, actor, lesson_id, bool(data and data.confirm), now)
+
+
+@router.put("/{lesson_id}/parts", response_model=LessonDetailOut)
+def replace_parts(
+    lesson_id: IdPath,
+    data: LessonPartsIn,
+    actor: CurrentUser = Depends(BienTap),
+    db: Session = Depends(get_db),
+    now: datetime = Depends(get_now),
+) -> LessonDetailOut:
+    """API 56 – lưu toàn bộ danh sách nhãn bộ phận (thay cả danh sách; bộ phận gửi kèm id giữ nguyên id)."""
+    return service.replace_parts(db, actor, lesson_id, data, now)

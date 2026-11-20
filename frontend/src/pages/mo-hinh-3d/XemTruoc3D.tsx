@@ -3,8 +3,8 @@
  * không phải tải Three.js. Bọc ErrorBoundary: tải chunk lỗi (mất mạng, vừa triển khai bản mới) chỉ làm hỏng khung
  * này, không làm trắng cả trang.
  */
-import { Component, lazy, Suspense, useMemo, useState, type ReactNode } from "react";
-import type { NguonMoHinh } from "@/components/mo-hinh-3d/MoHinh3D";
+import { Component, lazy, Suspense, useMemo, useState, type ReactNode, type Ref } from "react";
+import type { DieuKhien3D, NguonMoHinh } from "@/components/mo-hinh-3d/MoHinh3D";
 import { cn } from "@/lib/utils";
 
 // React giữ kết quả lỗi của một lazy(): thử lại phải tạo lazy mới để tải lại chunk.
@@ -54,6 +54,9 @@ export function XemTruoc3D({
   file,
   ten,
   className,
+  onBamPhan,
+  phanToSang,
+  dieuKhienRef,
 }: {
   /** File đã nạp (/content/models/...). */
   url?: string;
@@ -62,6 +65,10 @@ export function XemTruoc3D({
   /** Tên cố định theo file / url (chỉ lấy lúc đổi nguồn): không truyền tên đang gõ vào đây. */
   ten: string;
   className?: string;
+  /** Gắn nhãn bộ phận (ND03): xem `MoHinh3D`. */
+  onBamPhan?: (ten: string | null, giuShift: boolean) => void;
+  phanToSang?: readonly string[];
+  dieuKhienRef?: Ref<DieuKhien3D>;
 }) {
   // Thành phần lazy nằm trong state: "Thử lại" tạo lazy mới và render lại ngay chính thành phần này.
   const [MoHinh3D, setMoHinh3D] = useState(taoLazy);
@@ -82,7 +89,14 @@ export function XemTruoc3D({
           </div>
         }
       >
-        <MoHinh3D nguon={nguon} nhan={`Bản xem trước 3D: ${ten}`} className={khung} />
+        <MoHinh3D
+          nguon={nguon}
+          nhan={`Bản xem trước 3D: ${ten}`}
+          className={khung}
+          onBamPhan={onBamPhan}
+          phanToSang={phanToSang}
+          ref={dieuKhienRef}
+        />
       </Suspense>
     </BatLoi>
   );

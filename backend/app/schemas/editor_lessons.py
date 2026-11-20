@@ -1,13 +1,14 @@
-"""Schema soạn bài học – /api/editor/lessons (Bảng 3-6, API 49–55; UC 20) và môn học – /api/subjects (API 7).
+"""Schema soạn bài học – /api/editor/lessons (Bảng 3-6, API 49–56; UC 20, 22) và môn học – /api/subjects (API 7).
 
 API soạn bài trả đầy đủ cấu hình, công thức đáp án, câu hỏi kèm đáp án (chương 3 mục 3.1.3: tách /api/editor để API
 học tập 8, 9 không bao giờ trả các trường này). KHÔNG dùng lại schema này cho API học tập.
 """
 
+import unicodedata
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, StringConstraints
 
 from app.schemas.common import ID_TOI_DA, UtcDatetime
 
@@ -61,6 +62,50 @@ class LessonUpdate(LessonIn):
     lesson_no: int | None = Field(ge=1, le=SO_BAI_TOI_DA)
     asset_id: int | None = Field(ge=1, le=ID_TOI_DA)
     config: dict[str, Any]
+
+
+# ---------------------------------------------------------------- đầu vào API 56
+SO_BO_PHAN_TOI_DA = 200
+SO_MESH_MOI_BO_PHAN_TOI_DA = 100
+
+# Chuẩn hóa NFC: "Vây" gõ dạng dựng sẵn hay dạng tổ hợp đều lưu (và so trùng) như nhau.
+# Chuẩn hóa TRƯỚC khi đo độ dài: dạng tổ hợp dài hơn, không để nhãn 100 ký tự bị báo quá dài.
+NhanBoPhan = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=100),
+    BeforeValidator(lambda s: unicodedata.normalize("NFC", s) if isinstance(s, str) else s),
+]
+ChuThich = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
+TenMesh = Annotated[str, StringConstraints(min_length=1, max_length=500)]
+# Tọa độ hữu hạn (không nhận NaN / vô cực) và không quá lớn để camera không bay khỏi cảnh.
+ToaDo = Annotated[float, Field(ge=-1e6, le=1e6, allow_inf_nan=False)]
+
+
+class CameraView(BaseModel):
+    """Góc camera khi chọn bộ phận, theo tọa độ gốc của file GLB (chưa dời tâm mô hình về gốc tọa độ):
+    `position` – vị trí camera, `target` – điểm camera nhìn vào. Phía hiển thị tự đổi sang tọa độ của khung 3D."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    position: tuple[ToaDo, ToaDo, ToaDo]
+    target: tuple[ToaDo, ToaDo, ToaDo]
+
+
+class LessonPartIn(BaseModel):
+    """Một bộ phận. Có `id` (bộ phận đã có của bài) thì sửa tại chỗ, giữ nguyên id; không có thì thêm mới.
+    Thứ tự trong danh sách gửi lên là thứ tự hiển thị (`sort_order` do máy chủ đặt)."""
+
+    id: int | None = Field(default=None, ge=1, le=ID_TOI_DA)
+    mesh_names: list[TenMesh] = Field(min_length=1, max_length=SO_MESH_MOI_BO_PHAN_TOI_DA)
+    label: NhanBoPhan
+    description: ChuThich | None = None
+    camera_view: CameraView | None = None
+
+
+class LessonPartsIn(BaseModel):
+    """Đầu vào API 56: TOÀN BỘ danh sách bộ phận của bài; bộ phận cũ không có trong danh sách sẽ bị xóa."""
+
+    parts: list[LessonPartIn] = Field(max_length=SO_BO_PHAN_TOI_DA)
 
 
 class UnpublishIn(BaseModel):

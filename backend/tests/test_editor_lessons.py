@@ -1,5 +1,6 @@
 """API 7 – /api/subjects; API 49–55 – /api/editor/lessons: soạn, xuất bản, gỡ, xóa bài học (UC 20)."""
 
+import unicodedata
 import uuid
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -125,6 +126,7 @@ DUONG_DAN = [
     ("DELETE", "/api/editor/lessons/1"),
     ("POST", "/api/editor/lessons/1/publish"),
     ("POST", "/api/editor/lessons/1/unpublish"),
+    ("PUT", "/api/editor/lessons/1/parts"),
 ]
 
 
@@ -142,9 +144,9 @@ def test_chua_dang_nhap(mt: MoiTruong, method: str, url: str) -> None:
 
 @pytest.mark.parametrize("method,url", DUONG_DAN[2:])
 def test_bai_khong_co(mt: MoiTruong, method: str, url: str) -> None:
-    res = mt.goi(method, url.replace("/1", "/999999"), json=mt.bai())
+    res = mt.goi(method, url.replace("/1", "/999999"), json=mt.bai() | {"parts": []})
     assert res.status_code == 404 and res.json()["error"]["code"] == "LESSON_NOT_FOUND"
-    assert mt.db.scalar(select(func.count()).select_from(SystemLog).where(SystemLog.action.like("%LESSON"))) == 0
+    assert mt.db.scalar(select(func.count()).select_from(SystemLog).where(SystemLog.action.like("%LESSON%"))) == 0
 
 
 # ================================================================ API 50 – tạo
@@ -537,3 +539,192 @@ def test_xoa_bai_da_co_bai_nop_bi_chan(mt: MoiTruong) -> None:
     res = mt.goi("DELETE", f"/api/editor/lessons/{b['id']}")
     assert res.status_code == 409 and res.json()["error"]["details"] == {"assignment_count": 0, "attempt_count": 1}
     assert mt.so_nhat_ky("DELETE_LESSON") == 0
+
+
+# ================================================================ API 56 – nhãn bộ phận
+GOC = {"position": [1.5, 0.25, 4], "target": [0, 0, 0]}
+
+
+def _bo_phan(**kw: Any) -> dict[str, Any]:
+    return {
+        "mesh_names": ["vay_lung"],
+        "label": "Vây lưng",
+        "description": "Giúp cá giữ thăng bằng.",
+        "camera_view": GOC,
+    } | kw
+
+
+def _luu(mt: MoiTruong, lesson_id: int, parts: list[dict[str, Any]], user: User | None = None) -> Response:
+    return mt.goi("PUT", f"/api/editor/lessons/{lesson_id}/parts", user, json={"parts": parts})
+
+
+def _nhat_ky_cuoi(mt: MoiTruong) -> SystemLog:
+    dong = mt.db.scalars(
+        select(SystemLog).where(SystemLog.action == "UPDATE_LESSON_PARTS").order_by(SystemLog.id.desc())
+    ).first()
+    assert dong is not None
+    return dong
+
+
+def test_gan_nhan_lan_dau(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    mt.dong_ho.gio += timedelta(minutes=5)
+    mat = _bo_phan(mesh_names=["mat"], label="Mắt", description="  ", camera_view=None)
+    res = _luu(mt, b["id"], [_bo_phan(), mat])
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert [(p["label"], p["mesh_names"], p["sort_order"]) for p in body["parts"]] == [
+        ("Vây lưng", ["vay_lung"], 0),
+        ("Mắt", ["mat"], 1),
+    ]
+    assert body["parts"][0]["camera_view"] == {"position": [1.5, 0.25, 4.0], "target": [0.0, 0.0, 0.0]}
+    assert body["parts"][1]["description"] is None and body["parts"][1]["camera_view"] is None
+    assert body["updated_at"] != b["updated_at"]
+    assert "Chưa gắn nhãn bộ phận nào" not in body["missing_for_publish"]
+    dong = kiem_tra_nhat_ky(mt.db, "UPDATE_LESSON_PARTS", target_id=b["id"], user_id=mt.tk["bientap"].id)
+    assert dong.detail["part_count"] == 2 and dong.detail["added_count"] == 2 and dong.detail["removed_count"] == 0
+    assert "Vây lưng" not in str(dong.detail)
+
+
+def test_quan_tri_he_thong_gan_nhan_duoc(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    assert _luu(mt, b["id"], [_bo_phan()], mt.tk["sys"]).status_code == 200
+
+
+def test_gop_nhieu_mesh_vao_mot_nhan(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = _luu(mt, b["id"], [_bo_phan(mesh_names=["mat", "vay_lung"], label="Cả hai")])
+    assert res.status_code == 200 and res.json()["parts"][0]["mesh_names"] == ["mat", "vay_lung"]
+
+
+def test_sua_giu_id_xoa_bo_phan_khong_gui_va_doi_thu_tu(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    dau = _luu(mt, b["id"], [_bo_phan(), _bo_phan(mesh_names=["mat"], label="Mắt")]).json()["parts"]
+    id_vay, id_mat = dau[0]["id"], dau[1]["id"]
+    # Đảo thứ tự, sửa nhãn "Mắt"; bỏ "Vây lưng" rồi thêm lại thành bộ phận mới (không id).
+    res = _luu(mt, b["id"], [_bo_phan(id=id_mat, mesh_names=["mat"], label="Mắt cá"), _bo_phan()])
+    assert res.status_code == 200, res.text
+    sau = res.json()["parts"]
+    assert sau[0]["id"] == id_mat and sau[0]["label"] == "Mắt cá" and sau[0]["sort_order"] == 0
+    assert sau[1]["id"] != id_vay and sau[1]["sort_order"] == 1
+    assert mt.db.get(LessonPart, id_vay) is None
+    dong = _nhat_ky_cuoi(mt)
+    assert dong.detail["changed_fields"] == ["label", "sort_order"]
+    assert dong.detail["added_count"] == 1 and dong.detail["removed_count"] == 1
+
+
+def test_luu_lai_khong_doi_gi_khong_ghi_nhat_ky(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    dau = _luu(mt, b["id"], [_bo_phan()]).json()
+    mt.dong_ho.gio += timedelta(minutes=5)
+    res = _luu(mt, b["id"], [_bo_phan(id=dau["parts"][0]["id"])])
+    assert res.status_code == 200 and res.json()["updated_at"] == dau["updated_at"]
+    assert mt.so_nhat_ky("UPDATE_LESSON_PARTS") == 1
+
+
+def test_xoa_het_nhan_bai_nhap(mt: MoiTruong) -> None:
+    b = mt.du_dieu_kien()
+    res = _luu(mt, b["id"], [])
+    assert res.status_code == 200 and res.json()["parts"] == []
+    assert "Chưa gắn nhãn bộ phận nào" in res.json()["missing_for_publish"]
+    assert kiem_tra_nhat_ky(mt.db, "UPDATE_LESSON_PARTS", target_id=b["id"]).detail["removed_count"] == 1
+
+
+def test_xoa_het_nhan_bai_da_xuat_ban_bi_chan(mt: MoiTruong) -> None:
+    b = mt.du_dieu_kien()
+    assert mt.goi("POST", f"/api/editor/lessons/{b['id']}/publish").status_code == 200
+    res = _luu(mt, b["id"], [])
+    assert res.status_code == 400 and res.json()["error"]["code"] == "LESSON_INCOMPLETE"
+    assert mt.so_nhat_ky("UPDATE_LESSON_PARTS") == 0
+
+
+def test_bai_da_xuat_ban_sua_nhan_duoc(mt: MoiTruong) -> None:
+    b = mt.du_dieu_kien()
+    assert mt.goi("POST", f"/api/editor/lessons/{b['id']}/publish").status_code == 200
+    res = _luu(mt, b["id"], [_bo_phan(label="Vây lưng mới")])
+    assert res.status_code == 200 and res.json()["status"] == "PUBLISHED"
+
+
+def test_bai_chua_co_mo_hinh(mt: MoiTruong) -> None:
+    b = mt.tao()
+    res = _luu(mt, b["id"], [_bo_phan()])
+    assert res.status_code == 400 and res.json()["error"]["code"] == "LESSON_NO_ASSET"
+    # Danh sách rỗng vẫn lưu được (xóa nhãn cũ sau khi bỏ mô hình).
+    assert _luu(mt, b["id"], []).status_code == 200
+    assert mt.so_nhat_ky("UPDATE_LESSON_PARTS") == 0
+
+
+def test_mesh_khong_co_trong_mo_hinh(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = _luu(mt, b["id"], [_bo_phan(mesh_names=["vay_lung", "duoi_bi_mat"])])
+    assert res.status_code == 422
+    loi = res.json()["error"]["details"]
+    assert [x["field"] for x in loi] == ["parts.0.mesh_names.1"]
+    assert "duoi_bi_mat" not in res.text
+    assert mt.so_nhat_ky("UPDATE_LESSON_PARTS") == 0
+
+
+def test_mot_mesh_hai_bo_phan(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = _luu(mt, b["id"], [_bo_phan(), _bo_phan(label="Khác")])
+    assert res.status_code == 422 and res.json()["error"]["details"][0]["field"] == "parts.1.mesh_names.0"
+    res = _luu(mt, b["id"], [_bo_phan(mesh_names=["mat", "mat"])])
+    assert res.status_code == 422 and res.json()["error"]["details"][0]["field"] == "parts.0.mesh_names.1"
+
+
+def test_nhan_trung(mt: MoiTruong) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = _luu(mt, b["id"], [_bo_phan(), _bo_phan(mesh_names=["mat"], label="  VÂY LƯNG ")])
+    assert res.status_code == 422 and res.json()["error"]["details"][0]["field"] == "parts.1.label"
+    # Cùng chữ nhưng gõ dạng tổ hợp (NFD) vẫn là trùng; lưu dạng NFC.
+    to_hop = unicodedata.normalize("NFD", "Vây lưng")
+    res = _luu(mt, b["id"], [_bo_phan(), _bo_phan(mesh_names=["mat"], label=to_hop)])
+    assert res.status_code == 422 and res.json()["error"]["details"][0]["field"] == "parts.1.label"
+    res = _luu(mt, b["id"], [_bo_phan(label=to_hop)])
+    assert res.status_code == 200 and res.json()["parts"][0]["label"] == "Vây lưng"
+    # Nhãn 100 ký tự gõ dạng tổ hợp (dài hơn 100 trước khi chuẩn hóa) vẫn hợp lệ.
+    dai = unicodedata.normalize("NFD", "â" * 100)
+    assert len(dai) == 200 and _luu(mt, b["id"], [_bo_phan(label=dai)]).status_code == 200
+
+
+def test_id_cua_bai_khac_hoac_lap(mt: MoiTruong) -> None:
+    khac = mt.tao(asset_id=mt.mo_hinh().id, lesson_no=35)
+    id_khac = _luu(mt, khac["id"], [_bo_phan()]).json()["parts"][0]["id"]
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = _luu(mt, b["id"], [_bo_phan(id=id_khac)])
+    assert res.status_code == 422 and res.json()["error"]["details"][0]["field"] == "parts.0.id"
+    assert mt.db.get(LessonPart, id_khac) is not None
+    id_b = _luu(mt, b["id"], [_bo_phan()]).json()["parts"][0]["id"]
+    res = _luu(mt, b["id"], [_bo_phan(id=id_b), _bo_phan(id=id_b, mesh_names=["mat"], label="Mắt")])
+    assert res.status_code == 422 and res.json()["error"]["details"][0]["field"] == "parts.1.id"
+
+
+@pytest.mark.parametrize(
+    "sua",
+    [
+        {"label": ""},
+        {"label": "   "},
+        {"label": "x" * 101},
+        {"description": "x" * 1001},
+        {"mesh_names": []},
+        {"mesh_names": [""]},
+        {"mesh_names": "vay_lung"},
+        {"camera_view": {"position": [0, 0], "target": [0, 0, 0]}},
+        {"camera_view": {"position": [0, 0, "NaN"], "target": [0, 0, 0]}},
+        {"camera_view": {"position": [0, 0, 1e9], "target": [0, 0, 0]}},
+        {"camera_view": {"position": [0, 0, 1], "target": [0, 0, 0], "zoom": 2}},
+        {"camera_view": {"position": [0, 0, 1]}},
+        {"id": 0},
+    ],
+)
+def test_bo_phan_sai_du_lieu(mt: MoiTruong, sua: dict[str, Any]) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = _luu(mt, b["id"], [_bo_phan(**sua)])
+    assert res.status_code == 422 and res.json()["error"]["code"] == "VALIDATION_ERROR", res.text
+
+
+@pytest.mark.parametrize("than", [{}, {"parts": None}, [], {"parts": [_bo_phan()] * 201}])
+def test_than_sai(mt: MoiTruong, than: Any) -> None:
+    b = mt.tao(asset_id=mt.mo_hinh().id)
+    res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}/parts", json=than)
+    assert res.status_code == 422
