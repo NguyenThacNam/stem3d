@@ -43,6 +43,10 @@ Theo mục 3.2.1 chương 3. Mẫu chuẩn: `docs/giao-dien-chuong-3.html` (lấ
 ## 3D (Three.js)
 - Hiển thị mô hình dùng `src/components/mo-hinh-3d/MoHinh3D.tsx`; phần tính toán thuần (canh camera, đếm tam giác,
   giải phóng bộ nhớ, đếm khung hình) ở `tinh-toan.ts`, có test Vitest. Thêm tính năng 3D: tách phần tính được ra đây.
+- Lõi Three.js dùng chung: `canh-3d.ts` (`Canh3D`). Vẽ THEO YÊU CẦU, không vẽ khi đứng yên: đổi cảnh (vật liệu, vị trí,
+  camera) thì gọi `veLai()`; chuyển động nhiều khung hình thì dùng `themHoatCanh(fn)` (trả `false` khi xong).
+- Tên phần mô hình: dùng `tenPhanCua(mesh)` (tên gốc trong file, khớp `mesh_names` của máy chủ), KHÔNG dùng `mesh.name`
+  (Three.js đổi khoảng trắng thành "_", tự đặt "mesh_<số>" cho phần không tên).
 - Rời trang / đổi mô hình phải giải phóng (`giaiPhong`, `renderer.dispose()`, `forceContextLoss()`); trình duyệt chỉ
   giữ khoảng 16 ngữ cảnh WebGL.
 - Không nén mô hình (Draco / meshopt); file GLB tên có số phiên bản (`ten.v3.glb`) theo `docs/quyet-dinh.md`.

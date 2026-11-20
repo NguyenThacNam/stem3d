@@ -19,17 +19,17 @@ API nạp mô hình. Chưa có chức năng học tập, quản lý trường ha
 | Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|---|
 | 0 | Nền tảng kỹ thuật | 9 | 8 | 0 | 0 | 1 |
-| 1 | Xem bài học 3D | 7 | 0 | 1 | 6 | 0 |
+| 1 | Xem bài học 3D | 7 | 0 | 2 | 5 | 0 |
 | 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 | 0 |
 | 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 | 0 |
 | 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 | 0 |
 | 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 | 0 |
 | 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 | 0 |
-| | **Tổng** | **45** | **8** | **2** | **34** | **1** |
+| | **Tổng** | **45** | **8** | **3** | **33** | **1** |
 
 API (chương 3, mục 3.1.3): **6 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
-Test: backend 277 (pytest, CSDL PostgreSQL thật), frontend 39 (Vitest cho `src/api/client.ts` và phần tính toán 3D).
+Test: backend 277 (pytest, CSDL PostgreSQL thật), frontend 48 (Vitest cho `src/api/client.ts` và phần tính toán 3D).
 
 ## 2. Bảng chức năng (45 việc theo kế hoạch)
 
@@ -47,7 +47,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | NT09 | Chốt quy ước API | Trưởng nhóm | 0 | Xong | dbf6502, d7f3456 | Khuôn dạng lỗi, mã lỗi chung, phân trang: `backend/CLAUDE.md` |
 | NT08 | Khung giao diện React và thử hiển thị mô hình 3D | Dev Bài học | 0 | Xong | 305b484, nhánh feature/NT08-thu-hien-thi-mo-hinh-3d | Người làm: Trưởng nhóm (làm thay Dev Bài học). Bố cục, menu, gọi API; thành phần `MoHinh3D` (Three.js) và trang thử `/thu-mo-hinh-3d` (chỉ bản dev) |
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
-| BH01 | Khung bài học 3D | Dev Bài học | 1 | Chưa làm | | Việc khó nhất |
+| BH01 | Khung bài học 3D | Dev Bài học | 1 | Đang làm | nhánh feature/BH01-khung-bai-hoc-3d | Việc khó nhất. Xong: phần 1 – lõi 3D dùng chung `Canh3D` (vẽ theo yêu cầu, không vẽ khi đứng yên), tên phần lấy tên gốc trong file khớp `mesh_names` của máy chủ, đóng ImageBitmap khi giải phóng. Chưa: phần 2 – chọn bộ phận, làm mờ bộ phận khác, tách ra, camera bay, lắp lại; phần 3 – màn khung bài học theo Hình 3-5 (thanh trên, chế độ, cột bộ phận, thẻ Đang xem, nhãn bộ phận đang chọn, ghi công, toàn màn hình, bàn phím), dữ liệu giả theo API 9, trang thử |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Đang làm | 387462e, bda040e (PR #5) | Xong phần nền: volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB `app/services/glb.py` (số tam giác, cạnh texture lớn nhất, tên mesh). Chưa: API 45–48, ghi nhật ký `UPLOAD_ASSET` / `DELETE_ASSET`, màn Thư viện mô hình (Hình 3-11) |
 | ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Chưa làm | | |
 | ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Chưa làm | | |
@@ -142,6 +142,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 4 | Frontend Vite + React 19 + Tailwind 4 + shadcn/ui: client API (token trong bộ nhớ, tự làm mới), màn đăng nhập (Hình 3-3), đổi mật khẩu bắt buộc, bố cục thanh bên theo vai trò (Hình 3-1), trang tạm; Nginx phục vụ bản build, header bảo mật, gzip | 305b484 |
 | ND01 (phần nền) | Dev Quản lý: volume `content` (api ghi, Nginx chỉ đọc), Nginx phục vụ `/content/models/` (lưu đệm lâu dài), `CONTENT_DIR` / `models_dir` / `content_tmp_dir` trong cấu hình, bộ đọc GLB `doc_glb()` (28 test), `python-multipart` cho tải file lên | 387462e, bda040e (PR #5) |
 | NT08 | Three.js 0.187.0; thành phần `MoHinh3D` (nạp GLB, kéo xoay / phóng to, tự canh camera, nền ô li, 3 trạng thái, giải phóng bộ nhớ đồ họa); phần tính toán thuần có test; trang thử `/thu-mo-hinh-3d` chỉ ở bản dev (mô hình mẫu, mở file GLB trên máy, đo thời gian tải / khung hình); CSP thêm `connect-src blob:`. Trưởng nhóm làm thay Dev Bài học | nhánh feature/NT08-thu-hien-thi-mo-hinh-3d |
+| BH01 (phần 1) | Lõi 3D dùng chung `Canh3D` (`src/components/mo-hinh-3d/canh-3d.ts`): renderer, camera, xoay / phóng to, nạp GLB, vẽ theo yêu cầu (đứng yên 0 khung hình, kéo xoay thì vẽ kể cả quán tính), hoạt cảnh, giải phóng; `MoHinh3D` viết lại trên `Canh3D`, giữ nguyên cách dùng. Tên phần lấy tên gốc trong file (`ganTenPhan`, `tenPhanCua`), đếm phần không tên – khớp `doc_glb()` của máy chủ (đã đối chiếu 2 mô hình mẫu). `giaiPhong` đóng ImageBitmap. Trang thử hiện số phần chưa đặt tên. Tên gồm cả phần là điểm / đường; phần không tên đếm mỗi node một lần; vẽ lại khi ngữ cảnh WebGL được khôi phục. 9 test mới | nhánh feature/BH01-khung-bai-hoc-3d |
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
 
@@ -226,6 +227,17 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
   - 60 khung hình/giây là giới hạn màn hình; GPU máy phát triển còn dư. Chưa đo trên máy tính bảng, máy trường thật (VH04).
   - Mở rồi đóng mô hình tim 20 lần: vẫn 1 canvas, không có cảnh báo vượt số ngữ cảnh WebGL.
 
+**Khung bài học 3D (BH01)**
+- Người dùng chốt: chỉ hiện nhãn của bộ phận đang chọn (đúng UC6, không vẽ mọi nhãn như Hình 3-5); bộ phận chọn nổi
+  bật bằng cách làm mờ các bộ phận khác (không phát sáng, không đổi màu thật của mô hình); chế độ Phim, Kiểm tra hiện
+  trên thanh trên nhưng chưa bấm được cho tới khi có HT03, HT05.
+- Vẽ theo yêu cầu (`Canh3D.veLai()`): chỉ vẽ khi xoay, phóng to, quán tính, hoạt cảnh, đổi cỡ khung. Code nào đổi cảnh
+  (vật liệu, vị trí, camera) phải gọi `veLai()` hoặc chạy trong `themHoatCanh()`, không thì màn hình không cập nhật.
+- Tên phần phía trình duyệt lấy như máy chủ (`mesh_names`): tên node gốc, node không tên thì tên mesh, giữ nguyên chuỗi
+  (không dùng `Object3D.name` vì Three.js đổi khoảng trắng thành "_" và tự đặt "mesh_<số>"). So `lesson_parts.mesh_names`
+  với `tenPhanCua(mesh)`.
+- Số khung hình/giây ở trang thử chỉ đo khi đang vẽ (xoay); đứng yên không vẽ nên không đo.
+
 ## 6. Giới hạn đã biết
 
 - **Refresh token:** không có bảng `refresh_tokens`, nên token cũ vẫn dùng được tới hết hạn 8 giờ trừ khi `token_version` tăng (đổi / đặt lại mật khẩu).
@@ -235,8 +247,8 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - **Dò được tên đăng nhập** có tồn tại qua khóa tạm (tên có thật sau 5 lần sai trả 423). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV vốn đoán được.
 - **Tin IP chuyển tiếp:** uvicorn chạy `--forwarded-allow-ips *`, tin mọi máy trong mạng compose (hiện chỉ có `web`, `db`).
 - **Ảnh cá chép** ở màn đăng nhập nặng 694 KB, vẫn tải trên màn hẹp.
-- **Khung 3D (NT08)** vẽ liên tục 60 lần/giây kể cả khi không xoay (tốn pin máy tính bảng); chưa điều khiển được bằng bàn
-  phím; chưa tự giảm chất lượng cho máy yếu. Để BH01, BH02 làm.
+- **Khung 3D (NT08)** chưa điều khiển được bằng bàn phím (BH01 phần 3 làm); chưa tự giảm chất lượng cho máy yếu (BH02).
+  Việc vẽ liên tục 60 lần/giây đã sửa ở BH01 phần 1 (vẽ theo yêu cầu).
 
 ## 7. Việc còn chờ
 
@@ -396,4 +408,5 @@ Script sinh sheet "Nền tảng đã bàn giao" từ bảng này (cột Mã là 
 | NT06 | Khung nhật ký `nhat_ky.ghi()`: 45 mã cố định có nhãn tiếng Việt, tự ghi tên người làm / đối tượng, chặn thông tin nhạy cảm; `kiem_tra_nhat_ky` cho test | Mỗi API thay đổi dữ liệu gọi `ghi()` trước `db.commit()` (xóa: trước `db.delete()`); test có `kiem_tra_nhat_ky` – điều kiện hoàn thành của API | `backend/CLAUDE.md` mục Nhật ký | d7f3456, d6c8030 |
 | NT09 | Khuôn dạng lỗi chung (`AppError`), mã lỗi chung, phân trang, `IdPath`, `UtcDatetime` / `UtcInputDatetime`, `get_now`, `current_school_year` | Ném `AppError(status, code, message)`; id trên đường dẫn dùng `IdPath`; giờ lấy qua `get_now`; danh sách trả `{items, total, page, page_size}` | `backend/CLAUDE.md` mục Quy ước; `app/schemas/common.py` | dbf6502, d7f3456 |
 | NT08 | Khung giao diện: bố cục thanh bên, menu theo vai trò, client API, trang tạm, quy ước giao diện. Khung 3D: thành phần `MoHinh3D` (nạp GLB, xoay, phóng to, 3 trạng thái, giải phóng bộ nhớ), trang thử `/thu-mo-hinh-3d` (chỉ bản dev) | BH01 dựng khung bài học trên `MoHinh3D` (`src/components/mo-hinh-3d/`); xem tên mesh của file GLB bằng trang thử (nút "Mở file GLB trên máy"); số liệu đo cho BH02 ở mục 5 | `frontend/CLAUDE.md` mục 3D | 305b484, nhánh feature/NT08-thu-hien-thi-mo-hinh-3d |
+| BH01 | Lõi 3D `Canh3D` (BH01 phần 1): nạp GLB (`napUrl`, `napDuLieu`), vẽ theo yêu cầu, hoạt cảnh, giải phóng; tên phần gốc khớp máy chủ | Tạo `new Canh3D(khung)`, đổi cảnh thì gọi `veLai()` hoặc `themHoatCanh(fn)`; rời trang gọi `huy()`. Tên phần: `tenPhanCua(mesh)` so với `lesson_parts.mesh_names` | `frontend/CLAUDE.md` mục 3D; `src/components/mo-hinh-3d/canh-3d.ts` | nhánh feature/BH01-khung-bai-hoc-3d |
 | — | Quy trình làm việc: nhánh `main` / `dev` / `feature/...`, hook chặn commit / push vào `main`, `dev`, subagent `review-code`, `tra-cuu-dac-ta`, skill viết API / màn hình / migration, file Excel phân công sinh từ tệp này | Làm theo mục 8 (Git – việc đầu tiên); xong việc: cập nhật mục 2, chạy `python ke-hoach/tao_phan_cong.py`, commit cả hai | `CLAUDE.md` mục Quy trình Git, Tiến độ | 6c4a137, 6a187b9, 6d9648f |

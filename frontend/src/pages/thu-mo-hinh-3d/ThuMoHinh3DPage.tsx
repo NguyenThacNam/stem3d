@@ -103,6 +103,7 @@ export default function ThuMoHinh3DPage() {
                   <DongThongTin nhan="Dung lượng" giaTri={dungLuong(thongTin.dungLuong)} />
                   <DongThongTin nhan="Thời gian tải và dựng" giaTri={`${so(thongTin.thoiGianMs)} ms`} />
                   <DongThongTin nhan="Số bộ phận (mesh)" giaTri={so(thongTin.soMesh)} />
+                  <DongThongTin nhan="Phần chưa đặt tên" giaTri={so(thongTin.soKhongTen)} />
                   <DongThongTin nhan="Số tam giác" giaTri={so(thongTin.soTamGiac)} />
                   <DongThongTin nhan="Khung hình/giây" giaTri={so(fps)} />
                   <DongThongTin nhan="Bộ xử lý đồ họa" giaTri={thongTin.gpu ?? "Trình duyệt không báo"} />
