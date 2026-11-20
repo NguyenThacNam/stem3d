@@ -1,6 +1,7 @@
 """Cấu hình ứng dụng, đọc từ biến môi trường (file .env qua docker compose)."""
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, model_validator
@@ -24,10 +25,23 @@ class Settings(BaseSettings):
     app_env: Literal["dev", "prod"] = "dev"
     # Độ khó bcrypt; test đặt 4 cho nhanh, bản thật tối thiểu 12 (kiểm tra bên dưới).
     bcrypt_rounds: int = Field(12, ge=4, le=15)
+    # Thư mục nội dung (volume `content`): api ghi, Nginx chỉ đọc và phục vụ models/ tại /content/models/.
+    content_dir: Path = Path("/data/content")
 
     @property
     def is_prod(self) -> bool:
         return self.app_env == "prod"
+
+    @property
+    def models_dir(self) -> Path:
+        """File GLB đã nạp xong, Nginx phục vụ tại /content/models/<tên file>."""
+        return self.content_dir / "models"
+
+    @property
+    def content_tmp_dir(self) -> Path:
+        """File đang ghi dở. Cùng volume với models/ để đổi tên sang models/ là thao tác nguyên tử;
+        Nginx không phục vụ thư mục này."""
+        return self.content_dir / "tmp"
 
     @model_validator(mode="after")
     def _kiem_tra_ban_that(self) -> "Settings":

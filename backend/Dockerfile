@@ -11,7 +11,11 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN useradd --create-home --uid 1000 ungdung && chown -R ungdung /app
+# /data/content: volume `content` (file mô hình GLB). Tạo sẵn và giao cho ungdung để volume mới tạo
+# nhận đúng chủ sở hữu (Docker chép quyền thư mục của image sang volume rỗng ở lần gắn đầu tiên).
+RUN useradd --create-home --uid 1000 ungdung \
+    && mkdir -p /data/content/models /data/content/tmp \
+    && chown -R ungdung /app /data/content
 USER ungdung
 
 EXPOSE 8000
