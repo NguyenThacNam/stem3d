@@ -36,3 +36,62 @@ export interface FieldError {
   field: string;
   message: string;
 }
+
+/*
+ * API 9 – GET /api/lessons/{id} (chi tiết bài học cho học sinh, giáo viên).
+ * Chương 3 chỉ mô tả bằng lời; khuôn dạng dưới đây là ĐỀ XUẤT của BH01, chờ thống nhất với Dev Quản lý
+ * (TIEN_DO.md mục 10, dòng "API học tập", "Cấu hình bài học", "Gắn nhãn bộ phận"). Không có đáp án, công thức chấm,
+ * sai số. BẢO MẬT: màn học tập chỉ dùng `LessonView`, KHÔNG dùng `LessonDetail` của `api/editorLessons.ts` (API 51,
+ * có đáp án, sai số); máy chủ cũng dùng schema đầu ra riêng `LessonViewOut`, không dùng lại schema của API 51.
+ */
+export type LessonType = "STRUCTURE" | "EXPERIMENT";
+
+/** Tọa độ trong hệ của mô hình đã đưa tâm khối bao về gốc, không co giãn (`duaTamVeGoc`). */
+export type Vec3 = [number, number, number];
+
+/** Góc nhìn: vị trí camera và điểm camera nhìn vào (giống tin nhắn `camera` của WebSocket, chương 3). */
+export interface CameraView {
+  position: Vec3;
+  target: Vec3;
+}
+
+export interface LessonViewPart {
+  id: number;
+  label: string;
+  description: string | null;
+  /** Một hoặc nhiều tên mesh trong file GLB (so theo `chuanHoaTenMesh`). */
+  mesh_names: string[];
+  camera_view: CameraView | null;
+  sort_order: number;
+}
+
+export interface LessonViewAsset {
+  /** Đường dẫn file GLB (có số phiên bản, ví dụ /content/models/12.v1.glb); cùng tên trường với API 51. */
+  file_url: string;
+  file_size: number | null;
+  /** Dòng ghi công hiển thị ở góc dưới khung 3D; null nếu không cần. */
+  attribution: string | null;
+}
+
+/** `lessons.config` đã lọc (không có công thức chấm, sai số). */
+export interface LessonConfig {
+  /** Góc nhìn tổng quan khi mở bài và khi bấm "Đặt lại góc nhìn"; null thì tự canh vừa khung. */
+  camera_view?: CameraView | null;
+  /** Kịch bản phim (HT03); rỗng hoặc không có thì ẩn chế độ Phim. */
+  film_script?: unknown[] | null;
+}
+
+export interface LessonView {
+  id: number;
+  subject: { id: number; name: string };
+  grade: number;
+  chapter: string | null;
+  lesson_no: number | null;
+  title: string;
+  lesson_type: LessonType;
+  asset: LessonViewAsset | null;
+  config: LessonConfig;
+  parts: LessonViewPart[];
+  /** Câu hỏi kiểm tra nhanh (HT05), không kèm đáp án. */
+  questions: unknown[];
+}

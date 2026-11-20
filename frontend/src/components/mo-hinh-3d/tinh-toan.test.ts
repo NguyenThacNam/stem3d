@@ -10,19 +10,24 @@ import {
   MeshStandardMaterial,
   Points,
   PointsMaterial,
+  Box3,
   Texture,
+  Vector3,
 } from "three";
 import { describe, expect, it, vi } from "vitest";
 import {
-  banDoTenPhan,
+  chuanHoaTenMesh,
+  chuyenDongMem,
   DemKhungHinh,
-  emDan,
+  duaTamVeGoc,
   giaiPhong,
+  gioiHanCamera,
+  huongTach,
   khoangCachVuaKhung,
-  laGocNhin,
   phanTramDaTai,
-  tenPhanGoc,
+  tenPhanCuaVat,
   thongKeMoHinh,
+  timMeshTheoTen,
 } from "./tinh-toan";
 
 describe("khoangCachVuaKhung", () => {
@@ -132,53 +137,121 @@ describe("DemKhungHinh", () => {
   });
 });
 
-describe("tenPhanGoc / banDoTenPhan", () => {
-  const json = {
-    nodes: [{ name: "Vây lưng", mesh: 0 }, { name: "  ", mesh: 1 }, { mesh: 2 }, { name: "Nhóm" }],
-    meshes: [{ name: "m0" }, { name: "mat.001" }, {}],
-  };
+describe("duaTamVeGoc", () => {
+  function moHinhLech() {
+    const goc = new Group();
+    const hop = new Mesh(new BoxGeometry(2, 4, 6), new MeshBasicMaterial()); // khối bao 2 × 4 × 6
+    hop.position.set(10, -3, 5);
+    goc.add(hop);
+    return goc;
+  }
 
-  it("tên node trước, node không tên thì tên mesh, không có tên nào thì null (giống máy chủ)", () => {
-    expect(tenPhanGoc(json, 0)).toBe("Vây lưng");
-    expect(tenPhanGoc(json, 1)).toBe("mat.001");
-    expect(tenPhanGoc(json, 2)).toBeNull();
-    expect(tenPhanGoc(json, 9)).toBeNull();
+  it("đưa tâm khối bao của toàn bộ mô hình về gốc tọa độ, không co giãn, không xoay", () => {
+    const goc = moHinhLech();
+    const kq = duaTamVeGoc(goc);
+    const hop = new Box3().setFromObject(goc);
+    const tam = hop.getCenter(new Vector3());
+    expect(tam.length()).toBeCloseTo(0, 6);
+    expect(hop.getSize(new Vector3()).toArray()).toEqual([2, 4, 6]);
+    expect(goc.scale.toArray()).toEqual([1, 1, 1]);
+    expect(goc.rotation.toArray().slice(0, 3)).toEqual([0, 0, 0]);
+    expect(kq?.banKinh).toBeCloseTo(Math.sqrt(1 + 4 + 9), 6); // nửa đường chéo khối bao
   });
 
-  it("mesh nhiều primitive (Group chứa Mesh con) lấy tên theo node của Group", () => {
-    const goc = new Group();
-    const vay = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
-    const nhom = new Group();
-    const con1 = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
-    const con2 = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
-    const khongTen = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
-    nhom.add(con1, con2);
-    goc.add(vay, nhom, khongTen);
-    const lienKet = new Map<unknown, { nodes?: number }>([
-      [vay, { nodes: 0 }],
-      [nhom, { nodes: 1 }],
-      [con1, {}],
-      [khongTen, { nodes: 2 }],
-    ]);
-    const bd = banDoTenPhan(goc, lienKet, json);
-    expect(bd.get(vay)).toBe("Vây lưng");
-    expect(bd.get(con1)).toBe("mat.001");
-    expect(bd.get(con2)).toBe("mat.001");
-    expect(bd.has(khongTen)).toBe(false);
+  it("gọi hai lần cho cùng kết quả (ND03 và BH01 dựng ra cùng hệ tọa độ)", () => {
+    const goc = moHinhLech();
+    duaTamVeGoc(goc);
+    const lan1 = goc.position.clone();
+    duaTamVeGoc(goc);
+    expect(goc.position.distanceTo(lan1)).toBeCloseTo(0, 6);
+    expect(lan1.toArray()).toEqual([-10, 3, -5]);
+  });
+
+  it("mô hình không có hình nào thì trả null", () => {
+    expect(duaTamVeGoc(new Group())).toBeNull();
   });
 });
 
-describe("laGocNhin / emDan", () => {
-  it("chỉ nhận hai bộ ba số hữu hạn", () => {
-    expect(laGocNhin({ position: [1, 2, 3], target: [0, 0, 0] })).toBe(true);
-    expect(laGocNhin({ position: [1, 2], target: [0, 0, 0] })).toBe(false);
-    expect(laGocNhin({ position: [1, 2, Number.NaN], target: [0, 0, 0] })).toBe(false);
-    expect(laGocNhin(null)).toBe(false);
+describe("chuanHoaTenMesh, timMeshTheoTen", () => {
+  it("chuẩn hóa như Three.js: khoảng trắng thành _, bỏ [ ] . : /", () => {
+    expect(chuanHoaTenMesh("than kinh")).toBe("than_kinh");
+    expect(chuanHoaTenMesh("Tâm thất trái")).toBe("Tâm_thất_trái");
+    expect(chuanHoaTenMesh("a[1].b:c/d")).toBe("a1bcd");
+    expect(chuanHoaTenMesh(chuanHoaTenMesh("than kinh"))).toBe("than_kinh");
   });
 
-  it("đi từ 0 tới 1, kẹp ngoài khoảng", () => {
-    expect(emDan(-1)).toBe(0);
-    expect(emDan(0.5)).toBeCloseTo(0.5, 6);
-    expect(emDan(2)).toBe(1);
+  it("khớp tên gốc trong file với tên Three.js đặt; nút nhóm lấy mọi mesh con; báo tên không có", () => {
+    const goc = new Group();
+    const than = new Group();
+    than.name = "than_kinh"; // Three.js đã chuẩn hóa từ "than kinh"
+    const duoi = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    const tren = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    than.add(duoi, tren);
+    const mat = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    mat.name = "mat";
+    goc.add(than, mat);
+
+    const kq = timMeshTheoTen(goc, ["than kinh", "mat", "khong co"]);
+    expect(new Set(kq.meshes)).toEqual(new Set([duoi, tren, mat]));
+    expect(kq.thieu).toEqual(["khong co"]);
+  });
+});
+
+describe("chuyenDongMem, huongTach", () => {
+  it("chuyển động bắt đầu 0, kết thúc 1, đối xứng ở giữa, kẹp ngoài [0, 1]", () => {
+    expect(chuyenDongMem(0)).toBe(0);
+    expect(chuyenDongMem(1)).toBe(1);
+    expect(chuyenDongMem(0.5)).toBeCloseTo(0.5, 6);
+    expect(chuyenDongMem(-1)).toBe(0);
+    expect(chuyenDongMem(2)).toBe(1);
+  });
+
+  it("tách theo hướng từ tâm mô hình ra tâm bộ phận", () => {
+    const h = huongTach(new Vector3(0, 3, 0), 10, new Vector3(0, 0, 1));
+    expect(h.toArray()).toEqual([0, 1, 0]);
+  });
+
+  it("bộ phận ở sát tâm mô hình thì tách về phía camera", () => {
+    const h = huongTach(new Vector3(0.1, 0, 0), 10, new Vector3(0, 0, 5));
+    expect(h.toArray()).toEqual([0, 0, 1]);
+  });
+});
+
+describe("gioiHanCamera", () => {
+  it("mô hình tính bằng mm (lớn gấp 1000 lần) có giới hạn lớn gấp 1000 lần – không bị cắt mất", () => {
+    const m = gioiHanCamera(1, 45, 1.5);
+    const mm = gioiHanCamera(1000, 45, 1.5);
+    expect(mm.near).toBeCloseTo(m.near * 1000, 6);
+    expect(mm.far).toBeCloseTo(m.far * 1000, 3);
+    expect(mm.minDistance).toBeCloseTo(m.minDistance * 1000, 6);
+    expect(mm.maxDistance).toBeCloseTo(m.maxDistance * 1000, 3);
+  });
+
+  it("góc nhìn vừa khung và lúc thu nhỏ hết cỡ đều nằm giữa mặt cắt gần và xa", () => {
+    for (const r of [0.001, 1, 400, 5000]) {
+      const gh = gioiHanCamera(r, 45, 1.5);
+      const vua = khoangCachVuaKhung(r, 45, 1.5);
+      expect(gh.near).toBeLessThan(vua - r);
+      expect(gh.far).toBeGreaterThan(gh.maxDistance + r);
+      expect(gh.minDistance).toBeLessThan(vua);
+      expect(gh.minDistance - r).toBeLessThan(0); // phóng sát vào được tới gần mặt mô hình
+      expect(gh.minDistance).toBeGreaterThan(gh.near);
+    }
+  });
+});
+
+describe("tenPhanCuaVat", () => {
+  it("đi ngược lên cha tới tên khớp sau chuẩn hóa, trả tên gốc", () => {
+    const goc = new Group();
+    const nhom = new Group();
+    nhom.name = chuanHoaTenMesh("Vây lưng.001");
+    const con = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    nhom.add(con);
+    const la = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    la.name = "khong_co";
+    goc.add(nhom, la);
+    expect(tenPhanCuaVat(con, ["mat", "Vây lưng.001"])).toBe("Vây lưng.001");
+    expect(tenPhanCuaVat(la, ["mat"])).toBeNull();
+    expect(tenPhanCuaVat(null, ["mat"])).toBeNull();
   });
 });

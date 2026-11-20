@@ -38,7 +38,14 @@ Tài liệu dài: dùng subagent `tra-cuu-dac-ta` để tra đúng đoạn cần
   - Nhánh việc tạo từ `dev`, mỗi việc một nhánh, tên theo mã việc trong `docs/Ke_hoach_trien_khai_chuc_nang.xlsx`:
     `feature/<mã-việc>-<mô-tả-ngắn-không-dấu>` (ví dụ `feature/QL04-nhap-hoc-sinh-excel`); sửa lỗi: `fix/<mô-tả>`.
 - Không commit, merge, push thẳng vào `main` hay `dev`.
-- Bắt đầu việc mới: `git switch dev` → `git pull` → `git switch -c feature/...`.
+- Bắt đầu một việc, theo thứ tự:
+  1. Kéo `dev` mới nhất: `git switch dev` → `git pull`.
+  2. Xem trên GitHub đã có nhánh của việc đó chưa: `git fetch --prune` rồi `git branch -r | grep <mã-việc>`. Có rồi thì
+     hỏi người kia, không tạo nhánh trùng.
+  3. Tạo nhánh: `git switch -c feature/...`.
+  4. Giữ chỗ ngay: trong `TIEN_DO.md` đổi trạng thái việc (mục 2) thành `Đang làm` và ghi đầu cột Ghi chú
+     "Người làm: <tên>. …" (cột Trạng thái chỉ nhận 5 giá trị: Chưa làm, Đang làm, Xong, Tạm hoãn, Bỏ – script sinh
+     Excel kiểm tra), chạy `python ke-hoach/tao_phan_cong.py`, commit và đẩy nhánh lên (`git push -u origin <nhánh>`).
 - Mỗi ngày và trước khi tạo PR: kéo `dev` mới nhất về nhánh mình (`git pull origin dev`), tự giải quyết xung đột.
 - Migration: kéo `dev` mới nhất về TRƯỚC khi tạo migration; nếu Alembic báo nhiều head thì tạo migration gộp
   (`alembic merge`) trên nhánh của mình.

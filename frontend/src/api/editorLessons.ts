@@ -1,6 +1,7 @@
 /** Soạn bài học – /api/editor/lessons (API 49–56) và môn học – /api/subjects (API 7). Biên tập viên, quản trị hệ thống. */
 import type { Page } from "./assets";
 import { request } from "./client";
+import type { CameraView } from "./types";
 
 export type LessonType = "STRUCTURE" | "EXPERIMENT";
 export type LessonStatus = "DRAFT" | "PUBLISHED";
@@ -43,7 +44,7 @@ export interface LessonPart {
   mesh_names: string[];
   label: string;
   description: string | null;
-  /** `{position: [x, y, z], target: [x, y, z]}` theo tọa độ gốc của file GLB (`GocNhin`), hoặc null. */
+  /** `CameraView` (`{position, target}`, hệ tọa độ đã đưa tâm mô hình về gốc) hoặc null. */
   camera_view: unknown;
   sort_order: number;
 }
@@ -54,7 +55,7 @@ export interface LessonPartInput {
   mesh_names: string[];
   label: string;
   description: string | null;
-  camera_view: { position: [number, number, number]; target: [number, number, number] } | null;
+  camera_view: CameraView | null;
 }
 
 export interface LessonQuestion {

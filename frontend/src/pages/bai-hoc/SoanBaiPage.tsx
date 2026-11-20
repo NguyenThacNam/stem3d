@@ -30,6 +30,7 @@ import {
   giuKhoa,
   khacDaLuu,
   kiemTraBoPhan,
+  laCameraView,
   type LoiBoPhan,
   loiBoPhanTuMayChu,
   thanhDauVaoBoPhan,
@@ -484,6 +485,7 @@ export function SoanBaiPage() {
         {the === "bo-phan" && (
           <TheBoPhan
             asset={bai.asset}
+            gocTongQuan={laCameraView(bai.config.camera_view) ? bai.config.camera_view : null}
             doiMoHinhChuaLuu={assetId !== (bai.asset?.id ?? null)}
             value={boPhan}
             onChange={setBoPhan}

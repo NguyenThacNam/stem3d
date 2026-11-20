@@ -2,7 +2,7 @@
  * Phần tính toán thuần của khung 3D (không cần WebGL) – tách riêng để viết test.
  */
 import type { Material, Object3D, Texture } from "three";
-import { Line, Mesh, Points } from "three";
+import { Box3, Line, Mesh, Points, PropertyBinding, Sphere, Vector3 } from "three";
 
 export type ThongKeMoHinh = {
   soMesh: number;
@@ -21,6 +21,19 @@ export function khoangCachVuaKhung(banKinh: number, fovDocDo: number, tiLe: numb
   const fovNgang = 2 * Math.atan(Math.tan(fovDoc / 2) * tiLe);
   const fovHep = Math.min(fovDoc, fovNgang);
   return (banKinh / Math.sin(fovHep / 2)) * le;
+}
+
+/**
+ * Giới hạn camera theo cỡ mô hình (bán kính `banKinh`, đơn vị gì cũng được – file GLB tính bằng mm hay m đều đúng):
+ * mặt cắt gần / xa đủ rộng để không cắt mô hình, khoảng phóng to từ sát mặt mô hình tới 3 lần khoảng nhìn vừa khung.
+ */
+export function gioiHanCamera(
+  banKinh: number,
+  fovDocDo: number,
+  tiLe: number,
+): { near: number; far: number; minDistance: number; maxDistance: number } {
+  const vua = khoangCachVuaKhung(banKinh, fovDocDo, tiLe);
+  return { near: vua / 100, far: vua * 100, minDistance: banKinh * 0.8, maxDistance: vua * 3 };
 }
 
 /** Đếm mesh và tam giác (geometry có index thì tính theo index, không thì theo số đỉnh). */
@@ -89,71 +102,76 @@ export class DemKhungHinh {
   }
 }
 
-// ---------------------------------------------------------------- gắn nhãn bộ phận (ND03, BH01)
-/** Phần JSON của file glTF cần để lấy tên phần (GLTFLoader để ở `gltf.parser.json`). */
-export type GltfJson = {
-  nodes?: { name?: unknown; mesh?: unknown }[];
-  meshes?: { name?: unknown }[];
-};
-
-function tenHopLe(x: unknown): string | null {
-  return typeof x === "string" && x.trim() ? x : null;
+/**
+ * Quy tắc tọa độ dùng chung cho xem bài (BH01) và gắn nhãn (ND03): dời gốc mô hình sao cho TÂM KHỐI BAO của toàn bộ
+ * mô hình nằm ở gốc tọa độ, KHÔNG co giãn, không xoay. `camera_view` của bài và bộ phận lưu theo hệ tọa độ này, nên
+ * hai màn hình phải dựng mô hình bằng đúng hàm này thì góc nhìn mới khớp.
+ * Gọi trên mô hình vừa tải (gốc chưa gắn vào cha có biến đổi). Trả null nếu mô hình không có hình nào.
+ */
+export function duaTamVeGoc(goc: Object3D): { banKinh: number } | null {
+  goc.updateWorldMatrix(true, true);
+  const hop = new Box3().setFromObject(goc);
+  if (hop.isEmpty()) return null;
+  goc.position.sub(hop.getCenter(new Vector3()));
+  goc.updateWorldMatrix(true, true);
+  return { banKinh: hop.getBoundingSphere(new Sphere()).radius };
 }
 
 /**
- * Tên gốc (chưa bị Three.js đổi) của node có hình số `nodeIndex`: tên node, node không tên thì tên mesh; không có
- * tên nào thì null. Phải khớp cách máy chủ lấy `assets.mesh_names` (backend `app/services/glb.py`), vì nhãn bộ phận
- * lưu theo tên này.
+ * Tên mesh như Three.js đặt khi đọc GLB: khoảng trắng thành "_", bỏ các ký tự [ ] . : /
+ * (`PropertyBinding.sanitizeNodeName`). `mesh_names` trong CSDL giữ tên gốc trong file; so khớp qua hàm này.
  */
-export function tenPhanGoc(json: GltfJson, nodeIndex: number): string | null {
-  const node = json.nodes?.[nodeIndex];
-  if (!node) return null;
-  const tenNode = tenHopLe(node.name);
-  if (tenNode) return tenNode;
-  return typeof node.mesh === "number" ? tenHopLe(json.meshes?.[node.mesh]?.name) : null;
+export function chuanHoaTenMesh(ten: string): string {
+  return PropertyBinding.sanitizeNodeName(ten);
 }
 
 /**
- * Gắn tên phần cho từng Mesh của mô hình. Node có mesh nhiều primitive thành một Group chứa nhiều Mesh con, nên
- * mỗi Mesh đi ngược lên cha tới đối tượng đầu tiên GLTFLoader ghi số node (`parser.associations`).
+ * Tìm mesh theo danh sách tên: đối tượng nào có tên khớp (sau chuẩn hóa) thì lấy nó và mọi mesh con
+ * (một node GLB có nhiều phần hình được Three.js dựng thành nhóm). Trả kèm các tên không tìm thấy.
  */
-export function banDoTenPhan(
-  goc: Object3D,
-  associations: Map<unknown, { nodes?: number }>,
-  json: GltfJson,
-): Map<Mesh, string> {
-  const ketQua = new Map<Mesh, string>();
+export function timMeshTheoTen(goc: Object3D, dsTen: string[]): { meshes: Mesh[]; thieu: string[] } {
+  const canTim = new Map(dsTen.map((t) => [chuanHoaTenMesh(t), t]));
+  const daThay = new Set<string>();
+  const meshes = new Set<Mesh>();
   goc.traverse((vat) => {
-    if (!(vat instanceof Mesh)) return;
-    for (let x: Object3D | null = vat; x && x !== goc.parent; x = x.parent) {
-      const so = associations.get(x)?.nodes;
-      if (so === undefined) continue;
-      const ten = tenPhanGoc(json, so);
-      if (ten) ketQua.set(vat, ten);
-      return;
-    }
+    if (!canTim.has(vat.name)) return;
+    daThay.add(vat.name);
+    vat.traverse((con) => {
+      if (con instanceof Mesh) meshes.add(con);
+    });
   });
-  return ketQua;
+  const thieu = [...canTim].filter(([chuan]) => !daThay.has(chuan)).map(([, goc]) => goc);
+  return { meshes: [...meshes], thieu };
+}
+
+/** Chuyển động chậm – nhanh – chậm cho tách bộ phận, camera bay; t trong [0, 1]. */
+export function chuyenDongMem(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
 
 /**
- * Góc camera lưu cho một bộ phận (`lesson_parts.camera_view`), theo tọa độ GỐC của file GLB – trước khi khung 3D
- * dời tâm mô hình về gốc tọa độ. Nhờ vậy khung khác (BH01) canh mô hình cách khác vẫn dùng lại được.
+ * Hướng tách một bộ phận: từ tâm mô hình ra tâm bộ phận. Bộ phận nằm gần tâm (dưới 5 % bán kính mô hình) thì
+ * dùng `huongDuPhong` (hướng về phía camera) để bộ phận vẫn tách ra trước mặt người xem.
  */
-export type GocNhin = { position: [number, number, number]; target: [number, number, number] };
-
-function laBoBaSo(x: unknown): x is [number, number, number] {
-  return Array.isArray(x) && x.length === 3 && x.every((s) => typeof s === "number" && Number.isFinite(s));
+export function huongTach(tamBoPhan: Vector3, banKinhMoHinh: number, huongDuPhong: Vector3): Vector3 {
+  if (tamBoPhan.length() < 0.05 * banKinhMoHinh) return huongDuPhong.clone().normalize();
+  return tamBoPhan.clone().normalize();
 }
 
-export function laGocNhin(x: unknown): x is GocNhin {
-  if (typeof x !== "object" || x === null) return false;
-  const g = x as Record<string, unknown>;
-  return laBoBaSo(g.position) && laBoBaSo(g.target);
-}
+/** Khoảng tách bộ phận khỏi chỗ cũ: 25 % bán kính mô hình (TIEN_DO.md mục 5). */
+export const TI_LE_TACH = 0.25;
 
-/** Đường cong chậm – nhanh – chậm cho camera bay tới góc nhìn; `t` ngoài [0, 1] được kẹp lại. */
-export function emDan(t: number): number {
-  const x = Math.min(1, Math.max(0, t));
-  return x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+/**
+ * Màn gắn nhãn (ND03): phần bị bấm ứng với tên nào trong `mesh_names` của mô hình (tên gốc trong file). Đi ngược từ
+ * đối tượng trúng lên cha, gặp đối tượng đầu tiên có tên khớp (qua `chuanHoaTenMesh`) thì trả tên gốc đó – cùng quy
+ * tắc với `timMeshTheoTen`, nên phần gắn nhãn ở màn soạn đúng là phần học sinh thấy. Không khớp tên nào thì null.
+ */
+export function tenPhanCuaVat(vat: Object3D | null, meshNames: readonly string[]): string | null {
+  const theoTen = new Map(meshNames.map((t) => [chuanHoaTenMesh(t), t]));
+  for (let x = vat; x; x = x.parent) {
+    const ten = theoTen.get(x.name);
+    if (ten !== undefined) return ten;
+  }
+  return null;
 }

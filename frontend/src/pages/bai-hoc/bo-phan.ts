@@ -1,7 +1,7 @@
 /** Thẻ Bộ phận (ND03, UC 22): dữ liệu đang soạn, kiểm tra, chuyển sang đầu vào API 56. Thuần, có test. */
 import { ApiError } from "@/api/client";
 import type { LessonPart, LessonPartInput } from "@/api/editorLessons";
-import { type GocNhin, laGocNhin } from "@/components/mo-hinh-3d/tinh-toan";
+import type { CameraView } from "@/api/types";
 
 export const NHAN_TOI_DA = 100;
 export const CHU_THICH_TOI_DA = 1000;
@@ -13,7 +13,8 @@ export type BoPhanNhap = {
   mesh_names: string[];
   label: string;
   description: string;
-  camera_view: GocNhin | null;
+  /** Theo hệ tọa độ đã đưa tâm mô hình về gốc (`duaTamVeGoc`), như khung bài học BH01. */
+  camera_view: CameraView | null;
 };
 
 /** Lỗi theo khóa bộ phận. */
@@ -25,6 +26,17 @@ export function khoaMoi(): string {
   return `moi-${dem}`;
 }
 
+function laBoBaSo(x: unknown): x is [number, number, number] {
+  return Array.isArray(x) && x.length === 3 && x.every((s) => typeof s === "number" && Number.isFinite(s));
+}
+
+/** `camera_view` máy chủ trả về (kiểu unknown) có đúng dạng {position, target} không. */
+export function laCameraView(x: unknown): x is CameraView {
+  if (typeof x !== "object" || x === null) return false;
+  const g = x as Record<string, unknown>;
+  return laBoBaSo(g.position) && laBoBaSo(g.target);
+}
+
 export function tuDanhSach(parts: LessonPart[]): BoPhanNhap[] {
   return parts.map((p) => ({
     khoa: `id-${p.id}`,
@@ -32,7 +44,7 @@ export function tuDanhSach(parts: LessonPart[]): BoPhanNhap[] {
     mesh_names: [...p.mesh_names],
     label: p.label,
     description: p.description ?? "",
-    camera_view: laGocNhin(p.camera_view) ? p.camera_view : null,
+    camera_view: laCameraView(p.camera_view) ? p.camera_view : null,
   }));
 }
 

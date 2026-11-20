@@ -5,15 +5,16 @@
  * Dùng được không cần chuột: thêm bộ phận và chọn phần bằng ô chọn "Thêm phần".
  */
 import { Camera, GripVertical, Plus, RotateCcw, Trash2, TriangleAlert, X } from "lucide-react";
-import { useRef, useState, type DragEvent, type KeyboardEvent } from "react";
+import { lazy, Suspense, useRef, useState, type DragEvent, type KeyboardEvent } from "react";
 import type { LessonAsset } from "@/api/editorLessons";
-import type { DieuKhien3D } from "@/components/mo-hinh-3d/MoHinh3D";
+import type { CameraView } from "@/api/types";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
-import { XemTruoc3D } from "@/pages/mo-hinh-3d/XemTruoc3D";
+import { BatLoi } from "@/pages/mo-hinh-3d/XemTruoc3D";
+import type { DieuKhienGanNhan } from "./KhungGanNhan";
 import {
   bamPhan,
   type BoPhanNhap,
@@ -25,12 +26,15 @@ import {
   phanChuaGan,
 } from "./bo-phan";
 
+const taoLazy = () => lazy(() => import("./KhungGanNhan"));
+
 function gioPhut(d: Date): string {
   return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
 }
 
 export function TheBoPhan({
   asset,
+  gocTongQuan,
   doiMoHinhChuaLuu,
   value,
   onChange,
@@ -40,6 +44,8 @@ export function TheBoPhan({
 }: {
   /** Mô hình ĐÃ LƯU của bài (nhãn gắn theo tên phần của mô hình này). */
   asset: LessonAsset | null;
+  /** `config.camera_view` của bài (đã kiểm dạng) – để góc mở đầu, "Góc nhìn chuẩn" giống màn học sinh. */
+  gocTongQuan: CameraView | null;
   /** Đã chọn mô hình khác ở thẻ Mô hình nhưng chưa lưu. */
   doiMoHinhChuaLuu: boolean;
   value: BoPhanNhap[];
@@ -52,7 +58,9 @@ export function TheBoPhan({
   const [keo, setKeo] = useState<number | null>(null);
   // Giờ lưu góc nhìn trong phiên này (máy chủ không lưu thời điểm), theo khóa bộ phận.
   const [gioLuuGoc, setGioLuuGoc] = useState<Record<string, string>>({});
-  const dieuKhien = useRef<DieuKhien3D>(null);
+  const dieuKhien = useRef<DieuKhienGanNhan>(null);
+  // Thành phần lazy nằm trong state: "Thử lại" tạo lazy mới để tải lại chunk (React giữ kết quả lỗi của lazy cũ).
+  const [KhungGanNhan, setKhung] = useState(taoLazy);
   const oNhan = useRef<HTMLInputElement>(null);
 
   if (!asset || doiMoHinhChuaLuu)
@@ -93,9 +101,9 @@ export function TheBoPhan({
     onChange(value.map((p) => (p.khoa === khoa ? { ...p, ...thay } : p)));
   }
 
+  /** Khung 3D tự tách bộ phận và bay tới góc nhìn của nó khi `dangChon` đổi. */
   function chonBoPhan(p: BoPhanNhap | null) {
     setDangChon(p?.khoa ?? null);
-    if (p?.camera_view) dieuKhien.current?.bayToi(p.camera_view);
   }
 
   function khiBamPhan(ten: string | null, giuShift: boolean) {
@@ -171,14 +179,30 @@ export function TheBoPhan({
           </Alert>
         )}
         <div className="relative min-h-0 flex-1">
-          <XemTruoc3D
-            url={asset.file_url}
-            ten={asset.name}
+          <BatLoi
             className="absolute inset-0 rounded-none border-0"
-            onBamPhan={khiBamPhan}
-            phanToSang={chon?.mesh_names}
-            dieuKhienRef={dieuKhien}
-          />
+            onRetry={() => setKhung(() => taoLazy())}
+          >
+            <Suspense
+              fallback={
+                <div className="absolute inset-0 grid place-items-center grid3d">
+                  <span className="text-[14px] text-text-2">Đang chuẩn bị khung 3D</span>
+                </div>
+              }
+            >
+              <KhungGanNhan
+                url={asset.file_url}
+                ten={asset.name}
+                meshNames={meshCo}
+                gocTongQuan={gocTongQuan}
+                boPhan={value}
+                dangChon={dangChon}
+                onBamPhan={khiBamPhan}
+                ref={dieuKhien}
+                className="absolute inset-0"
+              />
+            </Suspense>
+          </BatLoi>
           {chon && (
             <p className="pointer-events-none absolute top-4 left-4 rounded-ctl border border-accent bg-surface px-3 py-2 text-[14px]">
               <span className="font-medium">{chon.label.trim() || "Bộ phận mới"}</span>

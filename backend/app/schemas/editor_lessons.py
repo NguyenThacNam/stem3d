@@ -82,8 +82,8 @@ ToaDo = Annotated[float, Field(ge=-1e6, le=1e6, allow_inf_nan=False)]
 
 
 class CameraView(BaseModel):
-    """Góc camera khi chọn bộ phận, theo tọa độ gốc của file GLB (chưa dời tâm mô hình về gốc tọa độ):
-    `position` – vị trí camera, `target` – điểm camera nhìn vào. Phía hiển thị tự đổi sang tọa độ của khung 3D."""
+    """Góc camera khi chọn bộ phận: `position` – vị trí camera, `target` – điểm camera nhìn vào, theo hệ tọa độ của
+    mô hình đã đưa tâm khối bao về gốc, không co giãn (frontend `duaTamVeGoc`, dùng chung với khung bài học BH01)."""
 
     model_config = ConfigDict(extra="forbid")
 
