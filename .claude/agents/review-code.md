@@ -24,6 +24,11 @@ Danh sách kiểm tra:
 - Chấm điểm: máy chủ tự tính lại, không tin số máy học sinh gửi; nộp bài chống trùng theo `client_id`.
 - Frontend: access token không vào localStorage; không tính điểm phía máy học sinh; đúng quy ước giao diện 3.2.1.
 - Test: có đủ trường hợp đúng, sai dữ liệu, 401, 403, khác trường, từng mã lỗi? Chạy `docker compose exec api pytest`.
+- Tiến độ: `TIEN_DO.md` đã cập nhật theo mục "Tiến độ" của `CLAUDE.md` chưa? Dòng của việc ở mục 2 đúng trạng thái
+  (`Đang làm` khi mới xong một phần, `Xong` khi xong hết), ghi chú nói rõ "Xong: …. Chưa: …", có commit; API vừa làm
+  ở mục 3; số việc, số test ở mục 1 khớp; quyết định mới ở mục 5. Đối chiếu với code thật, không chỉ xem có sửa hay
+  không. File Excel đã sinh lại (`git diff` có `ke-hoach/Phan_cong_cong_viec.xlsx` khi mục 2, 9, 10, 11 đổi)? Chỉ sửa
+  dòng của việc mình, không sửa dòng người khác? Thiếu hoặc sai cập nhật tiến độ thì kết luận chưa Đạt (chặn gộp vào `dev`).
 - Thay đổi ngoài phạm vi yêu cầu (sửa lan man).
 
 Kết luận: "Đạt" hoặc danh sách lỗi xếp theo mức nghiêm trọng (Nghiêm trọng / Nên sửa / Góp ý).
