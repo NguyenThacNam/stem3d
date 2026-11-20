@@ -16,6 +16,10 @@ const TRANG_XAC_THUC = ["/", "/dang-nhap", "/doi-mat-khau"];
 const ThuMoHinh3DPage = import.meta.env.DEV
   ? lazy(() => import("@/pages/thu-mo-hinh-3d/ThuMoHinh3DPage"))
   : null;
+// Trang thử khung bài học (BH01): như trên, chỉ có khi chạy `npm run dev`, chạy bằng dữ liệu mẫu.
+const ThuKhungBaiHocPage = import.meta.env.DEV
+  ? lazy(() => import("@/pages/thu-khung-bai-hoc/ThuKhungBaiHocPage"))
+  : null;
 
 /** Chờ khôi phục phiên lúc tải trang; lỗi mạng thì hiện nút thử lại. */
 function SessionGate() {
@@ -74,6 +78,16 @@ export function App() {
           element={
             <Suspense fallback={<p className="p-6 text-text-2">Đang tải trang thử</p>}>
               <ThuMoHinh3DPage />
+            </Suspense>
+          }
+        />
+      )}
+      {ThuKhungBaiHocPage && (
+        <Route
+          path="/thu-khung-bai-hoc"
+          element={
+            <Suspense fallback={<p className="p-6 text-text-2">Đang tải trang thử</p>}>
+              <ThuKhungBaiHocPage />
             </Suspense>
           }
         />

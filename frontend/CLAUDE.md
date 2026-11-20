@@ -41,14 +41,21 @@ Theo mục 3.2.1 chương 3. Mẫu chuẩn: `docs/giao-dien-chuong-3.html` (lấ
 - Thông báo lỗi: bọc trong MỘT vùng `aria-live`; thành phần `Alert` không đặt `role="alert"` (tránh đọc 2 lần).
 
 ## 3D (Three.js)
-- Hiển thị mô hình dùng `src/components/mo-hinh-3d/MoHinh3D.tsx`; phần tính toán thuần (canh camera, đếm tam giác,
-  giải phóng bộ nhớ, đếm khung hình) ở `tinh-toan.ts`, có test Vitest. Thêm tính năng 3D: tách phần tính được ra đây.
+- Lõi 3D dùng chung: `src/components/mo-hinh-3d/canh-bai-hoc.ts` (`CanhBaiHoc`: tải GLB, xoay / phóng to, chọn bộ
+  phận, tách ra / lắp lại, camera bay, điểm neo thẻ chú thích, khóa thao tác). Mọi màn có 3D dựng trên lớp này, không
+  tự tạo renderer riêng. Khung bài học: `src/pages/khung-bai-hoc/KhungBaiHoc.tsx` (nhận `LessonDetail` – API 9).
+- Tọa độ: mô hình luôn đưa tâm khối bao về gốc, không co giãn (`duaTamVeGoc`); `camera_view` lưu theo hệ này. So tên
+  mesh qua `chuanHoaTenMesh`, không so chuỗi trực tiếp.
+- Phần tính toán thuần (canh camera, đếm tam giác, giải phóng bộ nhớ, đếm khung hình, xếp thẻ chú thích) ở
+  `tinh-toan.ts`, `khung-bai-hoc/bo-cuc.ts`, có test Vitest. Thêm tính năng 3D: tách phần tính được ra đây.
+- Vị trí đổi theo camera mỗi khung hình (thẻ chú thích…) cập nhật thẳng vào DOM qua ref, không qua state React.
 - Rời trang / đổi mô hình phải giải phóng (`giaiPhong`, `renderer.dispose()`, `forceContextLoss()`); trình duyệt chỉ
   giữ khoảng 16 ngữ cảnh WebGL.
 - Không nén mô hình (Draco / meshopt); file GLB tên có số phiên bản (`ten.v3.glb`) theo `docs/quyet-dinh.md`.
 - Trang nào dùng Three.js thì nạp lười (`lazy`) để màn đăng nhập, thư viện không phải tải Three.js.
 - CSP cho `connect-src blob:` vì GLTFLoader đọc texture nhúng bằng `fetch(blob:...)`; không nới thêm.
 - Trang thử `/thu-mo-hinh-3d` (chỉ `npm run dev`): mở file GLB trên máy để xem tên mesh, đo thời gian tải, khung hình.
+  Trang thử `/thu-khung-bai-hoc` (chỉ `npm run dev`): khung bài học với dữ liệu mẫu (kính hiển vi, phân tử nước).
   Mô hình mẫu sinh bằng `node scripts/tao-mo-hinh-mau.mjs`.
 
 ## Nginx (bản build)

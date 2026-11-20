@@ -10,10 +10,24 @@ import {
   MeshStandardMaterial,
   Points,
   PointsMaterial,
+  Box3,
   Texture,
+  Vector3,
 } from "three";
 import { describe, expect, it, vi } from "vitest";
-import { DemKhungHinh, giaiPhong, khoangCachVuaKhung, phanTramDaTai, thongKeMoHinh } from "./tinh-toan";
+import {
+  chuanHoaTenMesh,
+  chuyenDongMem,
+  DemKhungHinh,
+  duaTamVeGoc,
+  giaiPhong,
+  gioiHanCamera,
+  huongTach,
+  khoangCachVuaKhung,
+  phanTramDaTai,
+  thongKeMoHinh,
+  timMeshTheoTen,
+} from "./tinh-toan";
 
 describe("khoangCachVuaKhung", () => {
   it("khung vuông, fov 90°: khoảng cách = r / sin(45°) × lề", () => {
@@ -119,5 +133,108 @@ describe("DemKhungHinh", () => {
     expect(dem.fps()).toBe(0);
     dem.ghi(10);
     expect(dem.fps()).toBe(0);
+  });
+});
+
+describe("duaTamVeGoc", () => {
+  function moHinhLech() {
+    const goc = new Group();
+    const hop = new Mesh(new BoxGeometry(2, 4, 6), new MeshBasicMaterial()); // khối bao 2 × 4 × 6
+    hop.position.set(10, -3, 5);
+    goc.add(hop);
+    return goc;
+  }
+
+  it("đưa tâm khối bao của toàn bộ mô hình về gốc tọa độ, không co giãn, không xoay", () => {
+    const goc = moHinhLech();
+    const kq = duaTamVeGoc(goc);
+    const hop = new Box3().setFromObject(goc);
+    const tam = hop.getCenter(new Vector3());
+    expect(tam.length()).toBeCloseTo(0, 6);
+    expect(hop.getSize(new Vector3()).toArray()).toEqual([2, 4, 6]);
+    expect(goc.scale.toArray()).toEqual([1, 1, 1]);
+    expect(goc.rotation.toArray().slice(0, 3)).toEqual([0, 0, 0]);
+    expect(kq?.banKinh).toBeCloseTo(Math.sqrt(1 + 4 + 9), 6); // nửa đường chéo khối bao
+  });
+
+  it("gọi hai lần cho cùng kết quả (ND03 và BH01 dựng ra cùng hệ tọa độ)", () => {
+    const goc = moHinhLech();
+    duaTamVeGoc(goc);
+    const lan1 = goc.position.clone();
+    duaTamVeGoc(goc);
+    expect(goc.position.distanceTo(lan1)).toBeCloseTo(0, 6);
+    expect(lan1.toArray()).toEqual([-10, 3, -5]);
+  });
+
+  it("mô hình không có hình nào thì trả null", () => {
+    expect(duaTamVeGoc(new Group())).toBeNull();
+  });
+});
+
+describe("chuanHoaTenMesh, timMeshTheoTen", () => {
+  it("chuẩn hóa như Three.js: khoảng trắng thành _, bỏ [ ] . : /", () => {
+    expect(chuanHoaTenMesh("than kinh")).toBe("than_kinh");
+    expect(chuanHoaTenMesh("Tâm thất trái")).toBe("Tâm_thất_trái");
+    expect(chuanHoaTenMesh("a[1].b:c/d")).toBe("a1bcd");
+    expect(chuanHoaTenMesh(chuanHoaTenMesh("than kinh"))).toBe("than_kinh");
+  });
+
+  it("khớp tên gốc trong file với tên Three.js đặt; nút nhóm lấy mọi mesh con; báo tên không có", () => {
+    const goc = new Group();
+    const than = new Group();
+    than.name = "than_kinh"; // Three.js đã chuẩn hóa từ "than kinh"
+    const duoi = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    const tren = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    than.add(duoi, tren);
+    const mat = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+    mat.name = "mat";
+    goc.add(than, mat);
+
+    const kq = timMeshTheoTen(goc, ["than kinh", "mat", "khong co"]);
+    expect(new Set(kq.meshes)).toEqual(new Set([duoi, tren, mat]));
+    expect(kq.thieu).toEqual(["khong co"]);
+  });
+});
+
+describe("chuyenDongMem, huongTach", () => {
+  it("chuyển động bắt đầu 0, kết thúc 1, đối xứng ở giữa, kẹp ngoài [0, 1]", () => {
+    expect(chuyenDongMem(0)).toBe(0);
+    expect(chuyenDongMem(1)).toBe(1);
+    expect(chuyenDongMem(0.5)).toBeCloseTo(0.5, 6);
+    expect(chuyenDongMem(-1)).toBe(0);
+    expect(chuyenDongMem(2)).toBe(1);
+  });
+
+  it("tách theo hướng từ tâm mô hình ra tâm bộ phận", () => {
+    const h = huongTach(new Vector3(0, 3, 0), 10, new Vector3(0, 0, 1));
+    expect(h.toArray()).toEqual([0, 1, 0]);
+  });
+
+  it("bộ phận ở sát tâm mô hình thì tách về phía camera", () => {
+    const h = huongTach(new Vector3(0.1, 0, 0), 10, new Vector3(0, 0, 5));
+    expect(h.toArray()).toEqual([0, 0, 1]);
+  });
+});
+
+describe("gioiHanCamera", () => {
+  it("mô hình tính bằng mm (lớn gấp 1000 lần) có giới hạn lớn gấp 1000 lần – không bị cắt mất", () => {
+    const m = gioiHanCamera(1, 45, 1.5);
+    const mm = gioiHanCamera(1000, 45, 1.5);
+    expect(mm.near).toBeCloseTo(m.near * 1000, 6);
+    expect(mm.far).toBeCloseTo(m.far * 1000, 3);
+    expect(mm.minDistance).toBeCloseTo(m.minDistance * 1000, 6);
+    expect(mm.maxDistance).toBeCloseTo(m.maxDistance * 1000, 3);
+  });
+
+  it("góc nhìn vừa khung và lúc thu nhỏ hết cỡ đều nằm giữa mặt cắt gần và xa", () => {
+    for (const r of [0.001, 1, 400, 5000]) {
+      const gh = gioiHanCamera(r, 45, 1.5);
+      const vua = khoangCachVuaKhung(r, 45, 1.5);
+      expect(gh.near).toBeLessThan(vua - r);
+      expect(gh.far).toBeGreaterThan(gh.maxDistance + r);
+      expect(gh.minDistance).toBeLessThan(vua);
+      expect(gh.minDistance - r).toBeLessThan(0); // phóng sát vào được tới gần mặt mô hình
+      expect(gh.minDistance).toBeGreaterThan(gh.near);
+    }
   });
 });
