@@ -50,7 +50,7 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Chưa làm | | Việc khó nhất |
 | ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e (PR #5), ce33d83 | Phần nền (PR #5): volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB. API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
-| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | (commit ND02) | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
+| ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Đang làm | b8b03a4 | Xong: API 7, 49–55; màn Bài học (danh sách, tạo, gỡ, xóa) và màn soạn bài Hình 3-11 (thẻ Thông tin bài, Mô hình; xuất bản / gỡ). Chưa: soạn `lessons.config` (camera, kịch bản phim, thông số thí nghiệm – thẻ Thí nghiệm) và nút Xem trước – chờ thống nhất cấu trúc config (mục 10) |
 | ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Chưa làm | | |
 | HT01 | Tra cứu bài học | Dev Bài học | 1 | Chưa làm | | |
 | HT02 | Tự khám phá mô hình | Dev Bài học | 1 | Chưa làm | | |
@@ -97,7 +97,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 4 | GET | /api/auth/me | NT03 | Xong | d7f3456 |
 | 5 | POST | /api/auth/change-password | NT04 | Xong | d7f3456, 6eb8958 |
 | 6 | POST | /api/users/{id}/reset-password | QL08 | Xong | d7f3456, 6eb8958 |
-| 7 | GET | /api/subjects | ND02 | Xong | (commit ND02) – viết cùng ND02 cho ô chọn môn (mục 10, "API học tập") |
+| 7 | GET | /api/subjects | ND02 | Xong | b8b03a4 – viết cùng ND02 cho ô chọn môn (mục 10, "API học tập") |
 | 8 | GET | /api/lessons | HT01 | Chưa làm | |
 | 9 | GET | /api/lessons/{id} | HT02 | Chưa làm | |
 | 10 | POST | /api/attempts | LH03 | Chưa làm | |
@@ -120,7 +120,7 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 40–42 | | /api/classes/{id}/teachers (GET, POST, DELETE) | QL07 | Chưa làm | |
 | 43–44 | GET | /api/reports/usage, usage.xlsx | QL09 | Chưa làm | |
 | 45–48 | | /api/assets (GET, POST, GET {id}, DELETE) | ND01 | Xong | ce33d83 |
-| 49–55 | | /api/editor/lessons (CRUD, publish, unpublish) | ND02 | Xong | (commit ND02) |
+| 49–55 | | /api/editor/lessons (CRUD, publish, unpublish) | ND02 | Xong | b8b03a4 |
 | 56 | PUT | /api/editor/lessons/{id}/parts | ND03 | Chưa làm | |
 | 57–59 | | /api/editor/lessons/{id}/questions, /api/editor/questions/{id} | ND04 | Chưa làm | |
 | 60–65 | | /api/schools (CRUD, lock, unlock, xóa có mã xác nhận) | QL01 | Chưa làm | Khi làm khóa trường: cân nhắc tăng `token_version` (xem mục 6) |
