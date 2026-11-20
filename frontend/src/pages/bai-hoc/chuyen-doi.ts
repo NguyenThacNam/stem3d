@@ -53,11 +53,7 @@ export function loiTuMayChu(e: unknown): LoiThongTin | null {
   const loi: LoiThongTin = {};
   for (const d of e.details as { field?: string; message?: string }[]) {
     const f = d.field as keyof ThongTinBai | undefined;
-    if (
-      f &&
-      ["title", "subject_id", "grade", "book_series", "chapter", "lesson_no", "lesson_type"].includes(f)
-    )
-      loi[f] = d.message;
+    if (f && O_TREN_FORM.includes(f)) loi[f] = d.message;
   }
   return Object.keys(loi).length ? loi : null;
 }
