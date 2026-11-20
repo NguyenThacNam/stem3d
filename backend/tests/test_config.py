@@ -18,6 +18,13 @@ def test_dev_chap_nhan_gia_tri_mau() -> None:
     assert s.is_prod is False
 
 
+def test_thu_muc_noi_dung_mac_dinh() -> None:
+    s = Settings(database_url=URL_TOT, jwt_secret=KHOA_TOT)
+    assert str(s.content_dir) == "/data/content"
+    # tmp/ cùng volume với models/ để đổi tên file là nguyên tử.
+    assert s.models_dir.parent == s.content_tmp_dir.parent == s.content_dir
+
+
 def test_prod_hop_le() -> None:
     s = Settings(database_url=URL_TOT, jwt_secret=KHOA_TOT, app_env="prod", bcrypt_rounds=12)
     assert s.is_prod is True
