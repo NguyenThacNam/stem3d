@@ -32,12 +32,42 @@ class SubjectOut(BaseModel):
     max_grade: int | None
 
 
+# Tọa độ hữu hạn (không nhận NaN / vô cực) và không quá lớn để camera không bay khỏi cảnh.
+ToaDo = Annotated[float, Field(ge=-1e6, le=1e6, allow_inf_nan=False)]
+
+
+class CameraView(BaseModel):
+    """Góc camera khi chọn bộ phận: `position` – vị trí camera, `target` – điểm camera nhìn vào, theo hệ tọa độ của
+    mô hình đã đưa tâm khối bao về gốc, không co giãn (frontend `duaTamVeGoc`, dùng chung với khung bài học BH01)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    position: tuple[ToaDo, ToaDo, ToaDo]
+    target: tuple[ToaDo, ToaDo, ToaDo]
+
+
 # ---------------------------------------------------------------- đầu vào API 50, 52
+class LessonConfigIn(BaseModel):
+    """`lessons.config` – đúng 3 khóa (trưởng nhóm chốt 20/11/2026, TIEN_DO.md mục 5, 10); khóa lạ → 422.
+
+    - `camera_tong_quan` (ND02): góc nhìn tổng quan khi mở bài / "Đặt lại góc nhìn", cùng dạng `camera_view` bộ phận.
+    - `kich_ban_phim` (HT03), `thi_nghiem` (HT04 + NT07: `thong_so`, `cong_thuc_hien_thi`, `cong_thuc`, `sai_so`):
+      nội dung bên trong để mở, việc tương ứng chốt sau.
+    Không có khóa nào thì lưu `{}`; khóa null không lưu.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    camera_tong_quan: CameraView | None = None
+    kich_ban_phim: list[Any] | None = None
+    thi_nghiem: dict[str, Any] | None = None
+
+
 class LessonIn(BaseModel):
     """Toàn bộ thông tin bài (API 52 thay cả bản ghi, không vá từng trường).
 
-    Không nhận `status`, `created_by`, `published_by`, `published_at`: máy chủ tự đặt. `config` chỉ cần là JSON
-    object; cấu trúc bên trong chờ thống nhất với Dev Bài học (TIEN_DO.md mục 10, "Cấu hình bài học").
+    Không nhận `status`, `created_by`, `published_by`, `published_at`: máy chủ tự đặt. `config` theo khung 3 khóa
+    (`LessonConfigIn`).
     """
 
     subject_id: int = Field(ge=1, le=ID_TOI_DA)
@@ -48,7 +78,7 @@ class LessonIn(BaseModel):
     title: TieuDe
     lesson_type: LessonType
     asset_id: int | None = Field(default=None, ge=1, le=ID_TOI_DA)
-    config: dict[str, Any] = Field(default_factory=dict)
+    config: LessonConfigIn = Field(default_factory=LessonConfigIn)
     # Trùng môn + lớp + bộ sách + số bài với bài khác: lần đầu trả 409 DUPLICATE_LESSON, gửi lại với true để lưu.
     confirm_duplicate: bool = False
 
@@ -61,7 +91,7 @@ class LessonUpdate(LessonIn):
     chapter: Chuong | None
     lesson_no: int | None = Field(ge=1, le=SO_BAI_TOI_DA)
     asset_id: int | None = Field(ge=1, le=ID_TOI_DA)
-    config: dict[str, Any]
+    config: LessonConfigIn
 
 
 # ---------------------------------------------------------------- đầu vào API 56
@@ -77,20 +107,6 @@ NhanBoPhan = Annotated[
 ]
 ChuThich = Annotated[str, StringConstraints(strip_whitespace=True, max_length=1000)]
 TenMesh = Annotated[str, StringConstraints(min_length=1, max_length=500)]
-# Tọa độ hữu hạn (không nhận NaN / vô cực) và không quá lớn để camera không bay khỏi cảnh.
-ToaDo = Annotated[float, Field(ge=-1e6, le=1e6, allow_inf_nan=False)]
-
-
-class CameraView(BaseModel):
-    """Góc camera khi chọn bộ phận: `position` – vị trí camera, `target` – điểm camera nhìn vào, theo hệ tọa độ của
-    mô hình đã đưa tâm khối bao về gốc, không co giãn (frontend `duaTamVeGoc`, dùng chung với khung bài học BH01)."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    position: tuple[ToaDo, ToaDo, ToaDo]
-    target: tuple[ToaDo, ToaDo, ToaDo]
-
-
 class LessonPartIn(BaseModel):
     """Một bộ phận. Có `id` (bộ phận đã có của bài) thì sửa tại chỗ, giữ nguyên id; không có thì thêm mới.
     Thứ tự trong danh sách gửi lên là thứ tự hiển thị (`sort_order` do máy chủ đặt)."""

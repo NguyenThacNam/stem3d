@@ -57,3 +57,22 @@ export function loiTuMayChu(e: unknown): LoiThongTin | null {
   }
   return Object.keys(loi).length ? loi : null;
 }
+
+/**
+ * So hai object JSON không phụ thuộc thứ tự khóa (JSONB của PostgreSQL trả khóa theo thứ tự riêng). Như máy chủ
+ * (`LessonConfigIn`), chỉ bỏ khóa null / undefined ở tầng ngoài cùng; null bên trong vẫn tính.
+ */
+export function giongJson(a: unknown, b: unknown): boolean {
+  const sap = (x: unknown, tangNgoai: boolean): unknown =>
+    Array.isArray(x)
+      ? x.map((v) => sap(v, false))
+      : x && typeof x === "object"
+        ? Object.fromEntries(
+            Object.entries(x as Record<string, unknown>)
+              .filter(([, v]) => v !== undefined && !(tangNgoai && v === null))
+              .sort(([k1], [k2]) => (k1 < k2 ? -1 : k1 > k2 ? 1 : 0))
+              .map(([k, v]) => [k, sap(v, false)]),
+          )
+        : x;
+  return JSON.stringify(sap(a, true)) === JSON.stringify(sap(b, true));
+}

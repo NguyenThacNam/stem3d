@@ -10,7 +10,8 @@ Quyết định đã chốt với người dùng (TIEN_DO.md mục 5, ND02):
 - Gỡ bài đang giao cho lớp còn hạn → 409 LESSON_ASSIGNED; gửi lại với `confirm` để gỡ.
 - Sửa bài đã xuất bản được (UC 20 bước 7), trừ khi làm bài mất điều kiện xuất bản → 400 LESSON_INCOMPLETE.
 - Gỡ xuất bản giữ `published_by` / `published_at` ("xuất bản lần gần nhất").
-- `config` nhận nguyên JSON object, chưa kiểm tra cấu trúc bên trong (chờ thống nhất với Dev Bài học).
+- `config` theo khung 3 khóa `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem` (`LessonConfigIn`, khóa lạ 422);
+  lưu dạng JSON, bỏ khóa null. Nội dung `kich_ban_phim`, `thi_nghiem` do HT03, HT04 + NT07 chốt sau.
 """
 
 import json
@@ -198,7 +199,7 @@ def _kiem_tra_dau_vao(
         else:
             khoang = f"đến lớp {mon.max_grade}"
         loi.append({"field": "grade", "message": f"Môn {mon.name} chỉ có {khoang}, hãy chọn lại lớp"})
-    if len(json.dumps(data.config, ensure_ascii=False).encode("utf-8")) > CONFIG_TOI_DA:
+    if len(json.dumps(_cau_hinh(data), ensure_ascii=False).encode("utf-8")) > CONFIG_TOI_DA:
         loi.append({"field": "config", "message": "Cấu hình bài quá lớn (tối đa 1 MB), hãy rút gọn"})
     asset = None
     if data.asset_id is not None:
@@ -228,6 +229,11 @@ def _kiem_tra_dau_vao(
     return asset
 
 
+def _cau_hinh(data: LessonIn) -> dict[str, Any]:
+    """`config` sẽ lưu: chỉ các khóa có giá trị (khung 3 khóa đã kiểm ở schema)."""
+    return data.config.model_dump(mode="json", exclude_none=True)
+
+
 def _gan(lesson: Lesson, data: LessonIn) -> None:
     lesson.subject_id = data.subject_id
     lesson.grade = data.grade
@@ -237,7 +243,7 @@ def _gan(lesson: Lesson, data: LessonIn) -> None:
     lesson.title = data.title
     lesson.lesson_type = data.lesson_type
     lesson.asset_id = data.asset_id
-    lesson.config = data.config
+    lesson.config = _cau_hinh(data)
 
 
 def create_lesson(db: Session, actor: CurrentUser, data: LessonIn, now: datetime) -> LessonDetailOut:
@@ -273,6 +279,8 @@ def update_lesson(db: Session, actor: CurrentUser, lesson_id: int, data: LessonI
             )
 
     cu: dict[str, Any] = {k: getattr(lesson, k) for k in TRUONG_SUA}
+    if cu["config"] is None:
+        cu["config"] = {}  # bài cũ chưa có config: lưu {} không tính là đổi
     _gan(lesson, data)
     doi = [k for k in TRUONG_SUA if getattr(lesson, k) != cu[k]]
     if doi:

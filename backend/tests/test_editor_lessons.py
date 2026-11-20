@@ -155,7 +155,7 @@ def test_tao_bai_nhap(mt: MoiTruong) -> None:
     res = mt.goi(
         "POST",
         "/api/editor/lessons",
-        json=mt.bai(title="  Cá chép – cấu tạo ngoài ", asset_id=asset.id, config={"camera": {"position": [1, 2, 3]}}),
+        json=mt.bai(title="  Cá chép – cấu tạo ngoài ", asset_id=asset.id, config={"camera_tong_quan": {"position": [1, 2, 3], "target": [0, 0, 0]}}),
     )
     assert res.status_code == 201, res.text
     b = res.json()
@@ -164,7 +164,7 @@ def test_tao_bai_nhap(mt: MoiTruong) -> None:
     assert b["book_series"] == "KNTT" and b["grade"] == 6 and b["lesson_no"] == 34
     assert b["asset"]["id"] == asset.id and b["asset"]["file_url"] == "/content/models/1.v1.glb"
     assert b["asset"]["mesh_names"] == ["vay_lung", "mat"]
-    assert b["config"] == {"camera": {"position": [1, 2, 3]}}
+    assert b["config"] == {"camera_tong_quan": {"position": [1, 2, 3], "target": [0, 0, 0]}}
     assert b["parts"] == [] and b["questions"] == []
     assert b["created_by_name"] == mt.tk["bientap"].full_name and b["published_at"] is None
     assert b["missing_for_publish"] == ["Chưa gắn nhãn bộ phận nào"]
@@ -297,13 +297,13 @@ def test_danh_sach_tham_so_sai(mt: MoiTruong, params: dict[str, Any]) -> None:
 
 # ================================================================ API 51 – chi tiết
 def test_chi_tiet_kem_nhan_va_cau_hoi_co_dap_an(mt: MoiTruong) -> None:
-    b = mt.du_dieu_kien(config={"formula": "Vb = Ca * Va / Cb", "tolerance": 0.05})
+    b = mt.du_dieu_kien(config={"thi_nghiem": {"cong_thuc": "Vb = Ca * Va / Cb", "sai_so": 0.05}})
     mt.db.add(Question(lesson_id=b["id"], question_type="NUMERIC", content="Vb?", answer={"value": 12.5}, tolerance=0.1))
     mt.db.flush()
     res = mt.goi("GET", f"/api/editor/lessons/{b['id']}", mt.tk["sys"])
     assert res.status_code == 200
     body = res.json()
-    assert body["config"] == {"formula": "Vb = Ca * Va / Cb", "tolerance": 0.05}
+    assert body["config"] == {"thi_nghiem": {"cong_thuc": "Vb = Ca * Va / Cb", "sai_so": 0.05}}
     assert body["parts"][0] | {"id": 0} == {
         "id": 0, "mesh_names": ["vay_lung"], "label": "Vây 0", "description": None, "camera_view": None, "sort_order": 0
     }
@@ -315,10 +315,10 @@ def test_chi_tiet_kem_nhan_va_cau_hoi_co_dap_an(mt: MoiTruong) -> None:
 def test_sua_bai_ghi_truong_da_doi(mt: MoiTruong) -> None:
     b = mt.tao()
     mt.dong_ho.tua(hours=1)
-    res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}", json=mt.bai(title="Cá chép – bài 34", config={"a": 1}))
+    res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}", json=mt.bai(title="Cá chép – bài 34", config={"kich_ban_phim": [1]}))
     assert res.status_code == 200, res.text
     body = res.json()
-    assert body["title"] == "Cá chép – bài 34" and body["config"] == {"a": 1}
+    assert body["title"] == "Cá chép – bài 34" and body["config"] == {"kich_ban_phim": [1]}
     assert body["updated_at"].startswith("2026-11-18T08:00")
     dong = kiem_tra_nhat_ky(mt.db, "UPDATE_LESSON", target_id=b["id"])
     assert dong.detail["changed_fields"] == ["title", "config"]
@@ -375,16 +375,57 @@ def test_sua_du_lieu_sai(mt: MoiTruong, sua: dict[str, Any]) -> None:
 
 @pytest.mark.parametrize("bo", ["config", "asset_id", "chapter", "lesson_no", "book_series"])
 def test_sua_thieu_truong_khong_xoa_ngam(mt: MoiTruong, bo: str) -> None:
-    b = mt.tao(config={"formula": "Vb = Ca * Va / Cb"})
+    b = mt.tao(config={"thi_nghiem": {"cong_thuc": "Vb = Ca * Va / Cb"}})
     du_lieu = mt.bai()
     del du_lieu[bo]
     res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}", json=du_lieu)
     assert res.status_code == 422 and bo in [d["field"] for d in res.json()["error"]["details"]]
-    assert mt.db.get(Lesson, b["id"]).config == {"formula": "Vb = Ca * Va / Cb"}  # type: ignore[union-attr]
+    assert mt.db.get(Lesson, b["id"]).config == {"thi_nghiem": {"cong_thuc": "Vb = Ca * Va / Cb"}}  # type: ignore[union-attr]
+
+
+@pytest.mark.parametrize(
+    "config,truong",
+    [
+        ({"camera_view": {"position": [0, 0, 1], "target": [0, 0, 0]}}, "config.camera_view"),  # khóa cũ
+        ({"formula": "x"}, "config.formula"),
+        ({"camera_tong_quan": {"position": [0, 0], "target": [0, 0, 0]}}, "config.camera_tong_quan.position.2"),
+        ({"camera_tong_quan": {"position": [0, 0, 1], "target": [0, 0, 0], "zoom": 1}}, "config.camera_tong_quan.zoom"),
+        ({"kich_ban_phim": {"a": 1}}, "config.kich_ban_phim"),
+        ({"thi_nghiem": [1]}, "config.thi_nghiem"),
+    ],
+)
+def test_config_chi_nhan_3_khoa(mt: MoiTruong, config: dict[str, Any], truong: str) -> None:
+    """Khung config đã chốt: `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem`; khóa lạ hay sai dạng → 422 (API 50, 52)."""
+    res = mt.goi("POST", "/api/editor/lessons", json=mt.bai(config=config))
+    assert res.status_code == 422, res.text
+    assert truong in [d["field"] for d in res.json()["error"]["details"]]
+    b = mt.tao(lesson_no=40)
+    res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}", json=mt.bai(lesson_no=40, config=config))
+    assert res.status_code == 422 and mt.so_nhat_ky("UPDATE_LESSON") == 0
+
+
+def test_config_bo_khoa_null_va_luu_goc_tong_quan(mt: MoiTruong) -> None:
+    b = mt.tao(config={"camera_tong_quan": None, "kich_ban_phim": None, "thi_nghiem": None})
+    assert b["config"] == {}
+    goc = {"position": [0.5, 1, 4], "target": [0, 0.25, 0]}
+    res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}", json=mt.bai(config={"camera_tong_quan": goc}))
+    assert res.status_code == 200 and res.json()["config"] == {"camera_tong_quan": goc}
+    assert kiem_tra_nhat_ky(mt.db, "UPDATE_LESSON", target_id=b["id"]).detail["changed_fields"] == ["config"]
+
+
+def test_bai_cu_config_null_luu_rong_khong_tinh_la_doi(mt: MoiTruong) -> None:
+    b = mt.tao()
+    bai = mt.db.get(Lesson, b["id"])
+    assert bai is not None
+    bai.config = None
+    mt.db.flush()
+    res = mt.goi("PUT", f"/api/editor/lessons/{b['id']}", json=mt.bai())
+    assert res.status_code == 200 and res.json()["config"] == {}
+    assert mt.so_nhat_ky("UPDATE_LESSON") == 0
 
 
 def test_config_qua_lon(mt: MoiTruong) -> None:
-    res = mt.goi("POST", "/api/editor/lessons", json=mt.bai(config={"x": "a" * (1024 * 1024)}))
+    res = mt.goi("POST", "/api/editor/lessons", json=mt.bai(config={"thi_nghiem": {"x": "a" * (1024 * 1024)}}))
     assert res.status_code == 422
     assert res.json()["error"]["details"] == [
         {"field": "config", "message": "Cấu hình bài quá lớn (tối đa 1 MB), hãy rút gọn"}

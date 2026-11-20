@@ -39,7 +39,7 @@ export default function KhungGanNhan({
   dangChon: string | null;
   /** Bấm (không kéo): tên phần trúng (null khi bấm vùng trống hoặc phần không tên), có giữ Shift không. */
   onBamPhan: (ten: string | null, giuShift: boolean) => void;
-  /** Góc nhìn tổng quan của bài (`config.camera_view`), như khung bài học; null thì tự canh vừa khung. */
+  /** Góc nhìn tổng quan của bài (`config.camera_tong_quan`), như khung bài học; null thì tự canh vừa khung. */
   gocTongQuan: CameraView | null;
   ref?: Ref<DieuKhienGanNhan>;
   className?: string;
@@ -140,6 +140,12 @@ export default function KhungGanNhan({
     if (i < 0) canh.chon(null, false);
     else canh.chon(i + 1, true, ds[i].camera_view);
   }, [daTai, dangChon]);
+
+  // Đổi / bỏ góc tổng quan ("Lưu góc tổng quan"): "Góc nhìn chuẩn" dùng góc mới ngay, không tải lại mô hình.
+  const khoaGoc = JSON.stringify(gocTongQuan);
+  useEffect(() => {
+    canhRef.current?.datGocTongQuan(moi.current.gocTongQuan);
+  }, [daTai, khoaGoc]);
 
   return (
     <div className={cn("relative overflow-hidden grid3d", className)}>
