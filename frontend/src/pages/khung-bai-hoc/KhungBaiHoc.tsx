@@ -101,7 +101,7 @@ export function KhungBaiHoc({
       return;
     }
     canhRef.current = canh;
-    canh.datGocTongQuan(bai.config.camera_view ?? null);
+    canh.datGocTongQuan(bai.config.camera_tong_quan ?? null);
     const batDau = performance.now();
     let phanTramCu: number | null = null;
     canh
@@ -132,7 +132,7 @@ export function KhungBaiHoc({
       canh.huy();
       canhRef.current = null;
     };
-    // config.camera_view chỉ đọc lúc tải; đổi bài thì nguồn cũng đổi.
+    // config.camera_tong_quan chỉ đọc lúc tải; đổi bài thì nguồn cũng đổi.
   }, [nguon, lanThu]);
 
   // Gắn bộ phận vào mô hình (sau khi tải xong, hoặc khi danh sách bộ phận đổi).

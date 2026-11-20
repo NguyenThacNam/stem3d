@@ -17,6 +17,9 @@ Danh sách kiểm tra:
 - Tách API học tập với API soạn bài: API học tập API 8–10 (`/api/lessons/...`) có dùng chung schema hay kiểu với
   `/api/editor/...` không? (API 7 `/api/subjects` chỉ trả tên môn học, dùng chung `SubjectOut` được.) Máy chủ phải dùng schema đầu ra riêng (`LessonViewOut`), không kế thừa / dùng lại schema
   API 51; frontend màn học tập dùng `LessonView`, không nhập `LessonDetail` từ `api/editorLessons.ts`.
+- `lessons.config`: API 50, 52 chỉ nhận 3 khóa `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem` (khóa lạ 422)?
+  API 9 có trả nguyên `config` không? Phải lấy theo danh sách cho phép (`camera_tong_quan`, `kich_ban_phim`,
+  `thi_nghiem.thong_so`), tuyệt đối không có `cong_thuc`, `sai_so`; test kiểm điều này.
 - Phạm vi trường: `school_id` có lấy từ người dùng hiện tại không? Truy vấn có lọc theo trường? Khác trường có trả 404?
 - Phân quyền: router có `require_role` đúng vai trò trong bảng API? Service có kiểm tra lớp mình dạy / lớp chủ nhiệm?
 - Đúng đặc tả: đường dẫn, mã HTTP, mã lỗi, tên trường JSON, phân trang.

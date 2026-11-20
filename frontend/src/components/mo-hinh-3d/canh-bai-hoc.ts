@@ -191,7 +191,7 @@ export class CanhBaiHoc {
     return goc;
   }
 
-  /** Góc nhìn tổng quan của bài (`config.camera_view`); null thì tự canh vừa khung. */
+  /** Góc nhìn tổng quan của bài (`config.camera_tong_quan`); null thì tự canh vừa khung. */
   datGocTongQuan(goc: CameraView | null): void {
     this.gocTongQuan = goc;
   }

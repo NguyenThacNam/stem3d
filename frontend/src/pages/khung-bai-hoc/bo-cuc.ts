@@ -19,7 +19,7 @@ export const TEN_CHE_DO: Record<CheDo, string> = {
  */
 export function cacCheDo(bai: Pick<LessonView, "lesson_type" | "config">): CheDo[] {
   const ds: CheDo[] = [];
-  if ((bai.config.film_script?.length ?? 0) > 0) ds.push("phim");
+  if ((bai.config.kich_ban_phim?.length ?? 0) > 0) ds.push("phim");
   ds.push("kham-pha");
   if (bai.lesson_type === "EXPERIMENT") ds.push("thi-nghiem");
   ds.push("kiem-tra");

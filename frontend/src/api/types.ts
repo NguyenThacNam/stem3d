@@ -73,12 +73,19 @@ export interface LessonViewAsset {
   attribution: string | null;
 }
 
-/** `lessons.config` đã lọc (không có công thức chấm, sai số). */
+/**
+ * `lessons.config` ĐÃ LỌC cho học sinh (API 9). Khung `config` có đúng 3 khóa (trưởng nhóm chốt, TIEN_DO.md mục 10):
+ * `camera_tong_quan` (ND03), `kich_ban_phim` (HT03), `thi_nghiem {thong_so, cong_thuc, sai_so}` (HT04 + NT07).
+ * API 9 chỉ trả theo danh sách cho phép: `camera_tong_quan`, `kich_ban_phim`, `thi_nghiem.thong_so` – KHÔNG BAO GIỜ có
+ * `cong_thuc`, `sai_so`. Nội dung bên trong từng khóa do việc tương ứng chốt sau.
+ */
 export interface LessonConfig {
   /** Góc nhìn tổng quan khi mở bài và khi bấm "Đặt lại góc nhìn"; null thì tự canh vừa khung. */
-  camera_view?: CameraView | null;
-  /** Kịch bản phim (HT03); rỗng hoặc không có thì ẩn chế độ Phim. */
-  film_script?: unknown[] | null;
+  camera_tong_quan?: CameraView | null;
+  /** Kịch bản phim (HT03 chốt nội dung); rỗng hoặc không có thì ẩn chế độ Phim. */
+  kich_ban_phim?: unknown[] | null;
+  /** Bài thí nghiệm: chỉ có thông số (HT04 chốt nội dung). */
+  thi_nghiem?: { thong_so?: unknown } | null;
 }
 
 export interface LessonView {
