@@ -4,7 +4,7 @@ from fastapi import FastAPI
 
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
-from app.routers import auth, health, users
+from app.routers import assets, auth, health, users
 
 
 def create_app() -> FastAPI:
@@ -18,6 +18,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(auth.router)
     app.include_router(users.router)
+    app.include_router(assets.router)
     return app
 
 
