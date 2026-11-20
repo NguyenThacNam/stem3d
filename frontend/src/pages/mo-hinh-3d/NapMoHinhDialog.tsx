@@ -17,7 +17,6 @@ import {
   type SourceType,
 } from "@/api/assets";
 import { ApiError, UPLOAD_ABORTED } from "@/api/client";
-import { ModelViewerLazy } from "@/components/ModelViewerLazy";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
@@ -25,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { formatBytes } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { BaoCaoKiemTra } from "./BaoCaoKiemTra";
+import { XemTruoc3D } from "./XemTruoc3D";
 
 type Buoc =
   | { kind: "form" }
@@ -404,7 +404,7 @@ export function NapMoHinhDialog({
           {/* Cột phải: xem trước 3D – đọc thẳng file trên máy, chưa cần gửi lên máy chủ. */}
           <div className="min-w-0">
             {file ? (
-              <ModelViewerLazy file={file} label={name.trim() || file.name} className="h-[360px]" />
+              <XemTruoc3D file={file} ten={file.name} className="h-[360px]" />
             ) : (
               <div className="grid h-[360px] place-items-center rounded-card border border-line grid3d px-6 text-center">
                 <span className="text-[14px] text-text-2">Chọn file để xem trước mô hình 3D</span>

@@ -213,38 +213,6 @@ export async function upload<T>(path: string, form: FormData, options: UploadOpt
   return uploadOnce<T>(path, form, options, true);
 }
 
-/**
- * Tải file nhị phân công khai (file mô hình /content/models/...) có báo tiến độ và hủy được.
- * Không gắn token: file mô hình phục vụ công khai (Nginx). Hủy bằng `signal` thì ném ApiError UPLOAD_ABORTED.
- */
-export function downloadBinary(
-  url: string,
-  { onProgress, signal }: { onProgress?: (fraction: number) => void; signal?: AbortSignal } = {},
-): Promise<ArrayBuffer> {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) {
-      reject(new ApiError(0, UPLOAD_ABORTED, "Đã hủy tải file"));
-      return;
-    }
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", url);
-    xhr.responseType = "arraybuffer";
-    xhr.onprogress = (e) => {
-      if (e.lengthComputable && e.total > 0) onProgress?.(e.loaded / e.total);
-    };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.response as ArrayBuffer);
-      else reject(new ApiError(xhr.status, "HTTP_ERROR", "Không tải được file mô hình, hãy thử lại"));
-    };
-    xhr.onerror = () => reject(new ApiError(0, "NETWORK_ERROR", LOI_MANG));
-    xhr.onabort = () => reject(new ApiError(0, UPLOAD_ABORTED, "Đã hủy tải file"));
-    const huy = () => xhr.abort();
-    signal?.addEventListener("abort", huy, { once: true });
-    xhr.onloadend = () => signal?.removeEventListener("abort", huy);
-    xhr.send();
-  });
-}
-
 function sendXhr(
   path: string,
   form: FormData,

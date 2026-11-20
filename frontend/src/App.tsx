@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { lazy, Suspense, type ReactNode } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import type { Role } from "@/api/types";
 import { useAuth } from "@/auth/AuthProvider";
@@ -16,6 +16,12 @@ const TRANG_DA_LAM: Record<string, ReactNode> = {
 };
 
 const TRANG_XAC_THUC = ["/", "/dang-nhap", "/doi-mat-khau"];
+
+// Trang thử 3D (NT08): chỉ có khi chạy `npm run dev`. Bản build thay import.meta.env.DEV bằng false nên
+// bỏ hẳn trang này và Three.js khỏi gói. Nạp lười để Three.js không làm chậm các trang khác.
+const ThuMoHinh3DPage = import.meta.env.DEV
+  ? lazy(() => import("@/pages/thu-mo-hinh-3d/ThuMoHinh3DPage"))
+  : null;
 
 /** Chờ khôi phục phiên lúc tải trang; lỗi mạng thì hiện nút thử lại. */
 function SessionGate() {
@@ -68,6 +74,16 @@ function HomeRedirect() {
 export function App() {
   return (
     <Routes>
+      {ThuMoHinh3DPage && (
+        <Route
+          path="/thu-mo-hinh-3d"
+          element={
+            <Suspense fallback={<p className="p-6 text-text-2">Đang tải trang thử</p>}>
+              <ThuMoHinh3DPage />
+            </Suspense>
+          }
+        />
+      )}
       <Route element={<SessionGate />}>
         <Route element={<PublicOnly />}>
           <Route path="/dang-nhap" element={<DangNhapPage />} />

@@ -11,23 +11,25 @@ Bảng phân công dạng Excel `ke-hoach/Phan_cong_cong_viec.xlsx` được SIN
 
 **Trưởng nhóm đã xong toàn bộ phần nền tảng** (NT01–NT06, NT09) và bàn giao cho hai dev (mục 11). Hệ thống rỗng
 đã chạy được: Docker 3 dịch vụ, CSDL 15 bảng, đăng nhập / khóa tạm / đổi mật khẩu / đặt lại mật khẩu, phân quyền
-theo vai trò, khung ghi nhật ký, khung giao diện React với màn đăng nhập và thanh bên theo vai trò. Giai đoạn 0
-còn NT08 (phần thử hiển thị mô hình 3D, Dev Bài học). Chưa có chức năng học tập, quản lý trường hay nội dung bài học.
+theo vai trò, khung ghi nhật ký, khung giao diện React với màn đăng nhập và thanh bên theo vai trò, khung hiển thị
+mô hình 3D (Three.js). **Giai đoạn 0 đã xong** (NT08 do trưởng nhóm làm thay Dev Bài học). Giai đoạn 1 đã bắt đầu:
+ND01 (Dev Quản lý) xong – nạp mô hình GLB có kiểm tra tự động, danh sách, xem chi tiết 3D, xóa (API 45–48 và
+màn Thư viện mô hình 3D). Chưa có chức năng học tập, quản lý trường hay nội dung bài học.
 
 | Giai đoạn | Tên | Tổng việc | Xong | Đang làm | Chưa làm | Bỏ |
 |---|---|---|---|---|---|---|
-| 0 | Nền tảng kỹ thuật | 9 | 7 | 1 | 0 | 1 |
+| 0 | Nền tảng kỹ thuật | 9 | 8 | 0 | 0 | 1 |
 | 1 | Xem bài học 3D | 7 | 1 | 0 | 6 | 0 |
 | 2 | Thí nghiệm, kiểm tra, phim | 7 | 0 | 0 | 7 | 0 |
 | 3 | Trường, tài khoản, lớp | 10 | 0 | 1 | 9 | 0 |
 | 4 | Dạy học theo lớp | 7 | 0 | 0 | 7 | 0 |
 | 5 | Hoàn thiện, thử nghiệm thật | 4 | 0 | 0 | 4 | 0 |
 | 6 | Mở rộng (khi cần) | 1 | 0 | 0 | 1 | 0 |
-| | **Tổng** | **45** | **8** | **2** | **34** | **1** |
+| | **Tổng** | **45** | **9** | **1** | **34** | **1** |
 
 API (chương 3, mục 3.1.3): **10 / 73 API REST xong**, WebSocket 0 / 1. Ngoài danh sách có thêm `GET /api/health`.
 
-Test: backend 342 (pytest, CSDL PostgreSQL thật), frontend 25 (Vitest cho `src/api/client.ts`).
+Test: backend 342 (pytest, CSDL PostgreSQL thật), frontend 39 (Vitest cho `src/api/client.ts` và phần tính toán 3D).
 
 ## 2. Bảng chức năng (45 việc theo kế hoạch)
 
@@ -43,10 +45,10 @@ của Dev Bài học, Dev Quản lý ghi chú bên dưới).
 | NT05 | Phân quyền theo vai trò và theo trường | Trưởng nhóm | 0 | Xong | d7f3456 | `require_role`, `get_current_user`; phạm vi trường kiểm tra trong service từng API |
 | NT06 | Ghi nhật ký thao tác | Trưởng nhóm | 0 | Xong | d7f3456, d6c8030 | Khung `app/services/nhat_ky.py` (mã cố định, chặn thông tin nhạy cảm) + `kiem_tra_nhat_ky` cho test. Mỗi API tự ghi nhật ký: điều kiện hoàn thành của API đó (`backend/CLAUDE.md` mục Nhật ký) |
 | NT09 | Chốt quy ước API | Trưởng nhóm | 0 | Xong | dbf6502, d7f3456 | Khuôn dạng lỗi, mã lỗi chung, phân trang: `backend/CLAUDE.md` |
-| NT08 | Khung giao diện React và thử hiển thị mô hình 3D | Dev Bài học | 0 | Đang làm | 305b484 | Xong: bố cục, menu, gọi API. Chưa: thử mô hình 3D (Three.js) |
+| NT08 | Khung giao diện React và thử hiển thị mô hình 3D | Dev Bài học | 0 | Xong | 305b484, nhánh feature/NT08-thu-hien-thi-mo-hinh-3d | Người làm: Trưởng nhóm (làm thay Dev Bài học). Bố cục, menu, gọi API; thành phần `MoHinh3D` (Three.js) và trang thử `/thu-mo-hinh-3d` (chỉ bản dev) |
 | QL00 | Màn hình quản trị bằng dữ liệu giả; Excel mẫu | Dev Quản lý | 0 | Bỏ | | Đã có API thật, làm thẳng màn hình với API; Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | Khung bài học 3D | Dev Bài học | 1 | Chưa làm | | Việc khó nhất |
-| ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e, ce33d83 | API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
+| ND01 | Nạp mô hình 3D, xóa mô hình | Dev Quản lý | 1 | Xong | 387462e, bda040e (PR #5), ce33d83 | Phần nền (PR #5): volume `content`, Nginx phục vụ `/content/models/`, bộ đọc GLB. API 45–48 + màn Thư viện mô hình 3D (bảng, nạp có xem trước 3D, chi tiết, xóa) |
 | ND02 | Tạo, sửa, xóa, xuất bản bài học | Dev Quản lý | 1 | Chưa làm | | |
 | ND03 | Gắn nhãn, chú thích bộ phận | Dev Bài học | 1 | Chưa làm | | |
 | HT01 | Tra cứu bài học | Dev Bài học | 1 | Chưa làm | | |
@@ -138,8 +140,10 @@ Cột "Việc" là mã việc trong kế hoạch mà API phục vụ.
 | 3 (sửa) | Kiểm tra lại phạm vi sau khi khóa dòng khi đặt lại mật khẩu, ghi IP khi đổi mật khẩu | 6eb8958 |
 | NT06 | Khung nhật ký: `nhat_ky.ghi()` với danh sách mã cố định (45 mã, nhãn tiếng Việt cho VH01), tự ghi `actor` / `target_name`, chặn khóa nhạy cảm kể cả lồng nhau, IP chỉ cho đăng nhập / mật khẩu, quy tắc nhập Excel; `kiem_tra_nhat_ky` cho test; quy ước trong `backend/CLAUDE.md`, mục kiểm tra trong `review-code` | d6c8030 |
 | 4 | Frontend Vite + React 19 + Tailwind 4 + shadcn/ui: client API (token trong bộ nhớ, tự làm mới), màn đăng nhập (Hình 3-3), đổi mật khẩu bắt buộc, bố cục thanh bên theo vai trò (Hình 3-1), trang tạm; Nginx phục vụ bản build, header bảo mật, gzip | 305b484 |
+| ND01 (phần nền) | Dev Quản lý: volume `content` (api ghi, Nginx chỉ đọc), Nginx phục vụ `/content/models/` (lưu đệm lâu dài), `CONTENT_DIR` / `models_dir` / `content_tmp_dir` trong cấu hình, bộ đọc GLB `doc_glb()` (28 test), `python-multipart` cho tải file lên | 387462e, bda040e (PR #5) |
+| NT08 | Three.js 0.187.0; thành phần `MoHinh3D` (nạp GLB, kéo xoay / phóng to, tự canh camera, nền ô li, 3 trạng thái, giải phóng bộ nhớ đồ họa); phần tính toán thuần có test; trang thử `/thu-mo-hinh-3d` chỉ ở bản dev (mô hình mẫu, mở file GLB trên máy, đo thời gian tải / khung hình); CSP thêm `connect-src blob:`. Trưởng nhóm làm thay Dev Bài học | nhánh feature/NT08-thu-hien-thi-mo-hinh-3d |
 
-| ND01 | Mô hình 3D: volume `content` + Nginx phục vụ `/content/models/` (387462e); bộ đọc GLB (bda040e); API 45–48 (danh sách phân trang + tìm tên, nạp có kiểm tra tự động, chi tiết, xóa – khóa dòng, 409 khi bài đang dùng); màn Thư viện mô hình 3D: bảng chỉ số tô vàng khi vượt mức khuyến nghị, hộp thoại nạp (kéo thả, % tải lên, xác nhận cảnh báo, báo cáo kiểm tra, xem trước 3D ngay trên máy), chi tiết (xem 3D, các phần, bài đang dùng), xóa; Three.js 0.187 tải riêng khi mở khung 3D | ce33d83 |
+| ND01 | API 45–48 (danh sách phân trang + tìm tên, nạp có kiểm tra tự động, chi tiết, xóa – khóa dòng, 409 khi bài đang dùng); màn Thư viện mô hình 3D: bảng chỉ số tô vàng khi vượt mức khuyến nghị, hộp thoại nạp (kéo thả, % tải lên, xác nhận cảnh báo, báo cáo kiểm tra, xem trước 3D ngay trên máy), chi tiết (xem 3D, các phần, bài đang dùng), xóa; xem 3D dùng `MoHinh3D` (NT08), nạp lười | ce33d83 |
 
 Mỗi phần đều được subagent `review-code` soát trước khi commit; các mục "phải sửa / nên sửa" đã xử lý.
 
@@ -192,12 +196,47 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - Chữ chính 15 px, nhãn 14 px (to hơn file mẫu ~1 px) theo quy ước 15–16 px.
 - Logo ghi "Phòng thí nghiệm ảo / Lý · Hóa · Sinh 3D" theo ảnh mẫu; menu biên tập viên theo Hình 3-1 (Bài học, Mô hình 3D).
 - `/` tạm chuyển về `/dang-nhap` cho tới khi có trang giới thiệu.
-- Không dùng thư viện form / quản lý trạng thái; Vitest chỉ cho `src/api/client.ts`.
+- Không dùng thư viện form / quản lý trạng thái; Vitest cho `src/api/client.ts` và phần tính toán thuần (không cần trình duyệt).
 - Màn Thư viện mô hình 3D (không có ảnh riêng): bố cục bảng theo Hình 3-12, chỉ số vượt mức khuyến nghị tô vàng (`warn-weak`) như Hình 3-11. Bấm tên mô hình mở chi tiết; menu "⋯" có Xem chi tiết, Xóa mô hình.
-- Hộp thoại nạp xem trước 3D ngay từ file trên máy (đọc thẳng, chưa gửi lên) để biên tập viên thấy mô hình trước khi nạp (UC 21 bước 4). Tải lên dùng `XMLHttpRequest` trong `src/api/client.ts` để có % tiến độ.
-- Khung xem 3D `src/components/ModelViewer.tsx` (Three.js, xoay / phóng to, phím mũi tên, nút "Góc nhìn chuẩn", chỉ vẽ lại khi có thay đổi) – dùng qua `ModelViewerLazy` để Three.js chỉ tải khi mở khung 3D. Dev Bài học có thể dùng lại cho NT08, BH01.
-- Thêm `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu`, `three` (0.187.0) và thành phần `src/components/ui/dialog.tsx`, `dropdown-menu.tsx`.
+- Hộp thoại nạp xem trước 3D ngay từ file trên máy (đọc thẳng, chưa gửi lên) để biên tập viên thấy mô hình trước khi nạp (UC 21 bước 4). Tải lên dùng `XMLHttpRequest` trong `src/api/client.ts` để có % tiến độ; làm mới token trước khi gửi file lớn.
+- Xem 3D ở màn Mô hình 3D dùng thành phần chung `MoHinh3D` (NT08) qua `src/pages/mo-hinh-3d/XemTruoc3D.tsx` (nạp lười, ErrorBoundary có nút thử lại).
+- Thêm `@radix-ui/react-dialog`, `@radix-ui/react-dropdown-menu` và thành phần `src/components/ui/dialog.tsx`, `dropdown-menu.tsx`.
 - Phiên bản thư viện tra trên npm và ghim đúng số; cần Node ≥ 22.22 (React Router 8). Docker build dùng `node:26-alpine`, chạy `nginx:1.30.6-alpine` (bản ổn định).
+
+**Nạp mô hình 3D (ND01, phần nền – Dev Quản lý, PR #5)**
+- File GLB lưu trong volume `content` (`/data/content`): api ghi vào `tmp/` rồi đổi tên sang `models/` (nguyên tử, cùng
+  volume); Nginx chỉ đọc, phục vụ `models/` tại `/content/models/`, không phục vụ `tmp/`. Cần sao lưu cùng `pgdata` (VH03).
+- `/content/models/` công khai, không cần đăng nhập (đúng thiết kế, sau này đưa qua CDN – VH02); lưu đệm 1 năm
+  (`immutable`) vì tên file có số phiên bản.
+- Bộ đọc GLB chỉ dùng thư viện chuẩn, đọc từng phần (không nạp cả file 150 MB); file sai cấu trúc → 422 `INVALID_GLB`.
+  - Số tam giác tính theo cảnh mặc định: mesh dùng ở nhiều node tính nhiều lần.
+  - Tên mesh lấy như Three.js: tên node, node không tên thì tên mesh. Three.js còn đổi khoảng trắng thành `_` và bỏ ký
+    tự `[]:./`, nên khi gắn nhãn (ND03, BH01) hai phía phải so tên theo cùng một cách.
+- Máy dev: `npm run dev` chuyển `/content` sang Nginx cổng 8080 như `/api`.
+
+**3D (NT08)**
+- Three.js `0.187.0` (ghim cùng `@types/three`). Không dùng bộ giải nén Draco / meshopt vì đã chốt không nén mô hình (`docs/quyet-dinh.md`), nên không cần WASM.
+- CSP thêm `connect-src blob:`: GLTFLoader đọc texture nhúng trong GLB bằng `fetch(blob:...)`; thiếu thì mô hình mất toàn bộ màu
+  (đã thử với CSP bản thật). `blob:` chỉ trỏ tới dữ liệu do chính trang tạo, không mở đường gửi ra ngoài. Giữ ImageBitmap
+  (giải nén ảnh ngoài luồng chính) thay vì ép nạp bằng thẻ `<img>`.
+- Mỗi khung 3D một renderer; rời trang thì giải phóng geometry / vật liệu / texture và trả ngữ cảnh WebGL (`forceContextLoss`).
+  Độ phân giải tối đa 2× (`devicePixelRatio`). Tắt kéo dịch (pan) theo Hình 3-5: chỉ xoay và phóng to.
+- File trên máy đọc bằng `GLTFLoader.parse` (không tạo `blob:` cho cả file GLB).
+- Trang thử `/thu-mo-hinh-3d` chỉ có khi `npm run dev` (bản build bỏ hẳn trang, Three.js và mô hình mẫu). Mô hình mẫu
+  `phan-tu-nuoc.v1.glb` (5 mesh có tên) sinh bằng `node scripts/tao-mo-hinh-mau.mjs`, để trong `src/assets/` (không phải
+  `public/`) để không lên bản thật.
+- Dung lượng hiển thị theo đơn vị thập phân (1 MB = 1.000.000 byte) như ngưỡng 150 MB của ND01.
+- **Số liệu đo tham khảo cho BH02** (20/11/2026, Chrome, máy phát triển GPU AMD Radeon tích hợp, khung 1120 × 830 px, tỉ lệ 1×):
+
+  | Mô hình | Dung lượng | Tam giác | Mesh | Tải và dựng (file trên máy) | Khung hình/giây khi xoay |
+  |---|---|---|---|---|---|
+  | Phân tử nước (mẫu) | 64 KB | 2.144 | 5 | ~110 ms | 60 |
+  | Tim NIH 3D (CC0, Sourav Pan) | 16,7 MB | 149.992 | 1 | lần đầu ~440 ms, các lần sau 136–169 ms | 60 |
+  | Tim, giả lập CPU chậm 4× | 16,7 MB | 149.992 | 1 | 330–410 ms | 60 |
+
+  - Thời gian trên chưa gồm tải qua mạng: 16,7 MB qua đường 20 Mbit/s mất khoảng 7 s, 50 Mbit/s khoảng 3 s.
+  - 60 khung hình/giây là giới hạn màn hình; GPU máy phát triển còn dư. Chưa đo trên máy tính bảng, máy trường thật (VH04).
+  - Mở rồi đóng mô hình tim 20 lần: vẫn 1 canvas, không có cảnh báo vượt số ngữ cảnh WebGL.
 
 ## 6. Giới hạn đã biết
 
@@ -207,11 +246,15 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 - **Khóa tài khoản / trường** hiện chặn refresh nhờ kiểm tra `is_active`, nhưng chưa tăng `token_version` (thêm khi làm API khóa tài khoản, khóa trường).
 - **Dò được tên đăng nhập** có tồn tại qua khóa tạm (tên có thật sau 5 lần sai trả 423). Chấp nhận vì tên đăng nhập theo quy tắc mã trường + mã HS/GV vốn đoán được.
 - **Tin IP chuyển tiếp:** uvicorn chạy `--forwarded-allow-ips *`, tin mọi máy trong mạng compose (hiện chỉ có `web`, `db`).
+- **Mô hình 3D (ND01):** đóng hộp thoại chi tiết khi file GLB đang tải thì trình duyệt vẫn tải tiếp đến hết
+  (`MoHinh3D` dùng `GLTFLoader.load`, chưa hủy được); file lớn trên mạng chậm sẽ tốn băng thông. Sửa trong `MoHinh3D` khi làm BH02.
 - **Ảnh cá chép** ở màn đăng nhập nặng 694 KB, vẫn tải trên màn hẹp.
+- **Khung 3D (NT08)** vẽ liên tục 60 lần/giây kể cả khi không xoay (tốn pin máy tính bảng); chưa điều khiển được bằng bàn
+  phím; chưa tự giảm chất lượng cho máy yếu. Để BH01, BH02 làm.
 
 ## 7. Việc còn chờ
 
-- **Giai đoạn 0 còn lại:** NT08 (thử hiển thị mô hình 3D bằng Three.js). QL00 đã bỏ (xem mục 9). NT06 xong phần khung; mỗi API tự ghi nhật ký.
+- **Giai đoạn 0 đã xong.** QL00 đã bỏ (xem mục 9). NT06 xong phần khung; mỗi API tự ghi nhật ký.
 - **Cần trưởng nhóm chốt:**
   - Ai viết API học tập 7–9 phía máy chủ (mục 10, dòng "API học tập").
   - VH04 (thử trên thiết bị thật, Bắt buộc) không chờ LH05 (Nên có) như kế hoạch gốc; phần điều khiển lớp thử thêm khi LH05 xong (mục 9).
@@ -264,6 +307,7 @@ Bổ sung cho `docs/quyet-dinh.md` (những điểm đặc tả không nói ho�
 
 **Bẫy hay gặp**
 - Vitest trên Windows phải chạy từ đường dẫn ổ đĩa viết HOA (`E:\stem3d\frontend`); chữ thường (`e:\`) sẽ báo "failed to find the runner".
+  `npm run dev` cũng vậy: chạy từ `e:\` thì Vite nạp hai bản React, trang báo "Invalid hook call".
 - Cookie refresh chỉ có `Secure` khi `APP_ENV=prod`; truy cập bản thật bằng http (không phải localhost) sẽ không đăng nhập được – cần HTTPS.
 - Muốn mở cổng CSDL cho pgAdmin: bỏ chú thích trong `docker-compose.override.yml` (cổng 5433, không dùng 5432).
 - Ảnh chụp Playwright lưu trong `.playwright-mcp/` (không đưa lên Git).
@@ -297,10 +341,10 @@ trong `docs/` (người làm, cần xong trước, mức) để sinh `ke-hoach/P
 | NT05 | — | | | | | | | |
 | NT06 | — | | | | | Có | Trưởng nhóm: khung ghi nhật ký (xong); Dev Quản lý: ghi nhật ký trong mọi API mình viết; Dev Bài học: ghi nhật ký trong mọi API mình viết | Xong phần khung; ghi nhật ký là điều kiện hoàn thành của từng API (`backend/CLAUDE.md` mục Nhật ký) |
 | NT09 | — | | | | | | | |
-| NT08 | 1 | | Hình 3-5 | feature/NT08-thu-hien-thi-mo-hinh-3d | | | | Bố cục, menu, gọi API đã xong (305b484); chỉ còn phần thử hiển thị mô hình 3D bằng Three.js |
+| NT08 | 1 | | Hình 3-5 | feature/NT08-thu-hien-thi-mo-hinh-3d | | | | Trưởng nhóm làm thay Dev Bài học. Xong: bố cục, menu, gọi API (305b484); thử hiển thị mô hình 3D bằng Three.js |
 | QL00 | — | | | | | | | Bỏ: đã có API thật nên làm thẳng màn hình với API; file Excel mẫu nằm trong QL04 (API 26) |
 | BH01 | 2 | | Hình 3-5 | feature/BH01-khung-bai-hoc-3d | | | | Việc khó nhất. Làm được ngay: chỉ cần đọc file mô hình GLB; nối API 9 sau khi có |
-| ND01 | — | 45–48 | Thư viện mô hình 3D (Bảng 3-15), Hình 3-11 | feature/ND01-nap-mo-hinh-3d | | | | Xong. Khung xem 3D `src/components/ModelViewer.tsx` dùng lại được cho NT08, BH01 |
+| ND01 | — | 45–48 | Thư viện mô hình 3D (Bảng 3-15), Hình 3-11 | feature/ND01-nap-mo-hinh-3d | | | | Xong (ce33d83). Xem 3D dùng `MoHinh3D` của NT08 |
 | ND02 | 4 | 49–55 | Hình 3-11 | feature/ND02-soan-bai-hoc | | | | Làm sớm vì chặn ND03, HT01 của Dev Bài học |
 | ND03 | 5 | 56 | Hình 3-11 (thẻ Nhãn) | feature/ND03-gan-nhan-bo-phan | Dev Quản lý: ND02; Dev Bài học: ND02, BH01 | | Dev Quản lý: API 56 lưu nhãn (cùng nhóm /api/editor của ND02); Dev Bài học: chọn mesh trên mô hình 3D, thẻ Nhãn trên Hình 3-11 | Tách đôi: phần máy chủ giao Dev Quản lý; phần máy chủ không cần chờ BH01 |
 | HT01 | 6 | 7, 8 | Hình 3-4 | feature/HT01-thu-vien-bai-hoc | | | | API 7–8 phía máy chủ: xem mục 10, dòng "API học tập" |
@@ -365,5 +409,5 @@ Script sinh sheet "Nền tảng đã bàn giao" từ bảng này (cột Mã là 
 | NT05 | `require_role`, `get_current_user` (đọc lại tài khoản mỗi yêu cầu, chặn tài khoản phải đổi mật khẩu); thanh bên, menu theo vai trò | Router: `Depends(require_role(...))`; service: `school_id` lấy từ `CurrentUser`, bản ghi trường khác trả 404; thêm menu: `frontend/src/lib/roles.ts`, thêm trang: `frontend/src/App.tsx` (chỉ thêm phần của mình) | `backend/CLAUDE.md` mục Quy ước; `app/core/deps.py` | d7f3456, 305b484 |
 | NT06 | Khung nhật ký `nhat_ky.ghi()`: 45 mã cố định có nhãn tiếng Việt, tự ghi tên người làm / đối tượng, chặn thông tin nhạy cảm; `kiem_tra_nhat_ky` cho test | Mỗi API thay đổi dữ liệu gọi `ghi()` trước `db.commit()` (xóa: trước `db.delete()`); test có `kiem_tra_nhat_ky` – điều kiện hoàn thành của API | `backend/CLAUDE.md` mục Nhật ký | d7f3456, d6c8030 |
 | NT09 | Khuôn dạng lỗi chung (`AppError`), mã lỗi chung, phân trang, `IdPath`, `UtcDatetime` / `UtcInputDatetime`, `get_now`, `current_school_year` | Ném `AppError(status, code, message)`; id trên đường dẫn dùng `IdPath`; giờ lấy qua `get_now`; danh sách trả `{items, total, page, page_size}` | `backend/CLAUDE.md` mục Quy ước; `app/schemas/common.py` | dbf6502, d7f3456 |
-| NT08 | Phần khung giao diện: bố cục thanh bên, menu theo vai trò, client API, trang tạm, quy ước giao diện | Dev Bài học làm tiếp phần thử hiển thị mô hình 3D (Three.js) – việc thứ tự 1 | `frontend/CLAUDE.md` | 305b484 |
+| NT08 | Khung giao diện: bố cục thanh bên, menu theo vai trò, client API, trang tạm, quy ước giao diện. Khung 3D: thành phần `MoHinh3D` (nạp GLB, xoay, phóng to, 3 trạng thái, giải phóng bộ nhớ), trang thử `/thu-mo-hinh-3d` (chỉ bản dev) | BH01 dựng khung bài học trên `MoHinh3D` (`src/components/mo-hinh-3d/`); xem tên mesh của file GLB bằng trang thử (nút "Mở file GLB trên máy"); số liệu đo cho BH02 ở mục 5 | `frontend/CLAUDE.md` mục 3D | 305b484, nhánh feature/NT08-thu-hien-thi-mo-hinh-3d |
 | — | Quy trình làm việc: nhánh `main` / `dev` / `feature/...`, hook chặn commit / push vào `main`, `dev`, subagent `review-code`, `tra-cuu-dac-ta`, skill viết API / màn hình / migration, file Excel phân công sinh từ tệp này | Làm theo mục 8 (Git – việc đầu tiên); xong việc: cập nhật mục 2, chạy `python ke-hoach/tao_phan_cong.py`, commit cả hai | `CLAUDE.md` mục Quy trình Git, Tiến độ | 6c4a137, 6a187b9, 6d9648f |

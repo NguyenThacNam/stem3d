@@ -3,13 +3,13 @@ import { Trash2, TriangleAlert } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { getAsset, SOURCE_LABEL, type AssetDetail, type AssetListItem } from "@/api/assets";
 import { ApiError } from "@/api/client";
-import { ModelViewerLazy } from "@/components/ModelViewerLazy";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { formatDate } from "@/lib/format";
 import { BaoCaoKiemTra } from "./BaoCaoKiemTra";
 import { DanhSachBai } from "./DanhSachBai";
+import { XemTruoc3D } from "./XemTruoc3D";
 
 type TrangThai =
   { kind: "loading" } | { kind: "error"; message: string } | { kind: "ready"; data: AssetDetail };
@@ -63,7 +63,7 @@ export function ChiTietMoHinhDialog({
         )}
 
         <div className="mt-5 grid min-h-0 flex-1 grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] gap-6 overflow-y-auto">
-          {asset && <ModelViewerLazy url={asset.file_url} label={asset.name} className="h-[440px]" />}
+          {asset && <XemTruoc3D url={asset.file_url} ten={asset.name} className="h-[440px]" />}
 
           <div className="flex min-w-0 flex-col gap-5" aria-busy={tt.kind === "loading"}>
             {tt.kind === "loading" && (
